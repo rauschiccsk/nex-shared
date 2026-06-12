@@ -413,6 +413,7 @@ function createAuthStore(config) {
       )
     );
     registerAuthCallback(() => {
+      config.setToken?.(null);
       useAuthStore2.setState({ token: null, user: null });
     });
     const useLogin = () => {
@@ -506,7 +507,7 @@ function LoginForm({
   const [showPwd, setShowPwd] = useState3(false);
   const isEmail = fieldLabel === "email";
   const idLabel = identityLabel ?? (isEmail ? "Email" : "Pou\u017E\xEDvate\u013Esk\xE9 meno");
-  const disabled = loading || !username.trim() || !password;
+  const disabled = loading || !username.trim() || !password.trim();
   const handleSubmit = (e) => {
     e.preventDefault();
     if (disabled) return;

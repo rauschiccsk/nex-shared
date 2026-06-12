@@ -56,7 +56,7 @@ export function LoginForm({
 
   const isEmail = fieldLabel === "email";
   const idLabel = identityLabel ?? (isEmail ? "Email" : "Používateľské meno");
-  const disabled = loading || !username.trim() || !password;
+  const disabled = loading || !username.trim() || !password.trim();
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();

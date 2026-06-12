@@ -149,6 +149,10 @@ export function createAuthStore<T, A extends unknown[] = unknown[]>(
     // Clear in-memory state when the api-client detects a 401 (circular-dep-safe:
     // the lib never imports the app store).
     registerAuthCallback(() => {
+      // Atomic 401 clear: drop the app-side token (key-agnostic, via config) AND the
+      // in-memory store together, so a consumer needn't also clear the token in its
+      // onUnauthorized handler (mode 2 has no setToken → no-op).
+      config.setToken?.(null);
       useAuthStore.setState({ token: null, user: null });
     });
 
