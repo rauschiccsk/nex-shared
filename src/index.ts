@@ -1,2 +1,17 @@
 export { Button } from "./Button";
 export type { ButtonProps, ButtonVariant, ButtonSize } from "./Button";
+
+export { AppShell } from "./AppShell";
+export type { AppShellProps } from "./AppShell";
+
+export { Sidebar } from "./Sidebar";
+export type { SidebarProps } from "./Sidebar";
+
+export { NavItem } from "./NavItem";
+export type { NavItemProps } from "./NavItem";
+
+export { SectionLabel } from "./SectionLabel";
+export type { SectionLabelProps } from "./SectionLabel";
+
+export { Header } from "./Header";
+export type { HeaderProps } from "./Header";
