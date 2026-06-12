@@ -1,0 +1,5 @@
+node_modules
+*.tgz
+.DS_Store
+# dist/ is intentionally COMMITTED — git-dep consumers get prebuilt files
+# without a build-on-install (the `prepare` script is a belt-and-suspenders fallback).

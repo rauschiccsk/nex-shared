@@ -1,0 +1,63 @@
+/* nex-shared canonical design tokens + primitive component classes (E1 Phase B1, CR-NS-048).
+ *
+ * The NEX Studio "vzor" foundation, extracted verbatim so every NEX project shares ONE source of truth.
+ * Consumers `@import "tailwindcss"` FIRST, then `@import "nex-shared/tokens.css"` (this file), then add an
+ * `@source` pointing at nex-shared/dist so Tailwind v4 detects utility classes used by shipped components
+ * (e.g. <Button>). App-specific bits (body background, html/#root sizing, .nex-misspelled) stay in the app.
+ */
+
+/* Dark mode via the `.dark` class (consumers are dark-by-default via <html class="dark">). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Canonical palette — NEX Studio indigo primary + module status colors + fonts.
+   Token names are unprefixed: a consumer replaces its own @theme with this one. */
+@theme {
+  --color-primary-50: #eef2ff;
+  --color-primary-100: #e0e7ff;
+  --color-primary-200: #c7d2fe;
+  --color-primary-300: #a5b4fc;
+  --color-primary-400: #818cf8;
+  --color-primary-500: #6366f1;
+  --color-primary-600: #4f46e5;
+  --color-primary-700: #4338ca;
+  --color-primary-800: #3730a3;
+  --color-primary-900: #312e81;
+  --color-primary-950: #1e1b4b;
+  --color-primary: #6366f1;
+
+  --color-status-planned: #6b7280;
+  --color-status-in-design: #f59e0b;
+  --color-status-in-development: #3b82f6;
+  --color-status-done: #10b981;
+  --color-status-failed: #ef4444;
+
+  --font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", Consolas, Monaco, monospace;
+}
+
+@layer base {
+  /* Tailwind v4 dropped the default cursor:pointer on <button>; restore it (UX unchanged). */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@layer components {
+  /* v4 note: @apply can't compose a custom component class, so each variant inlines the base utilities. */
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-none disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-none disabled:opacity-50 disabled:pointer-events-none bg-primary-600 text-white hover:bg-primary-500;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-none disabled:opacity-50 disabled:pointer-events-none bg-slate-800 text-slate-200 hover:bg-slate-700;
+  }
+
+  .card {
+    @apply bg-slate-900 border border-slate-800 rounded-xl;
+  }
+}

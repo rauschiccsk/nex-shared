@@ -1,0 +1,33 @@
+{
+  "name": "nex-shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "NEX shared frontend library — canonical design tokens + UI primitives (E1 unification; NEX Studio is the vzor).",
+  "files": ["dist"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./tokens.css": "./dist/tokens.css"
+  },
+  "scripts": {
+    "build": "tsup",
+    "lint": "tsc --noEmit",
+    "prepare": "npm run build"
+  },
+  "peerDependencies": {
+    "react": "^19",
+    "react-dom": "^19",
+    "tailwindcss": "^4.3"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.7.0"
+  }
+}
