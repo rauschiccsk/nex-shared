@@ -1,5 +1,6 @@
 import * as react from 'react';
 import { ButtonHTMLAttributes, ReactNode, InputHTMLAttributes, SelectHTMLAttributes, HTMLAttributes } from 'react';
+import { UseBoundStore, StoreApi } from 'zustand';
 
 type ButtonVariant = "primary" | "secondary";
 type ButtonSize = "sm" | "md";
@@ -223,4 +224,153 @@ declare function registerAuthCallback(cb: () => void): void;
  */
 declare function createApiClient(config: ApiClientConfig): ApiClient;
 
-export { type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, Badge, type BadgeProps, type BadgeVariant, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, Header, type HeaderProps, type HttpMethod, Input, type InputProps, NavItem, type NavItemProps, type RequestOptions, SectionLabel, type SectionLabelProps, Select, type SelectProps, Sidebar, type SidebarProps, createApiClient, registerAuthCallback };
+/**
+ * Shared FE auth-store factory (E1 Phase C, CR-NS-052). FE-only — pure Zustand,
+ * no backend, no router, no app stores. Mode-discriminated:
+ *
+ *   - **mode 'login'** (NEX Studio, internal tools): username/password login,
+ *     persists {token, user} (Zustand persist), bridges the token to the
+ *     api-client's token storage via `setToken`, wires `registerAuthCallback`
+ *     so a 401 clears the store.
+ *   - **mode 'token-launch'** (Inbox/Ledger, Genesis-launched apps): session
+ *     metadata only (no token, no persist); `useSessionProbe` runs `getUser`
+ *     on mount; a 401 redirects to `redirectOnUnauthorized` (the api-client
+ *     handles the redirect; this store just clears).
+ *
+ * The backend auth stays per-project — this is only the shared FE plumbing.
+ */
+
+type AuthMode = "login" | "token-launch";
+/**
+ * Configuration for {@link createAuthStore}. `T` is the app's user type; `A` is
+ * the login action's argument tuple (e.g. `[string, string]` for username +
+ * password) — kept positional so the consuming app's existing `login(u, p)`
+ * call sites stay unchanged.
+ */
+interface AuthConfig<T, A extends unknown[] = unknown[]> {
+    mode: AuthMode;
+    /** localStorage key for the Zustand persist (mode 1). Default: `nex-auth`. */
+    persistKey?: string;
+    /** Probe the current user (`GET /auth/me` or `/session`) — app supplies the call. */
+    getUser: () => Promise<T>;
+    /** Authenticate (mode 1). Returns the raw token + user; the app maps its own response shape. */
+    login?: (...args: A) => Promise<{
+        token: string;
+        user: T;
+    }>;
+    /** Invalidate the session on the backend (mode 1 logout). Best-effort. */
+    logout?: () => Promise<void>;
+    /**
+     * Bridge the token to wherever the api-client reads it (mode 1). Called with
+     * the token on login and `null` on logout / failed revalidation. Keeps the
+     * api-client's `getToken` contract (e.g. localStorage) app-side.
+     */
+    setToken?: (token: string | null) => void;
+    /** Where ProtectedRoute / a 401 sends an unauthenticated user (e.g. `/login`). */
+    redirectOnUnauthorized: string;
+    /** Side-effect after a successful login (e.g. presence reset) — NOT baked in the lib. */
+    onLogin?: (user: T) => void;
+    /** Optional post-login gate (e.g. must-change-password) — returns false to block. */
+    validateAfterLogin?: (user: T) => boolean;
+}
+/** Mode-1 store shape (token + user + actions). */
+interface LoginAuthState<T, A extends unknown[]> {
+    token: string | null;
+    user: T | null;
+    login: (...args: A) => Promise<void>;
+    logout: () => Promise<void>;
+    fetchMe: () => Promise<void>;
+}
+/** Mode-2 store shape (session metadata, no token). */
+interface TokenLaunchAuthState<T> {
+    user: T | null;
+    ready: boolean;
+    probe: () => Promise<void>;
+    clear: () => void;
+}
+/** Mode-1 module: login store + convenience login hook. */
+interface LoginAuthModule<T, A extends unknown[]> {
+    /** The bound Zustand hook ({@link LoginAuthState}). */
+    useAuthStore: UseBoundStore<StoreApi<LoginAuthState<T, A>>>;
+    /** Where an unauthenticated user is redirected (mirrors the config). */
+    redirectOnUnauthorized: string;
+    /** Convenience login hook with local loading/error. */
+    useLogin: () => {
+        login: (...args: A) => Promise<void>;
+        loading: boolean;
+        error: string | null;
+    };
+}
+/** Mode-2 module: session store + probe hook. */
+interface TokenLaunchAuthModule<T> {
+    /** The bound Zustand hook ({@link TokenLaunchAuthState}). */
+    useAuthStore: UseBoundStore<StoreApi<TokenLaunchAuthState<T>>>;
+    redirectOnUnauthorized: string;
+    /** Runs `getUser` on mount and tracks `ready`. */
+    useSessionProbe: () => {
+        user: T | null;
+        ready: boolean;
+    };
+}
+/** Union of the per-mode modules (the impl return type). */
+type AuthModule<T, A extends unknown[]> = LoginAuthModule<T, A> | TokenLaunchAuthModule<T>;
+declare function createAuthStore<T, A extends unknown[] = unknown[]>(config: AuthConfig<T, A> & {
+    mode: "login";
+}): LoginAuthModule<T, A>;
+declare function createAuthStore<T, A extends unknown[] = unknown[]>(config: AuthConfig<T, A> & {
+    mode: "token-launch";
+}): TokenLaunchAuthModule<T>;
+
+interface ProtectedRouteProps {
+    /** Whether a token / session currently exists (the app reads its store). */
+    authed: boolean;
+    /** Revalidate on mount (e.g. fetchMe / session probe). Runs only when `authed`. */
+    validate?: () => Promise<void>;
+    /**
+     * Re-check auth AFTER `validate` resolves (the token may have been cleared by
+     * an expired-session revalidation). Defaults to the initial `authed`.
+     */
+    isAuthed?: () => boolean;
+    /** Rendered when unauthenticated — the app supplies its router redirect (e.g. `<Navigate>`). */
+    redirect: ReactNode;
+    children: ReactNode;
+}
+/**
+ * Config-driven auth guard. Router-agnostic: the consuming app reads its own
+ * store (`authed` / `isAuthed`), supplies the revalidation (`validate`) and the
+ * redirect element (`redirect`). Shows nothing until `validate` settles so there
+ * is no flash of protected content or a premature redirect.
+ */
+declare function ProtectedRoute({ authed, validate, isAuthed, redirect, children }: ProtectedRouteProps): react.JSX.Element | null;
+
+/** Credentials collected by the form. `username` carries the identity value
+ *  (a username or, in `email` mode, the email string). */
+interface LoginCreds {
+    username: string;
+    password: string;
+}
+interface LoginFormProps {
+    /** Which identity field — changes the label/type/autocomplete. Default `username`. */
+    fieldLabel?: "username" | "email";
+    /** Called with trimmed creds when the form is submitted (both fields non-empty). */
+    onSubmit: (creds: LoginCreds) => void | Promise<void>;
+    /** Disables inputs + submit; the submit shows the loading label. */
+    loading?: boolean;
+    /** Error message shown above the submit button. */
+    error?: string | null;
+    /** Fired on any field edit (e.g. to clear an externally-owned error). */
+    onChange?: () => void;
+    /** Focus the identity field on mount. */
+    autoFocus?: boolean;
+    /** Show the password visibility toggle. Default `true`. */
+    showPasswordToggle?: boolean;
+    identityLabel?: string;
+    passwordLabel?: string;
+    submitLabel?: string;
+    loadingLabel?: string;
+    identityPlaceholder?: string;
+    passwordPlaceholder?: string;
+}
+declare function LoginForm({ fieldLabel, onSubmit, loading, error, onChange, autoFocus, showPasswordToggle, identityLabel, passwordLabel, submitLabel, loadingLabel, identityPlaceholder, passwordPlaceholder, }: LoginFormProps): react.JSX.Element;
+
+export { type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, Header, type HeaderProps, type HttpMethod, Input, type InputProps, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, NavItem, type NavItemProps, ProtectedRoute, type ProtectedRouteProps, type RequestOptions, SectionLabel, type SectionLabelProps, Select, type SelectProps, Sidebar, type SidebarProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, createApiClient, createAuthStore, registerAuthCallback };

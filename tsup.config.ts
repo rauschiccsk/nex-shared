@@ -9,7 +9,7 @@ export default defineConfig({
   entry: ["src/index.ts"],
   format: ["esm"],
   dts: true,
-  external: ["react", "react-dom"],
+  external: ["react", "react-dom", "zustand", "zustand/middleware"],
   clean: true,
   onSuccess: async () => {
     copyFileSync("src/tokens.css", "dist/tokens.css");

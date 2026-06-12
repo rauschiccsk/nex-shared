@@ -36,3 +36,20 @@ export type {
   RequestOptions,
   HttpMethod,
 } from "./api-client";
+
+export { createAuthStore } from "./auth-store";
+export type {
+  AuthConfig,
+  AuthMode,
+  AuthModule,
+  LoginAuthModule,
+  TokenLaunchAuthModule,
+  LoginAuthState,
+  TokenLaunchAuthState,
+} from "./auth-store";
+
+export { ProtectedRoute } from "./ProtectedRoute";
+export type { ProtectedRouteProps } from "./ProtectedRoute";
+
+export { LoginForm } from "./LoginForm";
+export type { LoginFormProps, LoginCreds } from "./LoginForm";
