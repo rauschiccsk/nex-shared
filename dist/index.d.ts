@@ -1,5 +1,5 @@
 import * as react from 'react';
-import { ButtonHTMLAttributes, ReactNode } from 'react';
+import { ButtonHTMLAttributes, ReactNode, InputHTMLAttributes, SelectHTMLAttributes, HTMLAttributes } from 'react';
 
 type ButtonVariant = "primary" | "secondary";
 type ButtonSize = "sm" | "md";
@@ -112,4 +112,33 @@ interface HeaderProps {
  */
 declare function Header({ left, right, children, className }: HeaderProps): react.JSX.Element;
 
-export { AppShell, type AppShellProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Header, type HeaderProps, NavItem, type NavItemProps, SectionLabel, type SectionLabelProps, Sidebar, type SidebarProps };
+interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+    /** Mark the field invalid → red border + `aria-invalid`. */
+    invalid?: boolean;
+}
+declare function Input({ invalid, className, ...rest }: InputProps): react.JSX.Element;
+
+interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+    /** Mark the field invalid → red border + `aria-invalid`. */
+    invalid?: boolean;
+    /** `<option>` children. */
+    children?: ReactNode;
+}
+declare function Select({ invalid, className, children, ...rest }: SelectProps): react.JSX.Element;
+
+interface CardProps extends HTMLAttributes<HTMLDivElement> {
+    children?: ReactNode;
+}
+declare function Card({ className, children, ...rest }: CardProps): react.JSX.Element;
+
+type BadgeVariant = "neutral" | "muted";
+interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
+    /** Color preset. Defaults to `neutral`. Pass `className` for ad-hoc colors. */
+    variant?: BadgeVariant;
+    /** Subtle attention animation (e.g. a pending decision). */
+    pulse?: boolean;
+    children?: ReactNode;
+}
+declare function Badge({ variant, pulse, className, children, ...rest }: BadgeProps): react.JSX.Element;
+
+export { AppShell, type AppShellProps, Badge, type BadgeProps, type BadgeVariant, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, Header, type HeaderProps, Input, type InputProps, NavItem, type NavItemProps, SectionLabel, type SectionLabelProps, Select, type SelectProps, Sidebar, type SidebarProps };

@@ -149,11 +149,71 @@ function Header({ left, right, children, className = "" }) {
     }
   );
 }
+
+// src/Input.tsx
+import { jsx as jsx7 } from "react/jsx-runtime";
+var BASE2 = "w-full bg-slate-800 border rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-primary-500";
+function Input({ invalid, className = "", ...rest }) {
+  const border = invalid ? "border-red-500" : "border-slate-700";
+  return /* @__PURE__ */ jsx7(
+    "input",
+    {
+      className: `${BASE2} ${border} ${className}`.trim(),
+      "aria-invalid": invalid || void 0,
+      ...rest
+    }
+  );
+}
+
+// src/Select.tsx
+import { jsx as jsx8 } from "react/jsx-runtime";
+var BASE3 = "w-full bg-slate-800 border rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-primary-500";
+function Select({ invalid, className = "", children, ...rest }) {
+  const border = invalid ? "border-red-500" : "border-slate-700";
+  return /* @__PURE__ */ jsx8(
+    "select",
+    {
+      className: `${BASE3} ${border} ${className}`.trim(),
+      "aria-invalid": invalid || void 0,
+      ...rest,
+      children
+    }
+  );
+}
+
+// src/Card.tsx
+import { jsx as jsx9 } from "react/jsx-runtime";
+var BASE4 = "rounded-xl border border-slate-700 bg-slate-900";
+function Card({ className = "", children, ...rest }) {
+  return /* @__PURE__ */ jsx9("div", { className: `${BASE4} ${className}`.trim(), ...rest, children });
+}
+
+// src/Badge.tsx
+import { jsx as jsx10 } from "react/jsx-runtime";
+var BASE5 = "inline-flex items-center rounded px-1.5 py-0.5 text-xs";
+var VARIANT2 = {
+  neutral: "bg-slate-800 text-slate-300",
+  muted: "bg-slate-600/20 text-slate-300"
+};
+function Badge({ variant = "neutral", pulse = false, className = "", children, ...rest }) {
+  return /* @__PURE__ */ jsx10(
+    "span",
+    {
+      className: `${BASE5} ${VARIANT2[variant]} ${pulse ? "animate-pulse" : ""} ${className}`.replace(/\s+/g, " ").trim(),
+      ...rest,
+      children
+    }
+  );
+}
 export {
   AppShell,
+  Badge,
   Button,
+  Card,
   Header,
+  Input,
   NavItem,
   SectionLabel,
+  Select,
   Sidebar
 };
