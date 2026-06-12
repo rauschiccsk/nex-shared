@@ -205,7 +205,170 @@ function Badge({ variant = "neutral", pulse = false, className = "", children, .
     }
   );
 }
+
+// src/api-client.ts
+var ApiError = class extends Error {
+  status;
+  data;
+  code;
+  symbol;
+  resolution;
+  constructor(status, message, data = null, extra) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.data = data;
+    this.code = extra?.code;
+    this.symbol = extra?.symbol;
+    this.resolution = extra?.resolution;
+  }
+};
+var _authCb = null;
+function registerAuthCallback(cb) {
+  _authCb = cb;
+}
+function defaultErrorParser(_status, body) {
+  if (body && typeof body === "object" && "detail" in body) {
+    const detail = body.detail;
+    if (typeof detail === "string") {
+      return detail;
+    }
+    if (Array.isArray(detail) && detail.length > 0) {
+      const first = detail[0];
+      if (first && typeof first.msg === "string") {
+        return first.msg;
+      }
+    }
+  }
+  return "";
+}
+function buildQueryString(params) {
+  if (!params) {
+    return "";
+  }
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value === void 0 || value === null) {
+      continue;
+    }
+    search.append(key, String(value));
+  }
+  const serialized = search.toString();
+  return serialized.length > 0 ? `?${serialized}` : "";
+}
+async function parseBody(response) {
+  if (response.status === 204 || response.status === 205) {
+    return null;
+  }
+  const contentType = response.headers.get("content-type") ?? "";
+  if (contentType.includes("application/json")) {
+    const text2 = await response.text();
+    return text2.length > 0 ? JSON.parse(text2) : null;
+  }
+  const text = await response.text();
+  return text.length > 0 ? text : null;
+}
+function createApiClient(config) {
+  const apiPrefix = config.apiPrefix ?? "/api/v1";
+  const errorParser = config.errorParser ?? defaultErrorParser;
+  function buildUrl(path, params) {
+    const normalized = path.startsWith("/") ? path : `/${path}`;
+    const withPrefix = normalized.startsWith(apiPrefix) ? normalized : `${apiPrefix}${normalized}`;
+    return `${config.baseUrl}${withPrefix}${buildQueryString(params)}`;
+  }
+  async function request(method, path, body, options = {}) {
+    const headers = {
+      Accept: "application/json",
+      ...options.headers
+    };
+    let serializedBody;
+    if (body !== void 0 && body !== null) {
+      if (body instanceof FormData || body instanceof URLSearchParams) {
+        serializedBody = body;
+      } else {
+        headers["Content-Type"] = headers["Content-Type"] ?? "application/json";
+        serializedBody = JSON.stringify(body);
+      }
+    }
+    if (!options.skipAuth) {
+      const token = config.getToken();
+      if (token && !headers.Authorization) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+    }
+    if (config.requestIdHeader && !headers[config.requestIdHeader]) {
+      const gen = config.requestIdGenerator;
+      if (gen) {
+        headers[config.requestIdHeader] = gen();
+      }
+    }
+    let signal = options.signal;
+    let timeoutId;
+    let controller;
+    if (config.timeout && config.timeout > 0) {
+      controller = new AbortController();
+      timeoutId = setTimeout(() => controller.abort(), config.timeout);
+      if (options.signal) {
+        if (options.signal.aborted) {
+          controller.abort();
+        } else {
+          options.signal.addEventListener("abort", () => controller.abort(), { once: true });
+        }
+      }
+      signal = controller.signal;
+    }
+    try {
+      const response = await fetch(buildUrl(path, options.params), {
+        method,
+        headers,
+        body: serializedBody,
+        signal,
+        // Same-origin credentials keep any future cookie auth working without
+        // leaking tokens to third-party hosts.
+        credentials: "same-origin"
+      });
+      if (response.status === 401 && !options.skipAuthRedirect) {
+        if (_authCb) {
+          try {
+            _authCb();
+          } catch {
+          }
+        }
+        config.onUnauthorized?.();
+      }
+      const parsed = await parseBody(response);
+      if (!response.ok) {
+        const message = errorParser(response.status, parsed) || response.statusText || "Request failed";
+        throw new ApiError(response.status, message, parsed);
+      }
+      return parsed;
+    } finally {
+      if (timeoutId !== void 0) {
+        clearTimeout(timeoutId);
+      }
+    }
+  }
+  return {
+    request,
+    get(path, options) {
+      return request("GET", path, void 0, options);
+    },
+    post(path, body, options) {
+      return request("POST", path, body, options);
+    },
+    put(path, body, options) {
+      return request("PUT", path, body, options);
+    },
+    patch(path, body, options) {
+      return request("PATCH", path, body, options);
+    },
+    delete(path, options) {
+      return request("DELETE", path, void 0, options);
+    }
+  };
+}
 export {
+  ApiError,
   AppShell,
   Badge,
   Button,
@@ -215,5 +378,7 @@ export {
   NavItem,
   SectionLabel,
   Select,
-  Sidebar
+  Sidebar,
+  createApiClient,
+  registerAuthCallback
 };

@@ -141,4 +141,86 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 }
 declare function Badge({ variant, pulse, className, children, ...rest }: BadgeProps): react.JSX.Element;
 
-export { AppShell, type AppShellProps, Badge, type BadgeProps, type BadgeVariant, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, Header, type HeaderProps, Input, type InputProps, NavItem, type NavItemProps, SectionLabel, type SectionLabelProps, Select, type SelectProps, Sidebar, type SidebarProps };
+/**
+ * Generic, configurable HTTP-client factory (E1 Phase B4, CR-NS-051).
+ *
+ * Extracted verbatim from NEX Studio's `services/api.ts` machinery — the moving
+ * parts (base URL, token storage, error envelope, 401 behavior) become config so
+ * NEX Studio / Inbox / Ledger share ONE client. Pure TS: NO Tailwind, NO
+ * react-router, NO stores, NO app imports. Uses the platform `fetch`.
+ */
+type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+/** Optional per-request overrides. */
+interface RequestOptions {
+    /** Extra headers merged after the defaults — callers can override them. */
+    headers?: Record<string, string>;
+    /** Passed straight to `fetch` for cancellation support. */
+    signal?: AbortSignal;
+    /** When true, do not attach the Authorization header. */
+    skipAuth?: boolean;
+    /** When true, do not run the 401 handler (callback + onUnauthorized). */
+    skipAuthRedirect?: boolean;
+    /** Extra query string parameters, serialized with `URLSearchParams`. */
+    params?: Record<string, string | number | boolean | undefined | null>;
+}
+/** Richer error envelope fields (inbox/ledger style) — all optional. */
+interface ApiErrorEnvelope {
+    code?: string;
+    symbol?: string;
+    resolution?: string;
+}
+/**
+ * Error raised whenever a request does not complete with a 2xx status. The
+ * parsed body (if any) is preserved on `data` so feature code can surface
+ * backend validation messages. Optional `code`/`symbol`/`resolution` carry the
+ * richer inbox/ledger envelopes when present.
+ */
+declare class ApiError extends Error {
+    readonly status: number;
+    readonly data: unknown;
+    readonly code?: string;
+    readonly symbol?: string;
+    readonly resolution?: string;
+    constructor(status: number, message: string, data?: unknown, extra?: ApiErrorEnvelope);
+}
+/** Configuration for {@link createApiClient}. */
+interface ApiClientConfig {
+    /** Absolute origin or "" for same-origin (the app resolves this). */
+    baseUrl: string;
+    /** REST version prefix prepended to every path. Defaults to `/api/v1`. */
+    apiPrefix?: string;
+    /** Returns the current bearer token (or null). Called per request. */
+    getToken: () => string | null;
+    /** Invoked on a 401 (unless `skipAuthRedirect`) AFTER the registered auth callback. */
+    onUnauthorized?: () => void;
+    /** Build an error message from a failed response. Defaults to the FastAPI `{detail}` shape. */
+    errorParser?: (status: number, body: unknown) => string;
+    /** Optional per-request timeout in ms (aborts the fetch). */
+    timeout?: number;
+    /** When set, a request-id header with this name is added to every request. */
+    requestIdHeader?: string;
+    /** Generates the request-id value (used only when `requestIdHeader` is set). */
+    requestIdGenerator?: () => string;
+}
+/** The configured client surface. */
+interface ApiClient {
+    request<T>(method: HttpMethod, path: string, body?: unknown, options?: RequestOptions): Promise<T>;
+    get<T>(path: string, options?: RequestOptions): Promise<T>;
+    post<T>(path: string, body?: unknown, options?: RequestOptions): Promise<T>;
+    put<T>(path: string, body?: unknown, options?: RequestOptions): Promise<T>;
+    patch<T>(path: string, body?: unknown, options?: RequestOptions): Promise<T>;
+    delete<T>(path: string, options?: RequestOptions): Promise<T>;
+}
+/**
+ * Register a callback invoked on every 401 (before `config.onUnauthorized`).
+ * Intended to be called once by the app's auth store to clear in-memory state
+ * without performing its own redirect.
+ */
+declare function registerAuthCallback(cb: () => void): void;
+/**
+ * Create a configured HTTP client. The returned object exposes `get/post/put/
+ * patch/delete` plus the low-level `request<T>`.
+ */
+declare function createApiClient(config: ApiClientConfig): ApiClient;
+
+export { type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, Badge, type BadgeProps, type BadgeVariant, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, Header, type HeaderProps, type HttpMethod, Input, type InputProps, NavItem, type NavItemProps, type RequestOptions, SectionLabel, type SectionLabelProps, Select, type SelectProps, Sidebar, type SidebarProps, createApiClient, registerAuthCallback };

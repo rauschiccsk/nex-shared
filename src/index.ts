@@ -27,3 +27,12 @@ export type { CardProps } from "./Card";
 
 export { Badge } from "./Badge";
 export type { BadgeProps, BadgeVariant } from "./Badge";
+
+export { createApiClient, ApiError, registerAuthCallback } from "./api-client";
+export type {
+  ApiClient,
+  ApiClientConfig,
+  ApiErrorEnvelope,
+  RequestOptions,
+  HttpMethod,
+} from "./api-client";
