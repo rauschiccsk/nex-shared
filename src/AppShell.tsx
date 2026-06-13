@@ -21,7 +21,7 @@ export interface AppShellProps {
  */
 export function AppShell({ sidebar, header, topBanner, children }: AppShellProps) {
   return (
-    <div className="flex h-full w-full bg-slate-950">
+    <div className="flex h-full w-full bg-[var(--color-canvas)]">
       {sidebar}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         {topBanner}

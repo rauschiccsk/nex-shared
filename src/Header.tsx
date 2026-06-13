@@ -19,7 +19,7 @@ export interface HeaderProps {
 export function Header({ left, right, children, className = "" }: HeaderProps) {
   return (
     <header
-      className={`h-10 flex-shrink-0 bg-slate-900 border-b border-slate-800 flex items-center px-3 gap-3 z-10 select-none ${className}`.trim()}
+      className={`h-10 flex-shrink-0 bg-[var(--color-surface)] border-b border-[var(--color-border-default)] flex items-center px-3 gap-3 z-10 select-none ${className}`.trim()}
     >
       {children ?? (
         <>

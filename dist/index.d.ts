@@ -2,8 +2,8 @@ import * as react from 'react';
 import { ButtonHTMLAttributes, ReactNode, InputHTMLAttributes, SelectHTMLAttributes, HTMLAttributes } from 'react';
 import { UseBoundStore, StoreApi } from 'zustand';
 
-type ButtonVariant = "primary" | "secondary";
-type ButtonSize = "sm" | "md";
+type ButtonVariant = "primary" | "secondary" | "danger" | "ghost";
+type ButtonSize = "sm" | "md" | "lg";
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     /** Visual style. Defaults to `primary`. */
     variant?: ButtonVariant;

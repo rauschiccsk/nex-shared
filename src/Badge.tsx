@@ -15,8 +15,8 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 const BASE = "inline-flex items-center rounded px-1.5 py-0.5 text-xs";
 
 const VARIANT: Record<BadgeVariant, string> = {
-  neutral: "bg-slate-800 text-slate-300",
-  muted: "bg-slate-600/20 text-slate-300",
+  neutral: "bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)]",
+  muted: "bg-[var(--color-state-muted-bg)] text-[var(--color-state-muted-fg)]",
 };
 
 export function Badge({ variant = "neutral", pulse = false, className = "", children, ...rest }: BadgeProps) {

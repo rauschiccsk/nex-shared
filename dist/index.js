@@ -1,13 +1,16 @@
 // src/Button.tsx
 import { jsx } from "react/jsx-runtime";
-var BASE = "inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none disabled:opacity-50 disabled:pointer-events-none";
+var BASE = "inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors focus:outline-none disabled:opacity-50 disabled:pointer-events-none";
 var VARIANT = {
-  primary: "bg-primary-600 text-white hover:bg-primary-500",
-  secondary: "bg-slate-800 text-slate-200 hover:bg-slate-700"
+  primary: "bg-[var(--color-accent-primary)] text-white hover:bg-[var(--color-accent-primary-hover)]",
+  secondary: "bg-[var(--color-surface-hover)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-active)]",
+  danger: "bg-red-600 text-white hover:bg-red-500 active:bg-red-700",
+  ghost: "bg-transparent text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)]"
 };
 var SIZE = {
   sm: "px-3 py-1.5 text-xs",
-  md: "px-4 py-2 text-sm"
+  md: "px-4 py-2 text-sm",
+  lg: "px-5 py-3 text-base"
 };
 function Button({
   variant = "primary",
@@ -31,7 +34,7 @@ function Button({
 // src/AppShell.tsx
 import { jsx as jsx2, jsxs } from "react/jsx-runtime";
 function AppShell({ sidebar, header, topBanner, children }) {
-  return /* @__PURE__ */ jsxs("div", { className: "flex h-full w-full bg-slate-950", children: [
+  return /* @__PURE__ */ jsxs("div", { className: "flex h-full w-full bg-[var(--color-canvas)]", children: [
     sidebar,
     /* @__PURE__ */ jsxs("div", { className: "flex min-w-0 flex-1 flex-col overflow-hidden", children: [
       topBanner,
@@ -64,24 +67,24 @@ function Sidebar({
   return /* @__PURE__ */ jsx3(CollapseContext.Provider, { value: collapsed, children: /* @__PURE__ */ jsxs2(
     "aside",
     {
-      className: "flex-shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col select-none transition-all duration-200 overflow-x-hidden",
+      className: "flex-shrink-0 bg-[var(--color-surface)] border-r border-[var(--color-border-default)] flex flex-col select-none transition-all duration-200 overflow-x-hidden",
       style: { width: collapsed ? "3.5rem" : "14rem" },
       children: [
-        /* @__PURE__ */ jsxs2("div", { className: "px-3 py-3 border-b border-slate-800 flex items-center gap-3 min-h-[56px]", children: [
+        /* @__PURE__ */ jsxs2("div", { className: "px-3 py-3 border-b border-[var(--color-border-default)] flex items-center gap-3 min-h-[56px]", children: [
           !collapsed && logo,
           /* @__PURE__ */ jsx3(
             "button",
             {
               type: "button",
               onClick: onToggleCollapse,
-              className: `flex items-center justify-center rounded hover:bg-slate-800 text-slate-500 hover:text-slate-300 transition-colors shrink-0 ${collapsed ? "w-8 h-8" : "w-6 h-6"}`,
+              className: `flex items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)] transition-colors shrink-0 ${collapsed ? "w-8 h-8" : "w-6 h-6"}`,
               title: collapsed ? expandTitle : collapseTitle,
               children: /* @__PURE__ */ jsx3(IconSidebarToggle, {})
             }
           )
         ] }),
         /* @__PURE__ */ jsx3("nav", { className: "flex-1 p-2 space-y-0.5 overflow-y-auto overflow-x-hidden", children }),
-        footer != null && /* @__PURE__ */ jsx3("div", { className: "p-3 border-t border-slate-800", children: footer })
+        footer != null && /* @__PURE__ */ jsx3("div", { className: "p-3 border-t border-[var(--color-border-default)]", children: footer })
       ]
     }
   ) });
@@ -103,7 +106,7 @@ function NavItem({
   const collapsed = useCollapsed();
   const base = "flex items-center gap-2.5 py-2 rounded-lg text-sm transition-colors w-full";
   const px = collapsed ? "px-0 justify-center" : "px-3";
-  const color = disabled ? "text-slate-600 opacity-40 cursor-not-allowed" : active ? "bg-primary-500/15 text-primary-400" : "text-slate-400 hover:bg-slate-800/60 hover:text-slate-200";
+  const color = disabled ? "text-[var(--color-text-muted)] opacity-40 cursor-not-allowed" : active ? "bg-primary-600/10 text-[var(--color-accent-primary)]" : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]";
   const tooltip = disabled ? disabledTitle ?? label : collapsed ? label : void 0;
   const className = `${base} ${px} ${color} relative`;
   const inner = /* @__PURE__ */ jsxs3(Fragment, { children: [
@@ -113,7 +116,7 @@ function NavItem({
       "span",
       {
         "aria-label": badgeLabel,
-        className: collapsed ? "absolute right-1 top-1 h-2 w-2 rounded-full bg-amber-400" : "ml-auto h-2 w-2 rounded-full bg-amber-400"
+        className: collapsed ? "absolute right-1 top-1 h-2 w-2 rounded-full bg-[var(--color-status-in-design)]" : "ml-auto h-2 w-2 rounded-full bg-[var(--color-status-in-design)]"
       }
     )
   ] });
@@ -132,7 +135,7 @@ import { jsx as jsx5 } from "react/jsx-runtime";
 function SectionLabel({ label }) {
   const collapsed = useCollapsed();
   if (collapsed) return /* @__PURE__ */ jsx5("div", { className: "h-3" });
-  return /* @__PURE__ */ jsx5("div", { className: "pt-3 pb-1 px-3 text-[10px] text-slate-700 uppercase tracking-widest font-semibold", children: label });
+  return /* @__PURE__ */ jsx5("div", { className: "pt-3 pb-1 px-3 text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest font-semibold", children: label });
 }
 
 // src/Header.tsx
@@ -141,7 +144,7 @@ function Header({ left, right, children, className = "" }) {
   return /* @__PURE__ */ jsx6(
     "header",
     {
-      className: `h-10 flex-shrink-0 bg-slate-900 border-b border-slate-800 flex items-center px-3 gap-3 z-10 select-none ${className}`.trim(),
+      className: `h-10 flex-shrink-0 bg-[var(--color-surface)] border-b border-[var(--color-border-default)] flex items-center px-3 gap-3 z-10 select-none ${className}`.trim(),
       children: children ?? /* @__PURE__ */ jsxs4(Fragment2, { children: [
         left,
         right != null && /* @__PURE__ */ jsx6("div", { className: "ml-auto flex items-center gap-3", children: right })
@@ -152,9 +155,9 @@ function Header({ left, right, children, className = "" }) {
 
 // src/Input.tsx
 import { jsx as jsx7 } from "react/jsx-runtime";
-var BASE2 = "w-full bg-slate-800 border rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-primary-500";
+var BASE2 = "w-full bg-[var(--color-surface)] border rounded-lg px-3 py-2 text-sm text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-accent-focus)]";
 function Input({ invalid, className = "", ...rest }) {
-  const border = invalid ? "border-red-500" : "border-slate-700";
+  const border = invalid ? "border-red-500" : "border-[var(--color-border-default)]";
   return /* @__PURE__ */ jsx7(
     "input",
     {
@@ -167,9 +170,9 @@ function Input({ invalid, className = "", ...rest }) {
 
 // src/Select.tsx
 import { jsx as jsx8 } from "react/jsx-runtime";
-var BASE3 = "w-full bg-slate-800 border rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-primary-500";
+var BASE3 = "w-full bg-[var(--color-surface)] border rounded-lg px-3 py-2 text-sm text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-accent-focus)]";
 function Select({ invalid, className = "", children, ...rest }) {
-  const border = invalid ? "border-red-500" : "border-slate-700";
+  const border = invalid ? "border-red-500" : "border-[var(--color-border-default)]";
   return /* @__PURE__ */ jsx8(
     "select",
     {
@@ -183,7 +186,7 @@ function Select({ invalid, className = "", children, ...rest }) {
 
 // src/Card.tsx
 import { jsx as jsx9 } from "react/jsx-runtime";
-var BASE4 = "rounded-xl border border-slate-700 bg-slate-900";
+var BASE4 = "rounded-xl border border-[var(--color-border-default)] bg-[var(--color-surface-elevated)] shadow-[var(--shadow-sm)]";
 function Card({ className = "", children, ...rest }) {
   return /* @__PURE__ */ jsx9("div", { className: `${BASE4} ${className}`.trim(), ...rest, children });
 }
@@ -192,8 +195,8 @@ function Card({ className = "", children, ...rest }) {
 import { jsx as jsx10 } from "react/jsx-runtime";
 var BASE5 = "inline-flex items-center rounded px-1.5 py-0.5 text-xs";
 var VARIANT2 = {
-  neutral: "bg-slate-800 text-slate-300",
-  muted: "bg-slate-600/20 text-slate-300"
+  neutral: "bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)]",
+  muted: "bg-[var(--color-state-muted-bg)] text-[var(--color-state-muted-fg)]"
 };
 function Badge({ variant = "neutral", pulse = false, className = "", children, ...rest }) {
   return /* @__PURE__ */ jsx10(
@@ -486,7 +489,7 @@ function ProtectedRoute({ authed, validate, isAuthed, redirect, children }) {
 // src/LoginForm.tsx
 import { useState as useState3 } from "react";
 import { Fragment as Fragment4, jsx as jsx12, jsxs as jsxs5 } from "react/jsx-runtime";
-var LABEL_CLS = "block text-sm font-medium text-slate-300 mb-1";
+var LABEL_CLS = "block text-sm font-medium text-[var(--color-text-secondary)] mb-1";
 function LoginForm({
   fieldLabel = "username",
   onSubmit,
@@ -556,7 +559,7 @@ function LoginForm({
             type: "button",
             tabIndex: -1,
             onClick: () => setShowPwd((s) => !s),
-            className: "absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-400 transition-colors",
+            className: "absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors",
             children: showPwd ? /* @__PURE__ */ jsx12("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx12("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" }) }) : /* @__PURE__ */ jsxs5("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: [
               /* @__PURE__ */ jsx12("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15 12a3 3 0 11-6 0 3 3 0 016 0z" }),
               /* @__PURE__ */ jsx12("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" })

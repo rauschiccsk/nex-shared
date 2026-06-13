@@ -33,7 +33,7 @@ export interface LoginFormProps {
   passwordPlaceholder?: string;
 }
 
-const LABEL_CLS = "block text-sm font-medium text-slate-300 mb-1";
+const LABEL_CLS = "block text-sm font-medium text-[var(--color-text-secondary)] mb-1";
 
 export function LoginForm({
   fieldLabel = "username",
@@ -109,7 +109,7 @@ export function LoginForm({
               type="button"
               tabIndex={-1}
               onClick={() => setShowPwd((s) => !s)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-400 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors"
             >
               {showPwd ? (
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

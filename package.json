@@ -1,6 +1,6 @@
 {
   "name": "nex-shared",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
   "type": "module",
   "description": "NEX shared frontend library — canonical design tokens + UI primitives (E1 unification; NEX Studio is the vzor).",

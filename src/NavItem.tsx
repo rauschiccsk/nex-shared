@@ -44,10 +44,10 @@ export function NavItem({
   const base = "flex items-center gap-2.5 py-2 rounded-lg text-sm transition-colors w-full";
   const px = collapsed ? "px-0 justify-center" : "px-3";
   const color = disabled
-    ? "text-slate-600 opacity-40 cursor-not-allowed"
+    ? "text-[var(--color-text-muted)] opacity-40 cursor-not-allowed"
     : active
-      ? "bg-primary-500/15 text-primary-400"
-      : "text-slate-400 hover:bg-slate-800/60 hover:text-slate-200";
+      ? "bg-primary-600/10 text-[var(--color-accent-primary)]"
+      : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]";
 
   const tooltip = disabled ? (disabledTitle ?? label) : collapsed ? label : undefined;
   const className = `${base} ${px} ${color} relative`;
@@ -61,8 +61,8 @@ export function NavItem({
           aria-label={badgeLabel}
           className={
             collapsed
-              ? "absolute right-1 top-1 h-2 w-2 rounded-full bg-amber-400"
-              : "ml-auto h-2 w-2 rounded-full bg-amber-400"
+              ? "absolute right-1 top-1 h-2 w-2 rounded-full bg-[var(--color-status-in-design)]"
+              : "ml-auto h-2 w-2 rounded-full bg-[var(--color-status-in-design)]"
           }
         />
       )}

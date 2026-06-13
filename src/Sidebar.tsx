@@ -45,16 +45,16 @@ export function Sidebar({
   return (
     <CollapseContext.Provider value={collapsed}>
       <aside
-        className="flex-shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col select-none transition-all duration-200 overflow-x-hidden"
+        className="flex-shrink-0 bg-[var(--color-surface)] border-r border-[var(--color-border-default)] flex flex-col select-none transition-all duration-200 overflow-x-hidden"
         style={{ width: collapsed ? "3.5rem" : "14rem" }}
       >
         {/* Logo + toggle */}
-        <div className="px-3 py-3 border-b border-slate-800 flex items-center gap-3 min-h-[56px]">
+        <div className="px-3 py-3 border-b border-[var(--color-border-default)] flex items-center gap-3 min-h-[56px]">
           {!collapsed && logo}
           <button
             type="button"
             onClick={onToggleCollapse}
-            className={`flex items-center justify-center rounded hover:bg-slate-800 text-slate-500 hover:text-slate-300 transition-colors shrink-0 ${collapsed ? "w-8 h-8" : "w-6 h-6"}`}
+            className={`flex items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)] transition-colors shrink-0 ${collapsed ? "w-8 h-8" : "w-6 h-6"}`}
             title={collapsed ? expandTitle : collapseTitle}
           >
             <IconSidebarToggle />
@@ -65,7 +65,7 @@ export function Sidebar({
         <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto overflow-x-hidden">{children}</nav>
 
         {/* Footer */}
-        {footer != null && <div className="p-3 border-t border-slate-800">{footer}</div>}
+        {footer != null && <div className="p-3 border-t border-[var(--color-border-default)]">{footer}</div>}
       </aside>
     </CollapseContext.Provider>
   );
