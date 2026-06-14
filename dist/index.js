@@ -153,12 +153,133 @@ function Header({ left, right, children, className = "" }) {
   );
 }
 
+// src/Brand.tsx
+import { Fragment as Fragment3, jsx as jsx7, jsxs as jsxs5 } from "react/jsx-runtime";
+function Brand({ initials, name, version, squareClassName = "bg-primary-600" }) {
+  return /* @__PURE__ */ jsxs5(Fragment3, { children: [
+    /* @__PURE__ */ jsx7(
+      "div",
+      {
+        className: `w-8 h-8 rounded-lg ${squareClassName} flex items-center justify-center text-white font-black text-sm shrink-0`,
+        children: initials
+      }
+    ),
+    /* @__PURE__ */ jsxs5("div", { className: "flex-1 min-w-0", children: [
+      /* @__PURE__ */ jsx7("div", { className: "text-sm font-bold text-[var(--color-text-primary)] leading-tight", children: name }),
+      version != null && version !== "" && /* @__PURE__ */ jsx7("div", { className: "text-[10px] text-[var(--color-version-text)] font-mono", children: version })
+    ] })
+  ] });
+}
+
+// src/UserCard.tsx
+import { Fragment as Fragment4, jsx as jsx8, jsxs as jsxs6 } from "react/jsx-runtime";
+function UserCard({
+  initials,
+  name,
+  subtitle,
+  onLogout,
+  logoutTitle = "Odhl\xE1si\u0165 sa"
+}) {
+  const collapsed = useCollapsed();
+  return /* @__PURE__ */ jsxs6("div", { className: `flex items-center gap-2.5 px-2 py-1.5 rounded-lg ${collapsed ? "justify-center" : ""}`, children: [
+    /* @__PURE__ */ jsx8("div", { className: "w-7 h-7 rounded-full bg-primary-600 flex items-center justify-center text-xs font-bold text-white shrink-0", children: initials }),
+    !collapsed && /* @__PURE__ */ jsxs6(Fragment4, { children: [
+      /* @__PURE__ */ jsxs6("div", { className: "min-w-0 flex-1", children: [
+        /* @__PURE__ */ jsx8("div", { className: "text-xs font-medium text-[var(--color-text-primary)] truncate", children: name }),
+        subtitle != null && subtitle !== "" && /* @__PURE__ */ jsx8("div", { className: "text-[10px] text-[var(--color-text-muted)]", children: subtitle })
+      ] }),
+      onLogout != null && /* @__PURE__ */ jsx8(
+        "button",
+        {
+          type: "button",
+          onClick: onLogout,
+          title: logoutTitle,
+          className: "shrink-0 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors",
+          children: /* @__PURE__ */ jsx8("span", { "aria-hidden": "true", className: "text-base leading-none", children: "\u{1F6AA}" })
+        }
+      )
+    ] })
+  ] });
+}
+
+// src/ThemeToggle.tsx
+import { jsx as jsx9, jsxs as jsxs7 } from "react/jsx-runtime";
+var SunIcon = () => /* @__PURE__ */ jsxs7(
+  "svg",
+  {
+    width: "18",
+    height: "18",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2",
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    "aria-hidden": "true",
+    children: [
+      /* @__PURE__ */ jsx9("circle", { cx: "12", cy: "12", r: "4" }),
+      /* @__PURE__ */ jsx9("path", { d: "M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" })
+    ]
+  }
+);
+var MoonIcon = () => /* @__PURE__ */ jsx9(
+  "svg",
+  {
+    width: "18",
+    height: "18",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2",
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    "aria-hidden": "true",
+    children: /* @__PURE__ */ jsx9("path", { d: "M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" })
+  }
+);
+function ThemeToggle({
+  theme,
+  onToggle,
+  toLightLabel = "Prepn\xFA\u0165 na svetl\xFA t\xE9mu",
+  toDarkLabel = "Prepn\xFA\u0165 na tmav\xFA t\xE9mu",
+  toLightTitle = "Svetl\xE1 t\xE9ma",
+  toDarkTitle = "Tmav\xE1 t\xE9ma"
+}) {
+  const isDark = theme === "dark";
+  const label = isDark ? toLightLabel : toDarkLabel;
+  const title = isDark ? toLightTitle : toDarkTitle;
+  return /* @__PURE__ */ jsx9(
+    "button",
+    {
+      type: "button",
+      onClick: onToggle,
+      "aria-label": label,
+      title,
+      className: "p-2 rounded-[var(--radius-md)] hover:bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)] transition-colors",
+      children: isDark ? /* @__PURE__ */ jsx9(SunIcon, {}) : /* @__PURE__ */ jsx9(MoonIcon, {})
+    }
+  );
+}
+
+// src/NavIcon.tsx
+import { jsx as jsx10 } from "react/jsx-runtime";
+function NavIcon({ glyph }) {
+  return /* @__PURE__ */ jsx10(
+    "span",
+    {
+      "aria-hidden": "true",
+      className: "text-base leading-none shrink-0 w-4 inline-flex items-center justify-center",
+      children: glyph
+    }
+  );
+}
+
 // src/Input.tsx
-import { jsx as jsx7 } from "react/jsx-runtime";
+import { jsx as jsx11 } from "react/jsx-runtime";
 var BASE2 = "w-full bg-[var(--color-surface)] border rounded-lg px-3 py-2 text-sm text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-accent-focus)]";
 function Input({ invalid, className = "", ...rest }) {
   const border = invalid ? "border-red-500" : "border-[var(--color-border-default)]";
-  return /* @__PURE__ */ jsx7(
+  return /* @__PURE__ */ jsx11(
     "input",
     {
       className: `${BASE2} ${border} ${className}`.trim(),
@@ -169,11 +290,11 @@ function Input({ invalid, className = "", ...rest }) {
 }
 
 // src/Select.tsx
-import { jsx as jsx8 } from "react/jsx-runtime";
+import { jsx as jsx12 } from "react/jsx-runtime";
 var BASE3 = "w-full bg-[var(--color-surface)] border rounded-lg px-3 py-2 text-sm text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-accent-focus)]";
 function Select({ invalid, className = "", children, ...rest }) {
   const border = invalid ? "border-red-500" : "border-[var(--color-border-default)]";
-  return /* @__PURE__ */ jsx8(
+  return /* @__PURE__ */ jsx12(
     "select",
     {
       className: `${BASE3} ${border} ${className}`.trim(),
@@ -185,21 +306,21 @@ function Select({ invalid, className = "", children, ...rest }) {
 }
 
 // src/Card.tsx
-import { jsx as jsx9 } from "react/jsx-runtime";
+import { jsx as jsx13 } from "react/jsx-runtime";
 var BASE4 = "rounded-xl border border-[var(--color-border-default)] bg-[var(--color-surface-elevated)] shadow-[var(--shadow-sm)]";
 function Card({ className = "", children, ...rest }) {
-  return /* @__PURE__ */ jsx9("div", { className: `${BASE4} ${className}`.trim(), ...rest, children });
+  return /* @__PURE__ */ jsx13("div", { className: `${BASE4} ${className}`.trim(), ...rest, children });
 }
 
 // src/Badge.tsx
-import { jsx as jsx10 } from "react/jsx-runtime";
+import { jsx as jsx14 } from "react/jsx-runtime";
 var BASE5 = "inline-flex items-center rounded px-1.5 py-0.5 text-xs";
 var VARIANT2 = {
   neutral: "bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)]",
   muted: "bg-[var(--color-state-muted-bg)] text-[var(--color-state-muted-fg)]"
 };
 function Badge({ variant = "neutral", pulse = false, className = "", children, ...rest }) {
-  return /* @__PURE__ */ jsx10(
+  return /* @__PURE__ */ jsx14(
     "span",
     {
       className: `${BASE5} ${VARIANT2[variant]} ${pulse ? "animate-pulse" : ""} ${className}`.replace(/\s+/g, " ").trim(),
@@ -471,7 +592,7 @@ function createAuthStore(config) {
 
 // src/ProtectedRoute.tsx
 import { useEffect as useEffect2, useState as useState2 } from "react";
-import { Fragment as Fragment3, jsx as jsx11 } from "react/jsx-runtime";
+import { Fragment as Fragment5, jsx as jsx15 } from "react/jsx-runtime";
 function ProtectedRoute({ authed, validate, isAuthed, redirect, children }) {
   const [ready, setReady] = useState2(false);
   useEffect2(() => {
@@ -483,12 +604,12 @@ function ProtectedRoute({ authed, validate, isAuthed, redirect, children }) {
   }, [authed]);
   if (!ready) return null;
   const ok = isAuthed ? isAuthed() : authed;
-  return ok ? /* @__PURE__ */ jsx11(Fragment3, { children }) : /* @__PURE__ */ jsx11(Fragment3, { children: redirect });
+  return ok ? /* @__PURE__ */ jsx15(Fragment5, { children }) : /* @__PURE__ */ jsx15(Fragment5, { children: redirect });
 }
 
 // src/LoginForm.tsx
 import { useState as useState3 } from "react";
-import { Fragment as Fragment4, jsx as jsx12, jsxs as jsxs5 } from "react/jsx-runtime";
+import { Fragment as Fragment6, jsx as jsx16, jsxs as jsxs8 } from "react/jsx-runtime";
 var LABEL_CLS = "block text-sm font-medium text-[var(--color-text-secondary)] mb-1";
 function LoginForm({
   fieldLabel = "username",
@@ -520,10 +641,10 @@ function LoginForm({
     setter(e.target.value);
     onChange?.();
   };
-  return /* @__PURE__ */ jsxs5("form", { onSubmit: handleSubmit, noValidate: true, className: "space-y-4", children: [
-    /* @__PURE__ */ jsxs5("div", { children: [
-      /* @__PURE__ */ jsx12("label", { htmlFor: "login-username", className: LABEL_CLS, children: idLabel }),
-      /* @__PURE__ */ jsx12(
+  return /* @__PURE__ */ jsxs8("form", { onSubmit: handleSubmit, noValidate: true, className: "space-y-4", children: [
+    /* @__PURE__ */ jsxs8("div", { children: [
+      /* @__PURE__ */ jsx16("label", { htmlFor: "login-username", className: LABEL_CLS, children: idLabel }),
+      /* @__PURE__ */ jsx16(
         Input,
         {
           id: "login-username",
@@ -537,10 +658,10 @@ function LoginForm({
         }
       )
     ] }),
-    /* @__PURE__ */ jsxs5("div", { children: [
-      /* @__PURE__ */ jsx12("label", { htmlFor: "login-password", className: LABEL_CLS, children: passwordLabel }),
-      /* @__PURE__ */ jsxs5("div", { className: "relative", children: [
-        /* @__PURE__ */ jsx12(
+    /* @__PURE__ */ jsxs8("div", { children: [
+      /* @__PURE__ */ jsx16("label", { htmlFor: "login-password", className: LABEL_CLS, children: passwordLabel }),
+      /* @__PURE__ */ jsxs8("div", { className: "relative", children: [
+        /* @__PURE__ */ jsx16(
           Input,
           {
             id: "login-password",
@@ -553,26 +674,26 @@ function LoginForm({
             className: showPasswordToggle ? "pr-10" : ""
           }
         ),
-        showPasswordToggle && /* @__PURE__ */ jsx12(
+        showPasswordToggle && /* @__PURE__ */ jsx16(
           "button",
           {
             type: "button",
             tabIndex: -1,
             onClick: () => setShowPwd((s) => !s),
             className: "absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors",
-            children: showPwd ? /* @__PURE__ */ jsx12("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx12("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" }) }) : /* @__PURE__ */ jsxs5("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: [
-              /* @__PURE__ */ jsx12("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15 12a3 3 0 11-6 0 3 3 0 016 0z" }),
-              /* @__PURE__ */ jsx12("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" })
+            children: showPwd ? /* @__PURE__ */ jsx16("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx16("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" }) }) : /* @__PURE__ */ jsxs8("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: [
+              /* @__PURE__ */ jsx16("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15 12a3 3 0 11-6 0 3 3 0 016 0z" }),
+              /* @__PURE__ */ jsx16("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" })
             ] })
           }
         )
       ] })
     ] }),
-    error && /* @__PURE__ */ jsx12("div", { className: "rounded-lg bg-red-500/10 border border-red-500/30 p-3 text-sm text-red-400", children: error }),
-    /* @__PURE__ */ jsx12(Button, { type: "submit", variant: "primary", disabled, className: "w-full mt-2 gap-2", children: loading ? /* @__PURE__ */ jsxs5(Fragment4, { children: [
-      /* @__PURE__ */ jsxs5("svg", { className: "w-4 h-4 animate-spin", fill: "none", viewBox: "0 0 24 24", children: [
-        /* @__PURE__ */ jsx12("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4" }),
-        /* @__PURE__ */ jsx12("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" })
+    error && /* @__PURE__ */ jsx16("div", { className: "rounded-lg bg-red-500/10 border border-red-500/30 p-3 text-sm text-red-400", children: error }),
+    /* @__PURE__ */ jsx16(Button, { type: "submit", variant: "primary", disabled, className: "w-full mt-2 gap-2", children: loading ? /* @__PURE__ */ jsxs8(Fragment6, { children: [
+      /* @__PURE__ */ jsxs8("svg", { className: "w-4 h-4 animate-spin", fill: "none", viewBox: "0 0 24 24", children: [
+        /* @__PURE__ */ jsx16("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4" }),
+        /* @__PURE__ */ jsx16("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" })
       ] }),
       loadingLabel
     ] }) : submitLabel })
@@ -582,16 +703,20 @@ export {
   ApiError,
   AppShell,
   Badge,
+  Brand,
   Button,
   Card,
   Header,
   Input,
   LoginForm,
+  NavIcon,
   NavItem,
   ProtectedRoute,
   SectionLabel,
   Select,
   Sidebar,
+  ThemeToggle,
+  UserCard,
   createApiClient,
   createAuthStore,
   registerAuthCallback

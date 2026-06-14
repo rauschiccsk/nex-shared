@@ -16,6 +16,18 @@ export type { SectionLabelProps } from "./SectionLabel";
 export { Header } from "./Header";
 export type { HeaderProps } from "./Header";
 
+export { Brand } from "./Brand";
+export type { BrandProps } from "./Brand";
+
+export { UserCard } from "./UserCard";
+export type { UserCardProps } from "./UserCard";
+
+export { ThemeToggle } from "./ThemeToggle";
+export type { ThemeToggleProps } from "./ThemeToggle";
+
+export { NavIcon } from "./NavIcon";
+export type { NavIconProps } from "./NavIcon";
+
 export { Input } from "./Input";
 export type { InputProps } from "./Input";
 

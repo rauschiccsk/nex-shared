@@ -113,6 +113,84 @@ interface HeaderProps {
  */
 declare function Header({ left, right, children, className }: HeaderProps): react.JSX.Element;
 
+interface BrandProps {
+    /** 1–2 letter app initials shown in the colored square (e.g. "NS", "NI"). */
+    initials: string;
+    /** App name shown next to the square (e.g. "NEX Studio"). */
+    name: string;
+    /** Optional version line under the name — the app passes its own string
+        (build-time VITE_APP_VERSION for Studio, runtime /session for Inbox). */
+    version?: string;
+    /** Square background (Tailwind class). Defaults to the NEX indigo brand. */
+    squareClassName?: string;
+}
+/**
+ * The sidebar brand block: a colored rounded square with the app initials, the
+ * app name, and an optional version line beneath it. Promoted from the NEX
+ * Studio vzor (E1 unification, CR-NS-066) so every app's logo slot renders
+ * identically — pass `logo={<Brand initials="NI" name="NEX Inbox" version={v} />}`.
+ * Theme-aware via --color-* tokens (name + version resolve in light & dark). The
+ * shared <Sidebar> hides the whole logo slot when collapsed, so this need not be
+ * collapse-aware.
+ */
+declare function Brand({ initials, name, version, squareClassName }: BrandProps): react.JSX.Element;
+
+interface UserCardProps {
+    /** Avatar initials (e.g. first letter of the username, uppercased). */
+    initials: string;
+    /** Primary line — the logged-in user / session label. */
+    name: string;
+    /** Optional secondary line (e.g. "Director · Ri"). */
+    subtitle?: string;
+    /** Optional logout handler. When omitted the logout button is NOT rendered
+        (e.g. NEX Inbox's re-launch model has no logout — CR-002). */
+    onLogout?: () => void;
+    /** Tooltip for the logout button. NEX-Slovak default. */
+    logoutTitle?: string;
+}
+/**
+ * The sidebar-footer user card: a round avatar with initials, the user name, an
+ * optional role subtitle, and an optional logout button. Promoted from the NEX
+ * Studio vzor (E1 unification, CR-NS-066) — pass `footer={<UserCard .../>}`.
+ * Collapse-aware (avatar-only when the rail is collapsed) and theme-aware.
+ */
+declare function UserCard({ initials, name, subtitle, onLogout, logoutTitle, }: UserCardProps): react.JSX.Element;
+
+interface ThemeToggleProps {
+    /** Current theme. State is OWNED BY THE APP (Studio ThemeContext / Inbox uiStore). */
+    theme: "light" | "dark";
+    /** Toggle handler. */
+    onToggle: () => void;
+    /** aria-label (full action description) when currently dark (click → light). */
+    toLightLabel?: string;
+    /** aria-label (full action description) when currently light (click → dark). */
+    toDarkLabel?: string;
+    /** Short hover tooltip (target theme name) when currently dark. */
+    toLightTitle?: string;
+    /** Short hover tooltip (target theme name) when currently light. */
+    toDarkTitle?: string;
+}
+/**
+ * The top-bar theme toggle (Sun ↔ Moon) — promoted from the NEX Inbox vzor
+ * (E1 unification, CR-NS-066; Inbox's top-right placement is the vzor for this
+ * element). Presentational + theme-state-agnostic: the app passes its current
+ * `theme` and an `onToggle`. Render it in the shared <Header> `right` slot.
+ */
+declare function ThemeToggle({ theme, onToggle, toLightLabel, toDarkLabel, toLightTitle, toDarkTitle, }: ThemeToggleProps): react.JSX.Element;
+
+interface NavIconProps {
+    /** A full-Unicode emoji glyph (e.g. "🏠"). The system color-emoji font renders
+        it fully colored — no CSS needed (Director directive 2026-05-15). */
+    glyph: string;
+}
+/**
+ * A colored nav icon: wraps an emoji glyph in the canonical sizing box used by
+ * the NEX Studio vzor (E1 unification, CR-NS-066). Pass to <NavItem icon=...>:
+ * `<NavItem icon={<NavIcon glyph="🏠" />} ... />`. Decorative (aria-hidden) —
+ * the NavItem `label` is the accessible name.
+ */
+declare function NavIcon({ glyph }: NavIconProps): react.JSX.Element;
+
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
     /** Mark the field invalid → red border + `aria-invalid`. */
     invalid?: boolean;
@@ -373,4 +451,4 @@ interface LoginFormProps {
 }
 declare function LoginForm({ fieldLabel, onSubmit, loading, error, onChange, autoFocus, showPasswordToggle, identityLabel, passwordLabel, submitLabel, loadingLabel, identityPlaceholder, passwordPlaceholder, }: LoginFormProps): react.JSX.Element;
 
-export { type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, Header, type HeaderProps, type HttpMethod, Input, type InputProps, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, NavItem, type NavItemProps, ProtectedRoute, type ProtectedRouteProps, type RequestOptions, SectionLabel, type SectionLabelProps, Select, type SelectProps, Sidebar, type SidebarProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, createApiClient, createAuthStore, registerAuthCallback };
+export { type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, Header, type HeaderProps, type HttpMethod, Input, type InputProps, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, NavIcon, type NavIconProps, NavItem, type NavItemProps, ProtectedRoute, type ProtectedRouteProps, type RequestOptions, SectionLabel, type SectionLabelProps, Select, type SelectProps, Sidebar, type SidebarProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, createApiClient, createAuthStore, registerAuthCallback };
