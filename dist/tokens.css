@@ -76,6 +76,14 @@
   --color-state-muted-bg: #f1f5f9; /* slate-100 */
   --color-state-muted-fg: #475569; /* slate-600 */
 
+  /* === Semantic status (single-value — standalone text/border/icon; CR-NS-063).
+     Distinct from the -bg/-fg badge pairs above: these are one readable color each,
+     for things like an error money cell or a success border. === */
+  --color-status-success: #16a34a; /* green-600 */
+  --color-status-error: #dc2626; /* red-600 */
+  --color-status-warning: #d97706; /* amber-600 */
+  --color-status-info: #2563eb; /* blue-600 — distinct from the indigo brand accent */
+
   /* === Spacing / radii / shadows === */
   --spacing: 0.25rem; /* Tailwind v4 base unit */
   --radius-sm: 0.25rem;
@@ -124,6 +132,12 @@ html.dark {
   --color-state-info-fg: #93c5fd;
   --color-state-muted-bg: #334155; /* slate-700 */
   --color-state-muted-fg: #cbd5e1; /* slate-300 */
+
+  /* Semantic status (single-value) — lighter shades for contrast on the dark canvas. */
+  --color-status-success: #4ade80; /* green-400 */
+  --color-status-error: #f87171; /* red-400 */
+  --color-status-warning: #fbbf24; /* amber-400 */
+  --color-status-info: #60a5fa; /* blue-400 */
 
   color-scheme: dark;
 }
