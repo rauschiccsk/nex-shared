@@ -30,7 +30,9 @@ export function Brand({ initials, name, version, squareClassName = "bg-primary-6
       <div className="flex-1 min-w-0">
         <div className="text-sm font-bold text-[var(--color-text-primary)] leading-tight">{name}</div>
         {version != null && version !== "" && (
-          <div className="text-[10px] text-[var(--color-version-text)] font-mono">{version}</div>
+          // Indigo (brand-tinted) version line — the NEX Studio vzor (primary-400,
+          // resolves in both light & dark). All apps converge on this, not Inbox's violet.
+          <div className="text-[10px] text-primary-400 font-mono">{version}</div>
         )}
       </div>
     </>

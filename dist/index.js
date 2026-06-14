@@ -166,7 +166,9 @@ function Brand({ initials, name, version, squareClassName = "bg-primary-600" }) 
     ),
     /* @__PURE__ */ jsxs5("div", { className: "flex-1 min-w-0", children: [
       /* @__PURE__ */ jsx7("div", { className: "text-sm font-bold text-[var(--color-text-primary)] leading-tight", children: name }),
-      version != null && version !== "" && /* @__PURE__ */ jsx7("div", { className: "text-[10px] text-[var(--color-version-text)] font-mono", children: version })
+      version != null && version !== "" && // Indigo (brand-tinted) version line — the NEX Studio vzor (primary-400,
+      // resolves in both light & dark). All apps converge on this, not Inbox's violet.
+      /* @__PURE__ */ jsx7("div", { className: "text-[10px] text-primary-400 font-mono", children: version })
     ] })
   ] });
 }
