@@ -65,3 +65,33 @@ export type { ProtectedRouteProps } from "./ProtectedRoute";
 
 export { LoginForm } from "./LoginForm";
 export type { LoginFormProps, LoginCreds } from "./LoginForm";
+
+// ── Unified Settings/Admin kit (CR-NS-078) ──
+export { SettingsShell } from "./SettingsShell";
+export type { SettingsShellProps } from "./SettingsShell";
+
+export { SystemSettingsPanel } from "./SystemSettingsPanel";
+export type { SystemSettingsPanelProps } from "./SystemSettingsPanel";
+
+export { AgentsPanel } from "./AgentsPanel";
+export type { AgentsPanelProps, AgentDraft } from "./AgentsPanel";
+
+export { UsersPanel } from "./UsersPanel";
+export type { UsersPanelProps } from "./UsersPanel";
+
+export { SessionsPanel } from "./SessionsPanel";
+export type { SessionsPanelProps } from "./SessionsPanel";
+
+export { UserForm } from "./UserForm";
+export type { UserFormProps, UserFormData } from "./UserForm";
+
+export type {
+  UserRead,
+  UserSessionRead,
+  SystemSettingRead,
+  SystemSettingValueType,
+  SettingsKitConfig,
+  SettingsTabId,
+  SettingsCategory,
+  UserFieldSchema,
+} from "./settings-types";

@@ -701,7 +701,893 @@ function LoginForm({
     ] }) : submitLabel })
   ] });
 }
+
+// src/SettingsShell.tsx
+import { useState as useState4 } from "react";
+import { jsx as jsx17, jsxs as jsxs9 } from "react/jsx-runtime";
+var DEFAULT_TAB_LABELS = {
+  system: "Syst\xE9m",
+  agents: "Agenti",
+  users: "Pou\u017E\xEDvatelia",
+  sessions: "Rel\xE1cie"
+};
+function SettingsShell({
+  config,
+  currentUserRole,
+  panels,
+  title = "Nastavenia",
+  headerRight
+}) {
+  const visibleTabs = config.tabs.filter(
+    (t) => !config.tabVisibleForRole || config.tabVisibleForRole(t, currentUserRole)
+  );
+  const [tab, setTab] = useState4(visibleTabs[0]);
+  const activeTab = tab && visibleTabs.includes(tab) ? tab : visibleTabs[0];
+  return /* @__PURE__ */ jsxs9("div", { className: "flex flex-col h-full", children: [
+    /* @__PURE__ */ jsxs9("div", { className: "flex-shrink-0 px-6 py-4 border-b border-[var(--color-border-default)] flex items-center justify-between", children: [
+      /* @__PURE__ */ jsx17("h1", { className: "text-base font-bold text-[var(--color-text-primary)]", children: title }),
+      headerRight
+    ] }),
+    /* @__PURE__ */ jsx17("div", { className: "flex-shrink-0 flex gap-0 border-b border-[var(--color-border-default)] px-6", children: visibleTabs.map((t) => /* @__PURE__ */ jsx17(
+      "button",
+      {
+        type: "button",
+        onClick: () => setTab(t),
+        className: `px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${activeTab === t ? "border-primary-500 text-primary-400" : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"}`,
+        children: config.labels[t] ?? DEFAULT_TAB_LABELS[t]
+      },
+      t
+    )) }),
+    /* @__PURE__ */ jsx17("div", { className: "flex-1 overflow-y-auto", children: activeTab != null && panels[activeTab] })
+  ] });
+}
+
+// src/SystemSettingsPanel.tsx
+import { useEffect as useEffect3, useMemo, useState as useState5 } from "react";
+import { Fragment as Fragment7, jsx as jsx18, jsxs as jsxs10 } from "react/jsx-runtime";
+function inputTypeFor(valueType) {
+  if (valueType === "int" || valueType === "float") return "number";
+  if (valueType === "bool") return "checkbox";
+  return "text";
+}
+var OTHER_CATEGORY = {
+  id: "other",
+  label: "Ostatn\xE9",
+  description: "",
+  prefixes: []
+};
+function SystemSettingsPanel({
+  settings,
+  categories,
+  canEdit,
+  onSave,
+  loading = false,
+  loadError = ""
+}) {
+  const [drafts, setDrafts] = useState5({});
+  const [savingKey, setSavingKey] = useState5(null);
+  const [saveErrors, setSaveErrors] = useState5({});
+  const [flashKey, setFlashKey] = useState5(null);
+  useEffect3(() => {
+    setDrafts((prev) => {
+      const next = { ...prev };
+      for (const s of settings) if (!(s.key in next)) next[s.key] = s.value;
+      return next;
+    });
+  }, [settings]);
+  function classifyKey(key) {
+    for (const cat of categories) {
+      if (cat.prefixes.some((p) => key.startsWith(p))) return cat.id;
+    }
+    return OTHER_CATEGORY.id;
+  }
+  const groupedSettings = useMemo(() => {
+    const groups = {};
+    for (const s of settings) {
+      const catId = classifyKey(s.key);
+      (groups[catId] ||= []).push(s);
+    }
+    for (const list of Object.values(groups)) {
+      list.sort((a, b) => a.key.localeCompare(b.key));
+    }
+    return groups;
+  }, [settings, categories]);
+  async function handleSaveSetting(key) {
+    const draft = (drafts[key] ?? "").toString();
+    if (!draft.trim() && draft !== "0" && draft.toLowerCase() !== "false") return;
+    setSavingKey(key);
+    setSaveErrors((prev) => ({ ...prev, [key]: "" }));
+    try {
+      const updated = await onSave(key, draft);
+      setDrafts((prev) => ({ ...prev, [key]: updated.value }));
+      setFlashKey(key);
+      setTimeout(() => setFlashKey((k) => k === key ? null : k), 2e3);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Nezn\xE1ma chyba.";
+      setSaveErrors((prev) => ({ ...prev, [key]: msg }));
+    } finally {
+      setSavingKey(null);
+    }
+  }
+  return /* @__PURE__ */ jsxs10("div", { className: "p-6 max-w-3xl", children: [
+    /* @__PURE__ */ jsx18("h2", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-1", children: "Syst\xE9mov\xE9 nastavenia" }),
+    /* @__PURE__ */ jsxs10("p", { className: "text-xs text-[var(--color-text-muted)] mb-4", children: [
+      "Runtime-mutable nastavenia. ",
+      canEdit ? "Zmeny sa prejavia do 30 s (intern\xE1 cache TTL)." : "Read-only \u2014 ch\xFDba opr\xE1vnenie na \xFApravu."
+    ] }),
+    loadError && /* @__PURE__ */ jsx18("div", { className: "rounded-lg border border-[var(--color-state-error-bg)] bg-[var(--color-state-error-bg)] px-3 py-2 text-xs text-[var(--color-state-error-fg)] mb-4", children: loadError }),
+    loading && !loadError && /* @__PURE__ */ jsx18("div", { className: "text-xs text-[var(--color-text-muted)]", children: "Na\u010D\xEDtavam\u2026" }),
+    !loading && !loadError && /* @__PURE__ */ jsxs10("div", { className: "space-y-6", children: [
+      [...categories, OTHER_CATEGORY].map((cat) => {
+        const rows = groupedSettings[cat.id] ?? [];
+        if (rows.length === 0) return null;
+        return /* @__PURE__ */ jsxs10("section", { children: [
+          /* @__PURE__ */ jsx18("h3", { className: "text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-widest mb-1", children: cat.label }),
+          cat.description && /* @__PURE__ */ jsx18("p", { className: "text-[11px] text-[var(--color-text-muted)] mb-2", children: cat.description }),
+          /* @__PURE__ */ jsx18("div", { className: "rounded-lg border border-[var(--color-border-default)] bg-[var(--color-canvas)] divide-y divide-[var(--color-border-default)]", children: rows.map((s) => {
+            const draft = drafts[s.key] ?? s.value;
+            const dirty = draft !== s.value;
+            const inputType = inputTypeFor(s.value_type);
+            const saving = savingKey === s.key;
+            const err = saveErrors[s.key];
+            return /* @__PURE__ */ jsxs10("div", { className: "p-4", children: [
+              /* @__PURE__ */ jsxs10("div", { className: "flex items-start justify-between gap-4 mb-1", children: [
+                /* @__PURE__ */ jsxs10("div", { className: "min-w-0", children: [
+                  /* @__PURE__ */ jsx18("div", { className: "text-sm font-medium text-[var(--color-text-primary)] font-mono", children: s.key }),
+                  /* @__PURE__ */ jsx18("div", { className: "text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest mt-0.5", children: s.value_type })
+                ] }),
+                canEdit && /* @__PURE__ */ jsx18(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: () => handleSaveSetting(s.key),
+                    disabled: saving || !dirty,
+                    className: "shrink-0 px-3 py-1.5 text-xs font-medium text-white bg-primary-600 hover:bg-primary-500 disabled:opacity-40 disabled:cursor-not-allowed rounded transition-colors",
+                    children: saving ? "Uklad\xE1m\u2026" : dirty ? "Ulo\u017Ei\u0165" : "Ulo\u017Een\xE9"
+                  }
+                )
+              ] }),
+              s.description && /* @__PURE__ */ jsx18("p", { className: "text-xs text-[var(--color-text-muted)] mb-2 leading-relaxed", children: s.description }),
+              inputType === "checkbox" ? /* @__PURE__ */ jsxs10("label", { className: "flex items-center gap-2 text-xs text-[var(--color-text-secondary)]", children: [
+                /* @__PURE__ */ jsx18(
+                  "input",
+                  {
+                    type: "checkbox",
+                    checked: draft.toLowerCase() === "true" || draft === "1",
+                    onChange: (e) => setDrafts((prev) => ({ ...prev, [s.key]: e.target.checked ? "true" : "false" })),
+                    disabled: !canEdit,
+                    className: "rounded border-[var(--color-border-default)] bg-[var(--color-surface)] text-primary-500 focus:ring-primary-500 disabled:opacity-50"
+                  }
+                ),
+                /* @__PURE__ */ jsx18("span", { className: "font-mono", children: draft })
+              ] }) : /* @__PURE__ */ jsx18(
+                "input",
+                {
+                  type: inputType,
+                  value: draft,
+                  onChange: (e) => setDrafts((prev) => ({ ...prev, [s.key]: e.target.value })),
+                  disabled: !canEdit,
+                  step: s.value_type === "float" ? "any" : void 0,
+                  className: "w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded px-3 py-1.5 text-xs text-[var(--color-text-primary)] font-mono focus:outline-none focus:border-primary-500 disabled:opacity-50"
+                }
+              ),
+              /* @__PURE__ */ jsxs10("div", { className: "mt-2 text-[11px] flex items-center gap-2 flex-wrap", children: [
+                s.is_default ? /* @__PURE__ */ jsx18("span", { className: "text-[var(--color-text-muted)]", children: "Predvolen\xE1 hodnota." }) : /* @__PURE__ */ jsxs10("span", { className: "text-[var(--color-text-muted)]", children: [
+                  "Ulo\u017Een\xFD override",
+                  s.updated_by_username && /* @__PURE__ */ jsxs10(Fragment7, { children: [
+                    " \u2014 ",
+                    /* @__PURE__ */ jsx18("span", { className: "text-[var(--color-text-secondary)] font-medium", children: s.updated_by_username })
+                  ] }),
+                  s.updated_at && /* @__PURE__ */ jsxs10(Fragment7, { children: [
+                    " \xB7 ",
+                    new Date(s.updated_at).toLocaleString("sk-SK")
+                  ] })
+                ] }),
+                flashKey === s.key && /* @__PURE__ */ jsx18("span", { className: "text-[var(--color-status-success)]", children: "\u2713 Ulo\u017Een\xE9" }),
+                err && /* @__PURE__ */ jsx18("span", { className: "text-[var(--color-status-error)]", children: err })
+              ] })
+            ] }, s.key);
+          }) })
+        ] }, cat.id);
+      }),
+      !canEdit && /* @__PURE__ */ jsx18("p", { className: "text-[11px] text-[var(--color-text-muted)] italic", children: "Read-only \u2014 na \xFApravu ch\xFDba opr\xE1vnenie." })
+    ] })
+  ] });
+}
+
+// src/AgentsPanel.tsx
+import { useEffect as useEffect4, useState as useState6 } from "react";
+import { jsx as jsx19, jsxs as jsxs11 } from "react/jsx-runtime";
+function seedState(roles, drafts) {
+  const out = {};
+  for (const r of roles) {
+    const d = drafts[r.id];
+    out[r.id] = { model: d?.model ?? "", effort: d?.effort ?? "" };
+  }
+  return out;
+}
+function AgentsPanel({
+  roles,
+  models,
+  efforts,
+  drafts,
+  onSave,
+  loading = false,
+  loadError = "",
+  saveErrors = {}
+}) {
+  const [edit, setEdit] = useState6(() => seedState(roles, drafts));
+  const [savingRole, setSavingRole] = useState6(null);
+  const [flashRole, setFlashRole] = useState6(null);
+  useEffect4(() => {
+    setEdit(seedState(roles, drafts));
+  }, [roles, drafts]);
+  async function handleSave(roleId) {
+    const draft = edit[roleId] ?? { model: "", effort: "" };
+    setSavingRole(roleId);
+    try {
+      await onSave(roleId, draft);
+      setFlashRole(roleId);
+      setTimeout(() => setFlashRole((r) => r === roleId ? null : r), 2e3);
+    } catch {
+    } finally {
+      setSavingRole(null);
+    }
+  }
+  return /* @__PURE__ */ jsxs11("div", { className: "p-6 max-w-3xl", children: [
+    /* @__PURE__ */ jsx19("h2", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-1", children: "Agenti \u2014 model a effort" }),
+    /* @__PURE__ */ jsxs11("p", { className: "text-xs text-[var(--color-text-muted)] mb-4", children: [
+      "Per-rola konfigur\xE1cia modelu (",
+      /* @__PURE__ */ jsx19("code", { children: "--model" }),
+      ") a \xFArovne (",
+      /* @__PURE__ */ jsx19("code", { children: "--effort" }),
+      "). Nenastaven\xE9 pole = predvolen\xE9 spr\xE1vanie (CLI default)."
+    ] }),
+    loadError && /* @__PURE__ */ jsx19("div", { className: "rounded-lg border border-[var(--color-state-error-bg)] bg-[var(--color-state-error-bg)] px-3 py-2 text-xs text-[var(--color-state-error-fg)] mb-4", children: loadError }),
+    loading && !loadError && /* @__PURE__ */ jsx19("div", { className: "text-xs text-[var(--color-text-muted)]", children: "Na\u010D\xEDtavam\u2026" }),
+    !loading && !loadError && /* @__PURE__ */ jsx19("div", { className: "rounded-lg border border-[var(--color-border-default)] bg-[var(--color-canvas)] divide-y divide-[var(--color-border-default)]", children: roles.map((r) => {
+      const draft = edit[r.id] ?? { model: "", effort: "" };
+      const saving = savingRole === r.id;
+      const err = saveErrors[r.id];
+      return /* @__PURE__ */ jsxs11("div", { className: "p-4", children: [
+        /* @__PURE__ */ jsxs11("div", { className: "flex items-start justify-between gap-4 mb-2", children: [
+          /* @__PURE__ */ jsx19("div", { className: "text-sm font-medium text-[var(--color-text-primary)]", children: r.label }),
+          /* @__PURE__ */ jsx19(
+            "button",
+            {
+              type: "button",
+              onClick: () => handleSave(r.id),
+              disabled: saving,
+              className: "shrink-0 px-3 py-1.5 text-xs font-medium text-white bg-primary-600 hover:bg-primary-500 disabled:opacity-40 disabled:cursor-not-allowed rounded transition-colors",
+              children: saving ? "Uklad\xE1m\u2026" : "Ulo\u017Ei\u0165"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs11("div", { className: "grid grid-cols-2 gap-3", children: [
+          /* @__PURE__ */ jsxs11("label", { className: "block", children: [
+            /* @__PURE__ */ jsx19("span", { className: "text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest", children: "Model" }),
+            /* @__PURE__ */ jsxs11(
+              "select",
+              {
+                value: draft.model,
+                onChange: (e) => setEdit((prev) => ({ ...prev, [r.id]: { ...draft, model: e.target.value } })),
+                className: "mt-1 w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded px-3 py-1.5 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-primary-500",
+                children: [
+                  /* @__PURE__ */ jsx19("option", { value: "", children: "\u2014 Predvolen\xFD \u2014" }),
+                  models.map((m) => /* @__PURE__ */ jsx19("option", { value: m.id, children: m.label }, m.id))
+                ]
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxs11("label", { className: "block", children: [
+            /* @__PURE__ */ jsx19("span", { className: "text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest", children: "\xDArove\u0148" }),
+            /* @__PURE__ */ jsxs11(
+              "select",
+              {
+                value: draft.effort,
+                onChange: (e) => setEdit((prev) => ({ ...prev, [r.id]: { ...draft, effort: e.target.value } })),
+                className: "mt-1 w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded px-3 py-1.5 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-primary-500",
+                children: [
+                  /* @__PURE__ */ jsx19("option", { value: "", children: "\u2014 Predvolen\xFD \u2014" }),
+                  efforts.map((ef) => /* @__PURE__ */ jsx19("option", { value: ef, children: ef }, ef))
+                ]
+              }
+            )
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxs11("div", { className: "mt-2 text-[11px] flex items-center gap-2", children: [
+          flashRole === r.id && /* @__PURE__ */ jsx19("span", { className: "text-[var(--color-status-success)]", children: "\u2713 Ulo\u017Een\xE9" }),
+          err && /* @__PURE__ */ jsx19("span", { className: "text-[var(--color-status-error)]", children: err })
+        ] })
+      ] }, r.id);
+    }) })
+  ] });
+}
+
+// src/UsersPanel.tsx
+import { useMemo as useMemo2, useState as useState8 } from "react";
+
+// src/UserForm.tsx
+import { useState as useState7 } from "react";
+import { Fragment as Fragment8, jsx as jsx20, jsxs as jsxs12 } from "react/jsx-runtime";
+function initialFromUser(user, roleOptions) {
+  return {
+    username: user?.username ?? "",
+    email: user?.email ?? "",
+    password: "",
+    role: user?.role ?? roleOptions[0]?.value ?? "",
+    first_name: user?.first_name ?? "",
+    last_name: user?.last_name ?? "",
+    telegram_chat_id: user?.telegram_chat_id ?? "",
+    is_active: user?.is_active ?? true
+  };
+}
+function UserForm({
+  mode,
+  initial,
+  roleOptions,
+  fieldSchema,
+  submitting,
+  error,
+  onSubmit,
+  onCancel
+}) {
+  const isEdit = mode === "edit";
+  const minLen = fieldSchema.passwordMinLength;
+  const [data, setData] = useState7(
+    () => initialFromUser(initial, roleOptions)
+  );
+  const passwordTooShort = data.password.length > 0 && data.password.length < minLen;
+  const usernameRequired = !isEdit && fieldSchema.username;
+  const submitDisabled = submitting || !data.email || usernameRequired && !data.username || !isEdit && !data.password || passwordTooShort;
+  const submitLabel = isEdit ? submitting ? "Uklad\xE1m\u2026" : "Ulo\u017Ei\u0165" : submitting ? "Vytv\xE1ram\u2026" : "Vytvori\u0165";
+  function update(key, value) {
+    setData((prev) => ({ ...prev, [key]: value }));
+  }
+  function handleSubmit() {
+    if (submitDisabled) return;
+    void onSubmit(data);
+  }
+  return /* @__PURE__ */ jsxs12(Card, { className: "mt-4 p-4", children: [
+    /* @__PURE__ */ jsx20("h3", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-3", children: isEdit ? /* @__PURE__ */ jsxs12(Fragment8, { children: [
+      "Upravi\u0165 pou\u017E\xEDvate\u013Ea \xB7",
+      " ",
+      /* @__PURE__ */ jsx20("span", { className: "font-mono text-[var(--color-text-secondary)]", children: initial?.username })
+    ] }) : "Vytvori\u0165 pou\u017E\xEDvate\u013Ea" }),
+    error && /* @__PURE__ */ jsx20("div", { className: "mb-3 text-xs text-[var(--color-state-error-fg)] rounded bg-[var(--color-state-error-bg)] border border-[var(--color-state-error-bg)] px-3 py-2", children: error }),
+    /* @__PURE__ */ jsxs12("div", { className: "grid grid-cols-2 gap-3 mb-3", children: [
+      fieldSchema.names && /* @__PURE__ */ jsxs12(Fragment8, { children: [
+        /* @__PURE__ */ jsxs12("div", { children: [
+          /* @__PURE__ */ jsx20("label", { htmlFor: "uf-first-name", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: "Meno" }),
+          /* @__PURE__ */ jsx20(
+            Input,
+            {
+              id: "uf-first-name",
+              type: "text",
+              value: data.first_name,
+              onChange: (e) => update("first_name", e.target.value),
+              placeholder: "napr. Tibor"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs12("div", { children: [
+          /* @__PURE__ */ jsx20("label", { htmlFor: "uf-last-name", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: "Priezvisko" }),
+          /* @__PURE__ */ jsx20(
+            Input,
+            {
+              id: "uf-last-name",
+              type: "text",
+              value: data.last_name,
+              onChange: (e) => update("last_name", e.target.value),
+              placeholder: "napr. Rausch"
+            }
+          )
+        ] })
+      ] }),
+      fieldSchema.username && /* @__PURE__ */ jsxs12("div", { children: [
+        /* @__PURE__ */ jsxs12("label", { htmlFor: "uf-username", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: [
+          "Pou\u017E\xEDvate\u013Esk\xE9 meno ",
+          isEdit ? "" : "*"
+        ] }),
+        /* @__PURE__ */ jsx20(
+          "input",
+          {
+            id: "uf-username",
+            type: "text",
+            value: data.username,
+            onChange: (e) => update("username", e.target.value),
+            disabled: isEdit,
+            title: isEdit ? "Pou\u017E\xEDvate\u013Esk\xE9 meno sa po vytvoren\xED nemen\xED (zachov\xE1va login stabilitu)." : void 0,
+            placeholder: "napr. tibi",
+            className: `w-full border rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-primary-500 ${isEdit ? "bg-[var(--color-surface-hover)] border-[var(--color-border-default)] text-[var(--color-text-muted)] cursor-not-allowed" : "bg-[var(--color-surface)] border-[var(--color-border-default)] text-[var(--color-text-primary)]"}`
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxs12("div", { children: [
+        /* @__PURE__ */ jsx20("label", { htmlFor: "uf-email", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: "Email *" }),
+        /* @__PURE__ */ jsx20(
+          Input,
+          {
+            id: "uf-email",
+            type: "email",
+            value: data.email,
+            onChange: (e) => update("email", e.target.value),
+            placeholder: "napr. tibi@isnex.ai"
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxs12("div", { children: [
+        /* @__PURE__ */ jsx20("label", { htmlFor: "uf-password", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: isEdit ? /* @__PURE__ */ jsxs12(Fragment8, { children: [
+          "Nov\xE9 heslo",
+          " ",
+          /* @__PURE__ */ jsx20("span", { className: "text-[var(--color-text-muted)]", children: "(nechaj pr\xE1zdne ak nemeni\u0165)" })
+        ] }) : "Heslo *" }),
+        /* @__PURE__ */ jsx20(
+          Input,
+          {
+            id: "uf-password",
+            type: "password",
+            value: data.password,
+            onChange: (e) => update("password", e.target.value),
+            placeholder: `min. ${minLen} znakov`,
+            invalid: passwordTooShort
+          }
+        ),
+        passwordTooShort && /* @__PURE__ */ jsxs12("div", { className: "mt-1 text-[10px] text-[var(--color-status-error)]", children: [
+          "Heslo mus\xED ma\u0165 aspo\u0148 ",
+          minLen,
+          " znakov (",
+          data.password.length,
+          "/",
+          minLen,
+          ")."
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxs12("div", { children: [
+        /* @__PURE__ */ jsx20("label", { htmlFor: "uf-role", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: "Rola" }),
+        /* @__PURE__ */ jsx20(
+          Select,
+          {
+            id: "uf-role",
+            value: data.role,
+            onChange: (e) => update("role", e.target.value),
+            children: roleOptions.map((o) => /* @__PURE__ */ jsx20("option", { value: o.value, children: o.label }, o.value))
+          }
+        )
+      ] }),
+      fieldSchema.telegram && /* @__PURE__ */ jsxs12("div", { children: [
+        /* @__PURE__ */ jsx20("label", { htmlFor: "uf-telegram", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: "Telegram chat_id" }),
+        /* @__PURE__ */ jsx20(
+          Input,
+          {
+            id: "uf-telegram",
+            type: "text",
+            value: data.telegram_chat_id,
+            onChange: (e) => update("telegram_chat_id", e.target.value),
+            placeholder: "napr. 123456789 (notifik\xE1cie agenta)"
+          }
+        )
+      ] }),
+      isEdit && /* @__PURE__ */ jsx20("div", { className: "flex items-end", children: /* @__PURE__ */ jsxs12("label", { htmlFor: "uf-active", className: "flex items-center gap-2 text-xs text-[var(--color-text-secondary)] cursor-pointer", children: [
+        /* @__PURE__ */ jsx20(
+          "input",
+          {
+            id: "uf-active",
+            type: "checkbox",
+            checked: data.is_active,
+            onChange: (e) => update("is_active", e.target.checked),
+            className: "rounded bg-[var(--color-surface)] border-[var(--color-border-default)]"
+          }
+        ),
+        "Akt\xEDvny"
+      ] }) })
+    ] }),
+    /* @__PURE__ */ jsxs12("div", { className: "flex gap-2 justify-end", children: [
+      onCancel && /* @__PURE__ */ jsx20(
+        "button",
+        {
+          type: "button",
+          onClick: onCancel,
+          className: "px-3 py-1.5 text-xs text-[var(--color-text-secondary)] border border-[var(--color-border-default)] rounded-lg hover:bg-[var(--color-surface-hover)] transition-colors",
+          children: "Zru\u0161i\u0165"
+        }
+      ),
+      /* @__PURE__ */ jsx20(
+        "button",
+        {
+          type: "button",
+          onClick: handleSubmit,
+          disabled: submitDisabled,
+          className: "px-3 py-1.5 text-xs font-medium text-white bg-primary-600 hover:bg-primary-500 disabled:opacity-40 rounded-lg transition-colors",
+          children: submitLabel
+        }
+      )
+    ] })
+  ] });
+}
+
+// src/UsersPanel.tsx
+import { jsx as jsx21, jsxs as jsxs13 } from "react/jsx-runtime";
+function UsersPanel({
+  users,
+  roleOptions,
+  canManage,
+  fieldSchema,
+  onCreate,
+  onUpdate,
+  onDelete,
+  onChangePassword,
+  onToggleActive,
+  roleClass
+}) {
+  const roleCls = roleClass ?? (() => "");
+  const [roleFilter, setRoleFilter] = useState8("");
+  const [activeFilter, setActiveFilter] = useState8("");
+  const [showNewForm, setShowNewForm] = useState8(false);
+  const [editingUser, setEditingUser] = useState8(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState8(null);
+  const [creating, setCreating] = useState8(false);
+  const [createError, setCreateError] = useState8("");
+  const [editing, setEditing] = useState8(false);
+  const [editError, setEditError] = useState8("");
+  const [deleting, setDeleting] = useState8(false);
+  const [deleteError, setDeleteError] = useState8("");
+  const filteredUsers = useMemo2(() => {
+    return users.filter((u) => {
+      if (roleFilter && u.role !== roleFilter) return false;
+      if (activeFilter === "active" && !u.is_active) return false;
+      if (activeFilter === "inactive" && u.is_active) return false;
+      return true;
+    });
+  }, [users, roleFilter, activeFilter]);
+  const showNames = fieldSchema.names;
+  const showUsername = fieldSchema.username;
+  const colCount = 4 + (showNames ? 1 : 0) + (showUsername ? 1 : 0);
+  async function handleCreate(data) {
+    setCreating(true);
+    setCreateError("");
+    try {
+      await onCreate(data);
+      setShowNewForm(false);
+    } catch (e) {
+      const msg = e instanceof Error && e.message ? `Nepodarilo sa vytvori\u0165 pou\u017E\xEDvate\u013Ea: ${e.message}` : "Nepodarilo sa vytvori\u0165 pou\u017E\xEDvate\u013Ea.";
+      setCreateError(msg);
+    } finally {
+      setCreating(false);
+    }
+  }
+  async function handleSaveEdit(data) {
+    if (!editingUser) return;
+    setEditing(true);
+    setEditError("");
+    try {
+      await onUpdate(editingUser.id, data);
+      if (data.password) {
+        await onChangePassword(editingUser.id, data.password);
+      }
+      setEditingUser(null);
+    } catch (e) {
+      const msg = e instanceof Error && e.message ? `Nepodarilo sa ulo\u017Ei\u0165 zmeny: ${e.message}` : "Nepodarilo sa ulo\u017Ei\u0165 zmeny.";
+      setEditError(msg);
+    } finally {
+      setEditing(false);
+    }
+  }
+  async function handleConfirmDelete(id) {
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      await onDelete(id);
+      setConfirmingDeleteId(null);
+    } catch (e) {
+      const msg = e instanceof Error && e.message ? `Ned\xE1 sa vymaza\u0165: ${e.message}. Sk\xFAs miesto toho deaktivova\u0165.` : "Ned\xE1 sa vymaza\u0165. Sk\xFAs miesto toho deaktivova\u0165.";
+      setDeleteError(msg);
+      setConfirmingDeleteId(null);
+    } finally {
+      setDeleting(false);
+    }
+  }
+  function handleToggle(u) {
+    void onToggleActive(u).catch(() => {
+    });
+  }
+  return /* @__PURE__ */ jsxs13("div", { className: "p-6", children: [
+    /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-between mb-4", children: [
+      /* @__PURE__ */ jsx21("h2", { className: "text-sm font-semibold text-[var(--color-text-secondary)]", children: "Spr\xE1va pou\u017E\xEDvate\u013Eov" }),
+      canManage && /* @__PURE__ */ jsxs13(
+        "button",
+        {
+          type: "button",
+          onClick: () => {
+            setShowNewForm((v) => !v);
+            setEditingUser(null);
+            setConfirmingDeleteId(null);
+          },
+          className: "flex items-center gap-1.5 bg-primary-600 hover:bg-primary-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors",
+          children: [
+            /* @__PURE__ */ jsx21("svg", { className: "w-3.5 h-3.5", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx21("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 4v16m8-8H4" }) }),
+            "Nov\xFD pou\u017E\xEDvate\u013E"
+          ]
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsxs13("div", { className: "flex items-center gap-3 mb-3", children: [
+      /* @__PURE__ */ jsxs13(
+        "select",
+        {
+          value: roleFilter,
+          onChange: (e) => setRoleFilter(e.target.value),
+          className: "bg-[var(--color-surface)] border border-[var(--color-border-default)] text-xs text-[var(--color-text-secondary)] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-primary-500",
+          children: [
+            /* @__PURE__ */ jsx21("option", { value: "", children: "V\u0161etky role" }),
+            roleOptions.map((o) => /* @__PURE__ */ jsx21("option", { value: o.value, children: o.label }, o.value))
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsxs13(
+        "select",
+        {
+          value: activeFilter,
+          onChange: (e) => setActiveFilter(e.target.value),
+          className: "bg-[var(--color-surface)] border border-[var(--color-border-default)] text-xs text-[var(--color-text-secondary)] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-primary-500",
+          children: [
+            /* @__PURE__ */ jsx21("option", { value: "", children: "Ak\xFDko\u013Evek stav" }),
+            /* @__PURE__ */ jsx21("option", { value: "active", children: "Len akt\xEDvni" }),
+            /* @__PURE__ */ jsx21("option", { value: "inactive", children: "Len neakt\xEDvni" })
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsxs13("span", { className: "ml-auto text-xs text-[var(--color-text-muted)]", children: [
+        filteredUsers.length,
+        " pou\u017E\xEDvate\u013Eov"
+      ] })
+    ] }),
+    /* @__PURE__ */ jsx21("div", { className: "rounded-xl border border-[var(--color-border-default)] overflow-hidden", children: /* @__PURE__ */ jsxs13("table", { className: "w-full text-sm", children: [
+      /* @__PURE__ */ jsx21("thead", { className: "bg-[var(--color-surface-hover)]", children: /* @__PURE__ */ jsxs13("tr", { className: "text-[10px] uppercase tracking-widest text-[var(--color-text-muted)]", children: [
+        showNames && /* @__PURE__ */ jsx21("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Meno" }),
+        showUsername && /* @__PURE__ */ jsx21("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Pou\u017E\xEDvate\u013Esk\xE9 meno" }),
+        /* @__PURE__ */ jsx21("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Email" }),
+        /* @__PURE__ */ jsx21("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Rola" }),
+        /* @__PURE__ */ jsx21("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Stav" }),
+        /* @__PURE__ */ jsx21("th", { className: "px-4 py-2.5 text-right font-semibold", children: "Akcie" })
+      ] }) }),
+      /* @__PURE__ */ jsxs13("tbody", { className: "divide-y divide-[var(--color-border-default)]", children: [
+        filteredUsers.map((u) => {
+          const fullName = [u.first_name, u.last_name].filter(Boolean).join(" ");
+          return /* @__PURE__ */ jsxs13("tr", { className: "hover:bg-[var(--color-surface-hover)] transition-colors", children: [
+            showNames && /* @__PURE__ */ jsx21("td", { className: "px-4 py-3 text-sm text-[var(--color-text-secondary)]", children: fullName || /* @__PURE__ */ jsx21("span", { className: "text-[var(--color-text-muted)]", children: "\u2014" }) }),
+            showUsername && /* @__PURE__ */ jsx21("td", { className: "px-4 py-3 text-sm font-medium text-[var(--color-text-primary)] font-mono", children: u.username }),
+            /* @__PURE__ */ jsx21("td", { className: "px-4 py-3 text-xs text-[var(--color-text-secondary)]", children: u.email }),
+            /* @__PURE__ */ jsx21("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsx21("span", { className: `text-[11px] font-mono font-medium ${roleCls(u.role)}`, children: u.role }) }),
+            /* @__PURE__ */ jsx21("td", { className: "px-4 py-3", children: u.is_active ? /* @__PURE__ */ jsx21("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-state-success-bg)] border border-[var(--color-state-success-bg)] text-[var(--color-state-success-fg)]", children: "akt\xEDvny" }) : /* @__PURE__ */ jsx21("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-state-warning-bg)] border border-[var(--color-state-warning-bg)] text-[var(--color-state-warning-fg)]", children: "neakt\xEDvny" }) }),
+            /* @__PURE__ */ jsx21("td", { className: "px-4 py-3 text-right", children: !canManage ? /* @__PURE__ */ jsx21("span", { className: "text-xs text-[var(--color-text-muted)]", children: "\u2014" }) : confirmingDeleteId === u.id ? /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-end gap-2 text-xs", children: [
+              /* @__PURE__ */ jsx21("span", { className: "text-[var(--color-text-secondary)]", children: "Naozaj vymaza\u0165?" }),
+              /* @__PURE__ */ jsx21(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => handleConfirmDelete(u.id),
+                  disabled: deleting,
+                  className: "px-2 py-0.5 text-[var(--color-status-error)] border border-[var(--color-state-error-bg)] rounded hover:bg-[var(--color-state-error-bg)] disabled:opacity-40",
+                  children: "\xC1no"
+                }
+              ),
+              /* @__PURE__ */ jsx21(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => setConfirmingDeleteId(null),
+                  disabled: deleting,
+                  className: "px-2 py-0.5 text-[var(--color-text-secondary)] border border-[var(--color-border-default)] rounded hover:bg-[var(--color-surface-hover)]",
+                  children: "Nie"
+                }
+              )
+            ] }) : /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-end gap-3", children: [
+              /* @__PURE__ */ jsx21(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => {
+                    setEditingUser(u);
+                    setEditError("");
+                    setShowNewForm(false);
+                    setConfirmingDeleteId(null);
+                  },
+                  title: "Upravi\u0165",
+                  className: "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors",
+                  children: /* @__PURE__ */ jsx21("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx21("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" }) })
+                }
+              ),
+              /* @__PURE__ */ jsx21(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => {
+                    setConfirmingDeleteId(u.id);
+                    setDeleteError("");
+                  },
+                  title: "Vymaza\u0165",
+                  className: "text-[var(--color-text-muted)] hover:text-[var(--color-status-error)] transition-colors",
+                  children: /* @__PURE__ */ jsx21("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx21("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" }) })
+                }
+              ),
+              /* @__PURE__ */ jsx21(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => handleToggle(u),
+                  className: "text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors",
+                  children: u.is_active ? "Deaktivova\u0165" : "Aktivova\u0165"
+                }
+              )
+            ] }) })
+          ] }, u.id);
+        }),
+        filteredUsers.length === 0 && /* @__PURE__ */ jsx21("tr", { children: /* @__PURE__ */ jsx21("td", { colSpan: colCount, className: "px-4 py-6 text-center text-xs text-[var(--color-text-muted)]", children: "\u017Diadni pou\u017E\xEDvatelia" }) })
+      ] })
+    ] }) }),
+    deleteError && /* @__PURE__ */ jsxs13("div", { className: "mt-3 text-xs text-[var(--color-state-error-fg)] rounded bg-[var(--color-state-error-bg)] border border-[var(--color-state-error-bg)] px-3 py-2 flex items-center justify-between", children: [
+      /* @__PURE__ */ jsx21("span", { children: deleteError }),
+      /* @__PURE__ */ jsx21("button", { type: "button", onClick: () => setDeleteError(""), className: "text-[var(--color-state-error-fg)] hover:opacity-80 ml-2", children: "\xD7" })
+    ] }),
+    canManage && editingUser && /* @__PURE__ */ jsx21(
+      UserForm,
+      {
+        mode: "edit",
+        initial: editingUser,
+        roleOptions,
+        fieldSchema,
+        submitting: editing,
+        error: editError,
+        onSubmit: handleSaveEdit,
+        onCancel: () => {
+          setEditingUser(null);
+          setEditError("");
+        }
+      },
+      `edit-${editingUser.id}`
+    ),
+    canManage && showNewForm && /* @__PURE__ */ jsx21(
+      UserForm,
+      {
+        mode: "create",
+        roleOptions,
+        fieldSchema,
+        submitting: creating,
+        error: createError,
+        onSubmit: handleCreate,
+        onCancel: () => {
+          setShowNewForm(false);
+          setCreateError("");
+        }
+      }
+    )
+  ] });
+}
+
+// src/SessionsPanel.tsx
+import { useMemo as useMemo3, useState as useState9 } from "react";
+import { jsx as jsx22, jsxs as jsxs14 } from "react/jsx-runtime";
+function fmt(ts) {
+  if (!ts) return "\u2014";
+  const d = new Date(ts);
+  return Number.isNaN(d.getTime()) ? "\u2014" : d.toLocaleString("sk-SK");
+}
+function SessionsPanel({
+  sessions,
+  resolveUsername,
+  canRevoke,
+  onRevoke,
+  loading = false,
+  loadError = "",
+  filterUserId,
+  onFilterChange
+}) {
+  const [confirmingId, setConfirmingId] = useState9(null);
+  const [revoking, setRevoking] = useState9(false);
+  const [revokeError, setRevokeError] = useState9("");
+  const nameOf = (uid) => resolveUsername?.(uid) ?? uid;
+  const rows = useMemo3(
+    () => filterUserId ? sessions.filter((s) => s.user_id === filterUserId) : sessions,
+    [sessions, filterUserId]
+  );
+  async function handleRevoke(id) {
+    setRevoking(true);
+    setRevokeError("");
+    try {
+      await onRevoke(id);
+      setConfirmingId(null);
+    } catch (e) {
+      const msg = e instanceof Error && e.message ? `Nepodarilo sa zru\u0161i\u0165 rel\xE1ciu: ${e.message}` : "Nepodarilo sa zru\u0161i\u0165 rel\xE1ciu.";
+      setRevokeError(msg);
+      setConfirmingId(null);
+    } finally {
+      setRevoking(false);
+    }
+  }
+  return /* @__PURE__ */ jsxs14("div", { className: "p-6", children: [
+    /* @__PURE__ */ jsx22("h2", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-1", children: "Rel\xE1cie pou\u017E\xEDvate\u013Ea" }),
+    /* @__PURE__ */ jsx22("p", { className: "text-xs text-[var(--color-text-muted)] mb-4", children: "Kotvy \u017Eivotn\xE9ho cyklu JWT. Zru\u0161enie rel\xE1cie zneplatn\xED v\u0161etky jej zost\xE1vaj\xFAce tokeny." }),
+    filterUserId && onFilterChange && /* @__PURE__ */ jsxs14("div", { className: "mb-3 flex items-center gap-2 text-xs", children: [
+      /* @__PURE__ */ jsxs14("span", { className: "text-[var(--color-text-muted)]", children: [
+        "Filtrovan\xE9 pod\u013Ea pou\u017E\xEDvate\u013Ea:",
+        " ",
+        /* @__PURE__ */ jsx22("span", { className: "text-[var(--color-text-secondary)] font-medium", children: nameOf(filterUserId) })
+      ] }),
+      /* @__PURE__ */ jsx22(
+        "button",
+        {
+          type: "button",
+          onClick: () => onFilterChange(""),
+          className: "px-2 py-0.5 text-[var(--color-text-secondary)] border border-[var(--color-border-default)] rounded hover:bg-[var(--color-surface-hover)]",
+          children: "Zru\u0161i\u0165 filter"
+        }
+      )
+    ] }),
+    loadError && /* @__PURE__ */ jsx22("div", { className: "rounded-lg border border-[var(--color-state-error-bg)] bg-[var(--color-state-error-bg)] px-3 py-2 text-xs text-[var(--color-state-error-fg)] mb-4", children: loadError }),
+    loading && !loadError && /* @__PURE__ */ jsx22("div", { className: "text-xs text-[var(--color-text-muted)]", children: "Na\u010D\xEDtavam\u2026" }),
+    !loading && !loadError && /* @__PURE__ */ jsx22("div", { className: "rounded-xl border border-[var(--color-border-default)] overflow-hidden", children: /* @__PURE__ */ jsxs14("table", { className: "w-full text-sm", children: [
+      /* @__PURE__ */ jsx22("thead", { className: "bg-[var(--color-surface-hover)]", children: /* @__PURE__ */ jsxs14("tr", { className: "text-[10px] uppercase tracking-widest text-[var(--color-text-muted)]", children: [
+        /* @__PURE__ */ jsx22("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Pou\u017E\xEDvate\u013E" }),
+        /* @__PURE__ */ jsx22("th", { className: "px-4 py-2.5 text-left font-semibold", children: "ID rel\xE1cie" }),
+        /* @__PURE__ */ jsx22("th", { className: "px-4 py-2.5 text-right font-semibold", children: "tv" }),
+        /* @__PURE__ */ jsx22("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Naposledy viden\xFD" }),
+        /* @__PURE__ */ jsx22("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Vytvoren\xE9" }),
+        /* @__PURE__ */ jsx22("th", { className: "px-4 py-2.5 text-right font-semibold", children: "Akcie" })
+      ] }) }),
+      /* @__PURE__ */ jsxs14("tbody", { className: "divide-y divide-[var(--color-border-default)]", children: [
+        rows.map((s) => /* @__PURE__ */ jsxs14("tr", { className: "hover:bg-[var(--color-surface-hover)] transition-colors", children: [
+          /* @__PURE__ */ jsx22("td", { className: "px-4 py-3 text-sm font-medium text-[var(--color-text-primary)]", children: nameOf(s.user_id) }),
+          /* @__PURE__ */ jsx22("td", { className: "px-4 py-3 font-mono text-[10px] text-[var(--color-text-muted)]", children: s.id }),
+          /* @__PURE__ */ jsx22("td", { className: "px-4 py-3 text-right font-mono text-xs text-[var(--color-text-secondary)]", children: s.token_version }),
+          /* @__PURE__ */ jsx22("td", { className: "px-4 py-3 text-xs text-[var(--color-text-muted)]", children: fmt(s.last_seen_at) }),
+          /* @__PURE__ */ jsx22("td", { className: "px-4 py-3 text-xs text-[var(--color-text-muted)]", children: fmt(s.created_at) }),
+          /* @__PURE__ */ jsx22("td", { className: "px-4 py-3 text-right", children: !canRevoke ? /* @__PURE__ */ jsx22("span", { className: "text-xs text-[var(--color-text-muted)]", children: "\u2014" }) : confirmingId === s.id ? /* @__PURE__ */ jsxs14("div", { className: "flex items-center justify-end gap-2 text-xs", children: [
+            /* @__PURE__ */ jsx22("span", { className: "text-[var(--color-text-secondary)]", children: "Zru\u0161i\u0165 rel\xE1ciu?" }),
+            /* @__PURE__ */ jsx22(
+              "button",
+              {
+                type: "button",
+                onClick: () => handleRevoke(s.id),
+                disabled: revoking,
+                className: "px-2 py-0.5 text-[var(--color-status-error)] border border-[var(--color-state-error-bg)] rounded hover:bg-[var(--color-state-error-bg)] disabled:opacity-40",
+                children: "\xC1no"
+              }
+            ),
+            /* @__PURE__ */ jsx22(
+              "button",
+              {
+                type: "button",
+                onClick: () => setConfirmingId(null),
+                disabled: revoking,
+                className: "px-2 py-0.5 text-[var(--color-text-secondary)] border border-[var(--color-border-default)] rounded hover:bg-[var(--color-surface-hover)]",
+                children: "Nie"
+              }
+            )
+          ] }) : /* @__PURE__ */ jsx22(
+            "button",
+            {
+              type: "button",
+              onClick: () => {
+                setConfirmingId(s.id);
+                setRevokeError("");
+              },
+              className: "text-xs text-[var(--color-text-muted)] hover:text-[var(--color-status-error)] transition-colors",
+              children: "Zru\u0161i\u0165"
+            }
+          ) })
+        ] }, s.id)),
+        rows.length === 0 && /* @__PURE__ */ jsx22("tr", { children: /* @__PURE__ */ jsx22("td", { colSpan: 6, className: "px-4 py-6 text-center text-xs text-[var(--color-text-muted)]", children: "\u017Diadne rel\xE1cie" }) })
+      ] })
+    ] }) }),
+    revokeError && /* @__PURE__ */ jsxs14("div", { className: "mt-3 text-xs text-[var(--color-state-error-fg)] rounded bg-[var(--color-state-error-bg)] border border-[var(--color-state-error-bg)] px-3 py-2 flex items-center justify-between", children: [
+      /* @__PURE__ */ jsx22("span", { children: revokeError }),
+      /* @__PURE__ */ jsx22("button", { type: "button", onClick: () => setRevokeError(""), className: "text-[var(--color-state-error-fg)] hover:opacity-80 ml-2", children: "\xD7" })
+    ] })
+  ] });
+}
 export {
+  AgentsPanel,
   ApiError,
   AppShell,
   Badge,
@@ -716,9 +1602,14 @@ export {
   ProtectedRoute,
   SectionLabel,
   Select,
+  SessionsPanel,
+  SettingsShell,
   Sidebar,
+  SystemSettingsPanel,
   ThemeToggle,
   UserCard,
+  UserForm,
+  UsersPanel,
   createApiClient,
   createAuthStore,
   registerAuthCallback

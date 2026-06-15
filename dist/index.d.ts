@@ -451,4 +451,261 @@ interface LoginFormProps {
 }
 declare function LoginForm({ fieldLabel, onSubmit, loading, error, onChange, autoFocus, showPasswordToggle, identityLabel, passwordLabel, submitLabel, loadingLabel, identityPlaceholder, passwordPlaceholder, }: LoginFormProps): react.JSX.Element;
 
-export { type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, Header, type HeaderProps, type HttpMethod, Input, type InputProps, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, NavIcon, type NavIconProps, NavItem, type NavItemProps, ProtectedRoute, type ProtectedRouteProps, type RequestOptions, SectionLabel, type SectionLabelProps, Select, type SelectProps, Sidebar, type SidebarProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, createApiClient, createAuthStore, registerAuthCallback };
+/**
+ * Shared TS contracts for the unified Settings/Admin kit (CR-NS-078).
+ *
+ * Domain shapes mirror each ICC app's settings/user/session serializers at the
+ * canonical boundary the Director approved: user-active is canonical `is_active`,
+ * roles stay per-app (the kit receives `roleOptions` + capability booleans /
+ * predicates, NEVER role-string literals). Apps map their own serializer field
+ * names onto these on the way in.
+ */
+/** The four canonical settings tabs. An app enables a subset via `SettingsKitConfig.tabs`. */
+type SettingsTabId = "system" | "agents" | "users" | "sessions";
+/**
+ * Serialised user row. `role` is an opaque string (role-agnostic kit) — the app
+ * supplies `roleOptions` + a `roleClass` predicate for display, never a literal.
+ * Canonical active flag is `is_active`.
+ */
+interface UserRead {
+    id: string;
+    username: string;
+    email: string;
+    /** Opaque per-app role identifier (kit never compares against literals). */
+    role: string;
+    /** Canonical soft-disable flag (Director-approved canonical field). */
+    is_active: boolean;
+    /** Given name (nullable — legacy users / apps without names may omit it). */
+    first_name?: string | null;
+    /** Family name (nullable). */
+    last_name?: string | null;
+    /** Telegram chat_id for agent notifications (nullable; apps without it omit). */
+    telegram_chat_id?: string | null;
+    /** ISO-8601 timestamp. */
+    created_at: string;
+    /** ISO-8601 timestamp. */
+    updated_at: string;
+}
+/**
+ * Serialised user-session row — a per-user JWT lifecycle anchor. `token_version`
+ * is bumped on logout/password-change to invalidate outstanding JWTs.
+ */
+interface UserSessionRead {
+    id: string;
+    user_id: string;
+    token_version: number;
+    /** ISO-8601 timestamp. */
+    last_seen_at: string;
+    /** ISO-8601 timestamp. */
+    created_at: string;
+    /** ISO-8601 timestamp. */
+    updated_at: string;
+}
+/** Runtime type of a system-setting `value` — drives the input widget. */
+type SystemSettingValueType = "string" | "int" | "float" | "bool";
+/** Serialised system-setting row. A stored override sets `is_default` to false. */
+interface SystemSettingRead {
+    key: string;
+    value: string;
+    value_type: SystemSettingValueType;
+    description: string | null;
+    /** ISO-8601 timestamp of last edit; `null` when the value is a default. */
+    updated_at: string | null;
+    /** UUID of the user who last edited; `null` for defaults. */
+    updated_by: string | null;
+    /** Username of the last editor; `null` for defaults or a deleted editor. */
+    updated_by_username: string | null;
+    /** `true` when the value comes from the service-layer default. */
+    is_default: boolean;
+}
+/**
+ * A system-settings category. Every setting whose `key` starts with one of
+ * `prefixes` is grouped under it; keys matching no category fall into a trailing
+ * "Ostatné" bucket so forward-compat additions stay visible.
+ */
+interface SettingsCategory {
+    id: string;
+    label: string;
+    description: string;
+    prefixes: string[];
+}
+/**
+ * Which user fields a given app's `UserForm` renders. Apps differ (e.g. NEX
+ * Ledger has no username/names/telegram), so the field set is injected.
+ */
+interface UserFieldSchema {
+    /** Show the username field (disabled in edit mode for login stability). */
+    username: boolean;
+    /** Show the first-name + last-name fields. */
+    names: boolean;
+    /** Show the Telegram chat_id field. */
+    telegram: boolean;
+    /** Minimum password length (mirrors the app's backend constraint). */
+    passwordMinLength: number;
+}
+/**
+ * Top-level kit config for `SettingsShell`. The app declares which tabs exist,
+ * their (Slovak, overridable) labels, and an optional per-role visibility
+ * predicate. A tab renders only when it is in `tabs` AND `tabVisibleForRole`
+ * (when supplied) returns true.
+ */
+interface SettingsKitConfig {
+    /** Enabled tabs, in display order (subset of the four canonical ids). */
+    tabs: SettingsTabId[];
+    /** Slovak tab labels (app-overridable). */
+    labels: Record<SettingsTabId, string>;
+    /** Optional capability predicate — hide a tab from a role entirely. */
+    tabVisibleForRole?: (tab: SettingsTabId, role: string) => boolean;
+}
+
+interface SettingsShellProps {
+    /** Tabs, labels + per-role visibility predicate. */
+    config: SettingsKitConfig;
+    /** The current user's (opaque) role — passed to `tabVisibleForRole`. */
+    currentUserRole: string;
+    /** Panel body for each enabled tab. */
+    panels: Partial<Record<SettingsTabId, ReactNode>>;
+    /** Page title in the header. Defaults to "Nastavenia". */
+    title?: string;
+    /** Optional right-aligned header slot (e.g. the app's "logged in as" badge —
+     *  role coloring is an app concern, kept out of the role-agnostic kit). */
+    headerRight?: ReactNode;
+}
+declare function SettingsShell({ config, currentUserRole, panels, title, headerRight, }: SettingsShellProps): react.JSX.Element;
+
+interface SystemSettingsPanelProps {
+    settings: SystemSettingRead[];
+    /** Display categories; keys matching none fall into a trailing "Ostatné" bucket. */
+    categories: SettingsCategory[];
+    /** Whether the current user may edit (else the panel is read-only). */
+    canEdit: boolean;
+    /** Persist one setting. Resolves with the updated row; rejects with an Error
+     *  whose message is surfaced inline. */
+    onSave: (key: string, value: string) => Promise<SystemSettingRead>;
+    /** Initial load in flight. */
+    loading?: boolean;
+    /** Load error message (empty/undefined = none). */
+    loadError?: string;
+}
+declare function SystemSettingsPanel({ settings, categories, canEdit, onSave, loading, loadError, }: SystemSettingsPanelProps): react.JSX.Element;
+
+/**
+ * AgentsPanel — per-role model + effort grid (NEX Studio CR-NS-040 behaviour),
+ * rendered only where the app has agents. Role-agnostic: the roles, models and
+ * effort levels are all injected, never hardcoded.
+ *
+ * `drafts` is the app-loaded baseline (a row per role id); the panel seeds its
+ * editable grid from it and persists a row via `onSave(roleId, { model, effort })`
+ * (resolve → ✓ flash; reject → the app surfaces the message via `saveErrors`).
+ */
+/** One role's draft model/effort selection. Empty string = "use the default". */
+interface AgentDraft {
+    model: string;
+    effort: string;
+}
+interface AgentsPanelProps {
+    roles: {
+        id: string;
+        label: string;
+    }[];
+    models: {
+        id: string;
+        label: string;
+    }[];
+    efforts: string[];
+    /** App-loaded baseline per role id (stable after load). */
+    drafts: Record<string, AgentDraft>;
+    /** Persist one role's config. Resolve → flash; reject → app sets `saveErrors`. */
+    onSave: (roleId: string, value: AgentDraft) => Promise<void>;
+    /** Initial load in flight. */
+    loading?: boolean;
+    /** Load error message (empty/undefined = none). */
+    loadError?: string;
+    /** Per-role save error messages, keyed by role id. */
+    saveErrors?: Record<string, string>;
+}
+declare function AgentsPanel({ roles, models, efforts, drafts, onSave, loading, loadError, saveErrors, }: AgentsPanelProps): react.JSX.Element;
+
+/** Collected form values handed to the parent on submit. */
+interface UserFormData {
+    username: string;
+    email: string;
+    /** Create: required. Edit: empty string = keep current. */
+    password: string;
+    /** Opaque per-app role identifier (one of `roleOptions[].value`). */
+    role: string;
+    first_name: string;
+    last_name: string;
+    /** Telegram chat_id for agent notifications. */
+    telegram_chat_id: string;
+    is_active: boolean;
+}
+interface UserFormProps {
+    mode: "create" | "edit";
+    /** Required in edit mode — values pre-fill the form. */
+    initial?: UserRead;
+    /** Role options for the role `<select>` (app-supplied; no role literals here). */
+    roleOptions: {
+        value: string;
+        label: string;
+    }[];
+    /** Which fields to render + the password min length (app-specific). */
+    fieldSchema: UserFieldSchema;
+    /** Disables all inputs + submit button. Driven by the parent's in-flight call. */
+    submitting: boolean;
+    /** Backend error message to display below the title. Empty = hidden. */
+    error: string;
+    /** Called with the collected form data on submit. The parent maps it to the
+     *  right API calls (create vs patch + change-password). */
+    onSubmit: (data: UserFormData) => Promise<void> | void;
+    /** Optional cancel handler — when supplied a "Zrušiť" button is rendered. */
+    onCancel?: () => void;
+}
+declare function UserForm({ mode, initial, roleOptions, fieldSchema, submitting, error, onSubmit, onCancel, }: UserFormProps): react.JSX.Element;
+
+interface UsersPanelProps {
+    users: UserRead[];
+    /** Role options for the filter + the create/edit form (no role literals here). */
+    roleOptions: {
+        value: string;
+        label: string;
+    }[];
+    /** Whether the current user may create/edit/delete/toggle (else read-only). */
+    canManage: boolean;
+    /** Field set + password rule for the embedded UserForm. */
+    fieldSchema: UserFieldSchema;
+    /** Create a user. Reject with an Error to surface the message inline. */
+    onCreate: (data: UserFormData) => Promise<void>;
+    /** Patch profile fields (password is handled via `onChangePassword`). */
+    onUpdate: (id: string, data: UserFormData) => Promise<void>;
+    /** Delete a user. Reject (e.g. 409 FK conflict) surfaces a "deaktivovať" hint. */
+    onDelete: (id: string) => Promise<void>;
+    /** Rotate a user's password (called after `onUpdate` when a new one was typed). */
+    onChangePassword: (id: string, password: string) => Promise<void>;
+    /** Flip `is_active`. */
+    onToggleActive: (user: UserRead) => Promise<void>;
+    /** Optional role→className for the role cell (app supplies the palette). */
+    roleClass?: (role: string) => string;
+}
+declare function UsersPanel({ users, roleOptions, canManage, fieldSchema, onCreate, onUpdate, onDelete, onChangePassword, onToggleActive, roleClass, }: UsersPanelProps): react.JSX.Element;
+
+interface SessionsPanelProps {
+    sessions: UserSessionRead[];
+    /** Resolve a user id to a display name (falls back to the id). */
+    resolveUsername?: (userId: string) => string;
+    /** Whether the current user may revoke sessions. */
+    canRevoke: boolean;
+    /** Revoke (delete) a session. Reject with an Error to surface the message. */
+    onRevoke: (id: string) => Promise<void>;
+    /** Initial load in flight. */
+    loading?: boolean;
+    /** Load error message (empty/undefined = none). */
+    loadError?: string;
+    /** App-controlled user filter; the panel also filters rows by it. */
+    filterUserId?: string;
+    /** Clear/change the user filter. */
+    onFilterChange?: (userId: string) => void;
+}
+declare function SessionsPanel({ sessions, resolveUsername, canRevoke, onRevoke, loading, loadError, filterUserId, onFilterChange, }: SessionsPanelProps): react.JSX.Element;
+
+export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, Header, type HeaderProps, type HttpMethod, Input, type InputProps, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, NavIcon, type NavIconProps, NavItem, type NavItemProps, ProtectedRoute, type ProtectedRouteProps, type RequestOptions, SectionLabel, type SectionLabelProps, Select, type SelectProps, SessionsPanel, type SessionsPanelProps, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, Sidebar, type SidebarProps, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, createApiClient, createAuthStore, registerAuthCallback };
