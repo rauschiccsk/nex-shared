@@ -4,11 +4,11 @@
  * mature globals.css — the same token names, so its ~66 var(--color-...) consumers keep working) merged with
  * the NEX indigo brand. Light defaults live in @theme; `html.dark` overrides them. Consumers `@import
  * "tailwindcss"` FIRST, then `@import "nex-shared/tokens.css"`, then `@source` the dist. A dark app sets
- * `<html class="dark">` (NEX Studio); a light app leaves it off (NEX Inbox). The indigo accent resolves in
+ * `<html class="dark">` (all NEX apps are dark-by-default); a light app would leave it off. The indigo accent resolves in
  * BOTH modes so every var(--color-accent-*) / var(--color-text-link) consumer is indigo with zero edits.
  */
 
-/* Dark mode via the `.dark` class (Studio is dark-by-default via <html class="dark">; Inbox is light). */
+/* Dark mode via the `.dark` class (all NEX apps are dark-by-default via <html class="dark">). */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
