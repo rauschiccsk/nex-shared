@@ -349,6 +349,256 @@ function Badge({ variant = "neutral", pulse = false, className = "", children, .
   );
 }
 
+// src/ReleaseNotes.tsx
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
+// src/CodeBlock.tsx
+import { useCallback, useState } from "react";
+import { Fragment as Fragment5, jsx as jsx15, jsxs as jsxs8 } from "react/jsx-runtime";
+var COPY_FEEDBACK_DURATION_MS = 2e3;
+function useCopyToClipboard(resetDelay = COPY_FEEDBACK_DURATION_MS) {
+  const [isCopied, setIsCopied] = useState(false);
+  const copy = useCallback(
+    async (text) => {
+      try {
+        await navigator.clipboard.writeText(text);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), resetDelay);
+      } catch {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), resetDelay);
+      }
+    },
+    [resetDelay]
+  );
+  return [copy, isCopied];
+}
+function CodeBlock({ children, language }) {
+  const [copy, isCopied] = useCopyToClipboard();
+  const code = String(children).replace(/\n$/, "");
+  return /* @__PURE__ */ jsxs8("div", { className: "relative my-3", children: [
+    /* @__PURE__ */ jsxs8("div", { className: "flex items-center justify-between bg-[var(--color-surface)] px-3 py-1.5 rounded-t border border-[var(--color-border-default)] border-b-0", children: [
+      /* @__PURE__ */ jsx15("span", { className: "text-xs text-[var(--color-text-secondary)]", children: language || "code" }),
+      /* @__PURE__ */ jsx15(
+        "button",
+        {
+          onClick: () => copy(code),
+          className: "flex items-center gap-1 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors",
+          children: isCopied ? /* @__PURE__ */ jsxs8(Fragment5, { children: [
+            /* @__PURE__ */ jsx15(
+              "svg",
+              {
+                className: "w-3.5 h-3.5 text-[var(--color-status-success)]",
+                fill: "none",
+                stroke: "currentColor",
+                viewBox: "0 0 24 24",
+                children: /* @__PURE__ */ jsx15(
+                  "path",
+                  {
+                    strokeLinecap: "round",
+                    strokeLinejoin: "round",
+                    strokeWidth: 2,
+                    d: "M5 13l4 4L19 7"
+                  }
+                )
+              }
+            ),
+            /* @__PURE__ */ jsx15("span", { className: "text-[var(--color-status-success)]", children: "Skop\xEDrovan\xE9" })
+          ] }) : /* @__PURE__ */ jsxs8(Fragment5, { children: [
+            /* @__PURE__ */ jsx15(
+              "svg",
+              {
+                className: "w-3.5 h-3.5",
+                fill: "none",
+                stroke: "currentColor",
+                viewBox: "0 0 24 24",
+                children: /* @__PURE__ */ jsx15(
+                  "path",
+                  {
+                    strokeLinecap: "round",
+                    strokeLinejoin: "round",
+                    strokeWidth: 2,
+                    d: "M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  }
+                )
+              }
+            ),
+            /* @__PURE__ */ jsx15("span", { children: "Kop\xEDrova\u0165" })
+          ] })
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsx15("pre", { className: "bg-[var(--color-canvas)] p-3 rounded-b border border-[var(--color-border-default)] border-t-0 overflow-x-auto m-0", children: /* @__PURE__ */ jsx15("code", { className: `text-sm ${language ? `language-${language}` : ""}`, children: code }) })
+  ] });
+}
+
+// src/ReleaseNotes.tsx
+import { Fragment as Fragment6, jsx as jsx16, jsxs as jsxs9 } from "react/jsx-runtime";
+function formatDate(iso) {
+  if (!iso) return "";
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!m) return iso;
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  return new Intl.DateTimeFormat("sk-SK", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  }).format(d);
+}
+function MarkdownBody({ children }) {
+  const body = children.replace(/^\s*##\s+\S.*(?:\r?\n)+/, "");
+  return /* @__PURE__ */ jsx16(
+    "div",
+    {
+      className: "prose prose-base dark:prose-invert max-w-none\n        prose-headings:font-semibold\n        prose-h3:text-primary-500 prose-h3:text-base prose-h3:mt-5 prose-h3:mb-1\n        prose-p:text-[var(--color-text-secondary)] prose-p:leading-relaxed\n        prose-strong:text-[var(--color-text-primary)]\n        prose-li:text-[var(--color-text-secondary)] prose-li:marker:text-primary-500",
+      children: /* @__PURE__ */ jsx16(
+        ReactMarkdown,
+        {
+          remarkPlugins: [remarkGfm],
+          components: {
+            code({ className, children: children2, ...props }) {
+              const match = /language-(\w+)/.exec(className || "");
+              const isInline = !className && typeof children2 === "string" && !children2.includes("\n");
+              if (!isInline && match) {
+                return /* @__PURE__ */ jsx16(CodeBlock, { language: match[1], children: String(children2) });
+              }
+              if (!isInline && typeof children2 === "string" && children2.includes("\n")) {
+                return /* @__PURE__ */ jsx16(CodeBlock, { children: String(children2) });
+              }
+              return /* @__PURE__ */ jsx16(
+                "code",
+                {
+                  className: "bg-[var(--color-surface)] px-1.5 py-0.5 rounded text-sm",
+                  ...props,
+                  children: children2
+                }
+              );
+            },
+            pre({ children: children2 }) {
+              return /* @__PURE__ */ jsx16(Fragment6, { children: children2 });
+            }
+          },
+          children: body
+        }
+      )
+    }
+  );
+}
+function VersionCard({ note, defaultOpen }) {
+  const date = formatDate(note.released_at);
+  return /* @__PURE__ */ jsx16(Card, { className: "p-0 overflow-hidden", children: /* @__PURE__ */ jsxs9("details", { open: defaultOpen, className: "group", children: [
+    /* @__PURE__ */ jsxs9("summary", { className: "flex items-center justify-between gap-3 px-4 py-3 cursor-pointer select-none list-none hover:bg-[var(--color-surface-hover)] transition-colors", children: [
+      /* @__PURE__ */ jsxs9("span", { className: "flex items-baseline gap-2", children: [
+        /* @__PURE__ */ jsx16("span", { className: "text-base font-bold text-primary-500", children: note.version }),
+        date && /* @__PURE__ */ jsxs9("span", { className: "text-sm text-[var(--color-text-muted)]", children: [
+          "\u2014 ",
+          date
+        ] })
+      ] }),
+      /* @__PURE__ */ jsx16(
+        "svg",
+        {
+          className: "w-4 h-4 shrink-0 text-[var(--color-text-muted)] transition-transform group-open:rotate-180",
+          fill: "none",
+          stroke: "currentColor",
+          viewBox: "0 0 24 24",
+          children: /* @__PURE__ */ jsx16(
+            "path",
+            {
+              strokeLinecap: "round",
+              strokeLinejoin: "round",
+              strokeWidth: 2,
+              d: "M19 9l-7 7-7-7"
+            }
+          )
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsx16("div", { className: "px-4 pb-4 pt-1 border-t border-[var(--color-border-default)]", children: /* @__PURE__ */ jsx16(MarkdownBody, { children: note.markdown }) })
+  ] }) });
+}
+function ReleaseNotes({
+  notes,
+  loading = false,
+  error = null,
+  onDismissError,
+  appName
+}) {
+  return /* @__PURE__ */ jsxs9("div", { className: "p-6 max-w-5xl mx-auto", children: [
+    /* @__PURE__ */ jsxs9("div", { className: "mb-5", children: [
+      /* @__PURE__ */ jsxs9("h1", { className: "flex items-center gap-2 text-lg font-semibold text-[var(--color-text-primary)]", children: [
+        /* @__PURE__ */ jsx16("span", { "aria-hidden": "true", className: "text-primary-500 leading-none", children: "\u2728" }),
+        "Aktualiz\xE1cie"
+      ] }),
+      /* @__PURE__ */ jsxs9("p", { className: "mt-1 text-sm text-[var(--color-text-secondary)]", children: [
+        "\u010Co je nov\xE9 v jednotliv\xFDch verzi\xE1ch",
+        appName ? ` ${appName}` : "",
+        "."
+      ] })
+    ] }),
+    error && /* @__PURE__ */ jsxs9("div", { className: "mb-4 px-3 py-2 rounded-lg bg-[var(--color-state-error-bg)] text-[var(--color-state-error-fg)] text-sm flex items-center justify-between", children: [
+      /* @__PURE__ */ jsx16("span", { className: "truncate", children: error }),
+      /* @__PURE__ */ jsx16(
+        "button",
+        {
+          onClick: onDismissError,
+          className: "ml-2 hover:opacity-80",
+          "aria-label": "Zavrie\u0165",
+          children: /* @__PURE__ */ jsx16(
+            "svg",
+            {
+              className: "w-3.5 h-3.5",
+              fill: "none",
+              stroke: "currentColor",
+              viewBox: "0 0 24 24",
+              children: /* @__PURE__ */ jsx16(
+                "path",
+                {
+                  strokeLinecap: "round",
+                  strokeLinejoin: "round",
+                  strokeWidth: 2,
+                  d: "M6 18L18 6M6 6l12 12"
+                }
+              )
+            }
+          )
+        }
+      )
+    ] }),
+    loading ? /* @__PURE__ */ jsxs9("div", { className: "flex items-center gap-2 py-10 justify-center text-[var(--color-text-secondary)] text-sm", children: [
+      /* @__PURE__ */ jsx16(
+        "svg",
+        {
+          className: "w-4 h-4 animate-spin",
+          fill: "none",
+          stroke: "currentColor",
+          viewBox: "0 0 24 24",
+          children: /* @__PURE__ */ jsx16(
+            "path",
+            {
+              strokeLinecap: "round",
+              strokeLinejoin: "round",
+              strokeWidth: 2,
+              d: "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            }
+          )
+        }
+      ),
+      " ",
+      "Na\u010D\xEDtavam\u2026"
+    ] }) : notes.length === 0 ? /* @__PURE__ */ jsx16("div", { className: "rounded-xl border border-dashed border-[var(--color-border-default)] p-10 text-center text-sm text-[var(--color-text-muted)]", children: "Zatia\u013E \u017Eiadne aktualiz\xE1cie." }) : /* @__PURE__ */ jsx16("div", { className: "flex flex-col gap-3", children: notes.map((note, i) => /* @__PURE__ */ jsx16(VersionCard, { note, defaultOpen: i === 0 }, note.version)) })
+  ] });
+}
+
 // src/api-client.ts
 var ApiError = class extends Error {
   status;
@@ -514,7 +764,7 @@ function createApiClient(config) {
 // src/auth-store.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { useEffect, useState } from "react";
+import { useEffect, useState as useState2 } from "react";
 function createAuthStore(config) {
   if (config.mode === "login") {
     const useAuthStore2 = create()(
@@ -561,8 +811,8 @@ function createAuthStore(config) {
     });
     const useLogin = () => {
       const login = useAuthStore2((s) => s.login);
-      const [loading, setLoading] = useState(false);
-      const [error, setError] = useState(null);
+      const [loading, setLoading] = useState2(false);
+      const [error, setError] = useState2(null);
       const wrapped = async (...args) => {
         setError(null);
         setLoading(true);
@@ -610,10 +860,10 @@ function createAuthStore(config) {
 }
 
 // src/ProtectedRoute.tsx
-import { useEffect as useEffect2, useState as useState2 } from "react";
-import { Fragment as Fragment5, jsx as jsx15 } from "react/jsx-runtime";
+import { useEffect as useEffect2, useState as useState3 } from "react";
+import { Fragment as Fragment7, jsx as jsx17 } from "react/jsx-runtime";
 function ProtectedRoute({ authed, validate, isAuthed, redirect, children }) {
-  const [ready, setReady] = useState2(false);
+  const [ready, setReady] = useState3(false);
   useEffect2(() => {
     if (authed && validate) {
       validate().finally(() => setReady(true));
@@ -623,12 +873,12 @@ function ProtectedRoute({ authed, validate, isAuthed, redirect, children }) {
   }, [authed]);
   if (!ready) return null;
   const ok = isAuthed ? isAuthed() : authed;
-  return ok ? /* @__PURE__ */ jsx15(Fragment5, { children }) : /* @__PURE__ */ jsx15(Fragment5, { children: redirect });
+  return ok ? /* @__PURE__ */ jsx17(Fragment7, { children }) : /* @__PURE__ */ jsx17(Fragment7, { children: redirect });
 }
 
 // src/LoginForm.tsx
-import { useState as useState3 } from "react";
-import { Fragment as Fragment6, jsx as jsx16, jsxs as jsxs8 } from "react/jsx-runtime";
+import { useState as useState4 } from "react";
+import { Fragment as Fragment8, jsx as jsx18, jsxs as jsxs10 } from "react/jsx-runtime";
 var LABEL_CLS = "block text-sm font-medium text-[var(--color-text-secondary)] mb-1";
 function LoginForm({
   fieldLabel = "username",
@@ -645,9 +895,9 @@ function LoginForm({
   identityPlaceholder,
   passwordPlaceholder = "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
 }) {
-  const [username, setUsername] = useState3("");
-  const [password, setPassword] = useState3("");
-  const [showPwd, setShowPwd] = useState3(false);
+  const [username, setUsername] = useState4("");
+  const [password, setPassword] = useState4("");
+  const [showPwd, setShowPwd] = useState4(false);
   const isEmail = fieldLabel === "email";
   const idLabel = identityLabel ?? (isEmail ? "Email" : "Pou\u017E\xEDvate\u013Esk\xE9 meno");
   const disabled = loading || !username.trim() || !password.trim();
@@ -660,10 +910,10 @@ function LoginForm({
     setter(e.target.value);
     onChange?.();
   };
-  return /* @__PURE__ */ jsxs8("form", { onSubmit: handleSubmit, noValidate: true, className: "space-y-4", children: [
-    /* @__PURE__ */ jsxs8("div", { children: [
-      /* @__PURE__ */ jsx16("label", { htmlFor: "login-username", className: LABEL_CLS, children: idLabel }),
-      /* @__PURE__ */ jsx16(
+  return /* @__PURE__ */ jsxs10("form", { onSubmit: handleSubmit, noValidate: true, className: "space-y-4", children: [
+    /* @__PURE__ */ jsxs10("div", { children: [
+      /* @__PURE__ */ jsx18("label", { htmlFor: "login-username", className: LABEL_CLS, children: idLabel }),
+      /* @__PURE__ */ jsx18(
         Input,
         {
           id: "login-username",
@@ -677,10 +927,10 @@ function LoginForm({
         }
       )
     ] }),
-    /* @__PURE__ */ jsxs8("div", { children: [
-      /* @__PURE__ */ jsx16("label", { htmlFor: "login-password", className: LABEL_CLS, children: passwordLabel }),
-      /* @__PURE__ */ jsxs8("div", { className: "relative", children: [
-        /* @__PURE__ */ jsx16(
+    /* @__PURE__ */ jsxs10("div", { children: [
+      /* @__PURE__ */ jsx18("label", { htmlFor: "login-password", className: LABEL_CLS, children: passwordLabel }),
+      /* @__PURE__ */ jsxs10("div", { className: "relative", children: [
+        /* @__PURE__ */ jsx18(
           Input,
           {
             id: "login-password",
@@ -693,26 +943,26 @@ function LoginForm({
             className: showPasswordToggle ? "pr-10" : ""
           }
         ),
-        showPasswordToggle && /* @__PURE__ */ jsx16(
+        showPasswordToggle && /* @__PURE__ */ jsx18(
           "button",
           {
             type: "button",
             tabIndex: -1,
             onClick: () => setShowPwd((s) => !s),
             className: "absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors",
-            children: showPwd ? /* @__PURE__ */ jsx16("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx16("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" }) }) : /* @__PURE__ */ jsxs8("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: [
-              /* @__PURE__ */ jsx16("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15 12a3 3 0 11-6 0 3 3 0 016 0z" }),
-              /* @__PURE__ */ jsx16("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" })
+            children: showPwd ? /* @__PURE__ */ jsx18("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx18("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" }) }) : /* @__PURE__ */ jsxs10("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: [
+              /* @__PURE__ */ jsx18("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15 12a3 3 0 11-6 0 3 3 0 016 0z" }),
+              /* @__PURE__ */ jsx18("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" })
             ] })
           }
         )
       ] })
     ] }),
-    error && /* @__PURE__ */ jsx16("div", { className: "rounded-lg bg-red-500/10 border border-red-500/30 p-3 text-sm text-red-400", children: error }),
-    /* @__PURE__ */ jsx16(Button, { type: "submit", variant: "primary", disabled, className: "w-full mt-2 gap-2", children: loading ? /* @__PURE__ */ jsxs8(Fragment6, { children: [
-      /* @__PURE__ */ jsxs8("svg", { className: "w-4 h-4 animate-spin", fill: "none", viewBox: "0 0 24 24", children: [
-        /* @__PURE__ */ jsx16("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4" }),
-        /* @__PURE__ */ jsx16("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" })
+    error && /* @__PURE__ */ jsx18("div", { className: "rounded-lg bg-red-500/10 border border-red-500/30 p-3 text-sm text-red-400", children: error }),
+    /* @__PURE__ */ jsx18(Button, { type: "submit", variant: "primary", disabled, className: "w-full mt-2 gap-2", children: loading ? /* @__PURE__ */ jsxs10(Fragment8, { children: [
+      /* @__PURE__ */ jsxs10("svg", { className: "w-4 h-4 animate-spin", fill: "none", viewBox: "0 0 24 24", children: [
+        /* @__PURE__ */ jsx18("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4" }),
+        /* @__PURE__ */ jsx18("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" })
       ] }),
       loadingLabel
     ] }) : submitLabel })
@@ -720,8 +970,8 @@ function LoginForm({
 }
 
 // src/SettingsShell.tsx
-import { useState as useState4 } from "react";
-import { jsx as jsx17, jsxs as jsxs9 } from "react/jsx-runtime";
+import { useState as useState5 } from "react";
+import { jsx as jsx19, jsxs as jsxs11 } from "react/jsx-runtime";
 var DEFAULT_TAB_LABELS = {
   system: "Syst\xE9m",
   agents: "Agenti",
@@ -738,14 +988,14 @@ function SettingsShell({
   const visibleTabs = config.tabs.filter(
     (t) => !config.tabVisibleForRole || config.tabVisibleForRole(t, currentUserRole)
   );
-  const [tab, setTab] = useState4(visibleTabs[0]);
+  const [tab, setTab] = useState5(visibleTabs[0]);
   const activeTab = tab && visibleTabs.includes(tab) ? tab : visibleTabs[0];
-  return /* @__PURE__ */ jsxs9("div", { className: "flex flex-col h-full", children: [
-    /* @__PURE__ */ jsxs9("div", { className: "flex-shrink-0 px-6 py-4 border-b border-[var(--color-border-default)] flex items-center justify-between", children: [
-      /* @__PURE__ */ jsx17("h1", { className: "text-base font-bold text-[var(--color-text-primary)]", children: title }),
+  return /* @__PURE__ */ jsxs11("div", { className: "flex flex-col h-full", children: [
+    /* @__PURE__ */ jsxs11("div", { className: "flex-shrink-0 px-6 py-4 border-b border-[var(--color-border-default)] flex items-center justify-between", children: [
+      /* @__PURE__ */ jsx19("h1", { className: "text-base font-bold text-[var(--color-text-primary)]", children: title }),
       headerRight
     ] }),
-    /* @__PURE__ */ jsx17("div", { className: "flex-shrink-0 flex gap-0 border-b border-[var(--color-border-default)] px-6", children: visibleTabs.map((t) => /* @__PURE__ */ jsx17(
+    /* @__PURE__ */ jsx19("div", { className: "flex-shrink-0 flex gap-0 border-b border-[var(--color-border-default)] px-6", children: visibleTabs.map((t) => /* @__PURE__ */ jsx19(
       "button",
       {
         type: "button",
@@ -755,13 +1005,13 @@ function SettingsShell({
       },
       t
     )) }),
-    /* @__PURE__ */ jsx17("div", { className: "flex-1 overflow-y-auto", children: activeTab != null && panels[activeTab] })
+    /* @__PURE__ */ jsx19("div", { className: "flex-1 overflow-y-auto", children: activeTab != null && panels[activeTab] })
   ] });
 }
 
 // src/SystemSettingsPanel.tsx
-import { useEffect as useEffect3, useMemo, useState as useState5 } from "react";
-import { Fragment as Fragment7, jsx as jsx18, jsxs as jsxs10 } from "react/jsx-runtime";
+import { useEffect as useEffect3, useMemo, useState as useState6 } from "react";
+import { Fragment as Fragment9, jsx as jsx20, jsxs as jsxs12 } from "react/jsx-runtime";
 function inputTypeFor(valueType) {
   if (valueType === "int" || valueType === "float") return "number";
   if (valueType === "bool") return "checkbox";
@@ -781,10 +1031,10 @@ function SystemSettingsPanel({
   loading = false,
   loadError = ""
 }) {
-  const [drafts, setDrafts] = useState5({});
-  const [savingKey, setSavingKey] = useState5(null);
-  const [saveErrors, setSaveErrors] = useState5({});
-  const [flashKey, setFlashKey] = useState5(null);
+  const [drafts, setDrafts] = useState6({});
+  const [savingKey, setSavingKey] = useState6(null);
+  const [saveErrors, setSaveErrors] = useState6({});
+  const [flashKey, setFlashKey] = useState6(null);
   useEffect3(() => {
     setDrafts((prev) => {
       const next = { ...prev };
@@ -826,34 +1076,34 @@ function SystemSettingsPanel({
       setSavingKey(null);
     }
   }
-  return /* @__PURE__ */ jsxs10("div", { className: "p-6 max-w-3xl", children: [
-    /* @__PURE__ */ jsx18("h2", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-1", children: "Syst\xE9mov\xE9 nastavenia" }),
-    /* @__PURE__ */ jsxs10("p", { className: "text-xs text-[var(--color-text-muted)] mb-4", children: [
+  return /* @__PURE__ */ jsxs12("div", { className: "p-6 max-w-3xl", children: [
+    /* @__PURE__ */ jsx20("h2", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-1", children: "Syst\xE9mov\xE9 nastavenia" }),
+    /* @__PURE__ */ jsxs12("p", { className: "text-xs text-[var(--color-text-muted)] mb-4", children: [
       "Runtime-mutable nastavenia. ",
       canEdit ? "Zmeny sa prejavia do 30 s (intern\xE1 cache TTL)." : "Read-only \u2014 ch\xFDba opr\xE1vnenie na \xFApravu."
     ] }),
-    loadError && /* @__PURE__ */ jsx18("div", { className: "rounded-lg border border-[var(--color-state-error-bg)] bg-[var(--color-state-error-bg)] px-3 py-2 text-xs text-[var(--color-state-error-fg)] mb-4", children: loadError }),
-    loading && !loadError && /* @__PURE__ */ jsx18("div", { className: "text-xs text-[var(--color-text-muted)]", children: "Na\u010D\xEDtavam\u2026" }),
-    !loading && !loadError && /* @__PURE__ */ jsxs10("div", { className: "space-y-6", children: [
+    loadError && /* @__PURE__ */ jsx20("div", { className: "rounded-lg border border-[var(--color-state-error-bg)] bg-[var(--color-state-error-bg)] px-3 py-2 text-xs text-[var(--color-state-error-fg)] mb-4", children: loadError }),
+    loading && !loadError && /* @__PURE__ */ jsx20("div", { className: "text-xs text-[var(--color-text-muted)]", children: "Na\u010D\xEDtavam\u2026" }),
+    !loading && !loadError && /* @__PURE__ */ jsxs12("div", { className: "space-y-6", children: [
       [...categories, OTHER_CATEGORY].map((cat) => {
         const rows = groupedSettings[cat.id] ?? [];
         if (rows.length === 0) return null;
-        return /* @__PURE__ */ jsxs10("section", { children: [
-          /* @__PURE__ */ jsx18("h3", { className: "text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-widest mb-1", children: cat.label }),
-          cat.description && /* @__PURE__ */ jsx18("p", { className: "text-[11px] text-[var(--color-text-muted)] mb-2", children: cat.description }),
-          /* @__PURE__ */ jsx18("div", { className: "rounded-lg border border-[var(--color-border-default)] bg-[var(--color-canvas)] divide-y divide-[var(--color-border-default)]", children: rows.map((s) => {
+        return /* @__PURE__ */ jsxs12("section", { children: [
+          /* @__PURE__ */ jsx20("h3", { className: "text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-widest mb-1", children: cat.label }),
+          cat.description && /* @__PURE__ */ jsx20("p", { className: "text-[11px] text-[var(--color-text-muted)] mb-2", children: cat.description }),
+          /* @__PURE__ */ jsx20("div", { className: "rounded-lg border border-[var(--color-border-default)] bg-[var(--color-canvas)] divide-y divide-[var(--color-border-default)]", children: rows.map((s) => {
             const draft = drafts[s.key] ?? s.value;
             const dirty = draft !== s.value;
             const inputType = inputTypeFor(s.value_type);
             const saving = savingKey === s.key;
             const err = saveErrors[s.key];
-            return /* @__PURE__ */ jsxs10("div", { className: "p-4", children: [
-              /* @__PURE__ */ jsxs10("div", { className: "flex items-start justify-between gap-4 mb-1", children: [
-                /* @__PURE__ */ jsxs10("div", { className: "min-w-0", children: [
-                  /* @__PURE__ */ jsx18("div", { className: "text-sm font-medium text-[var(--color-text-primary)] font-mono", children: s.key }),
-                  /* @__PURE__ */ jsx18("div", { className: "text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest mt-0.5", children: s.value_type })
+            return /* @__PURE__ */ jsxs12("div", { className: "p-4", children: [
+              /* @__PURE__ */ jsxs12("div", { className: "flex items-start justify-between gap-4 mb-1", children: [
+                /* @__PURE__ */ jsxs12("div", { className: "min-w-0", children: [
+                  /* @__PURE__ */ jsx20("div", { className: "text-sm font-medium text-[var(--color-text-primary)] font-mono", children: s.key }),
+                  /* @__PURE__ */ jsx20("div", { className: "text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest mt-0.5", children: s.value_type })
                 ] }),
-                canEdit && /* @__PURE__ */ jsx18(
+                canEdit && /* @__PURE__ */ jsx20(
                   "button",
                   {
                     type: "button",
@@ -864,9 +1114,9 @@ function SystemSettingsPanel({
                   }
                 )
               ] }),
-              s.description && /* @__PURE__ */ jsx18("p", { className: "text-xs text-[var(--color-text-muted)] mb-2 leading-relaxed", children: s.description }),
-              inputType === "checkbox" ? /* @__PURE__ */ jsxs10("label", { className: "flex items-center gap-2 text-xs text-[var(--color-text-secondary)]", children: [
-                /* @__PURE__ */ jsx18(
+              s.description && /* @__PURE__ */ jsx20("p", { className: "text-xs text-[var(--color-text-muted)] mb-2 leading-relaxed", children: s.description }),
+              inputType === "checkbox" ? /* @__PURE__ */ jsxs12("label", { className: "flex items-center gap-2 text-xs text-[var(--color-text-secondary)]", children: [
+                /* @__PURE__ */ jsx20(
                   "input",
                   {
                     type: "checkbox",
@@ -876,8 +1126,8 @@ function SystemSettingsPanel({
                     className: "rounded border-[var(--color-border-default)] bg-[var(--color-surface)] text-primary-500 focus:ring-primary-500 disabled:opacity-50"
                   }
                 ),
-                /* @__PURE__ */ jsx18("span", { className: "font-mono", children: draft })
-              ] }) : /* @__PURE__ */ jsx18(
+                /* @__PURE__ */ jsx20("span", { className: "font-mono", children: draft })
+              ] }) : /* @__PURE__ */ jsx20(
                 "input",
                 {
                   type: inputType,
@@ -888,33 +1138,33 @@ function SystemSettingsPanel({
                   className: "w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded px-3 py-1.5 text-xs text-[var(--color-text-primary)] font-mono focus:outline-none focus:border-primary-500 disabled:opacity-50"
                 }
               ),
-              /* @__PURE__ */ jsxs10("div", { className: "mt-2 text-[11px] flex items-center gap-2 flex-wrap", children: [
-                s.is_default ? /* @__PURE__ */ jsx18("span", { className: "text-[var(--color-text-muted)]", children: "Predvolen\xE1 hodnota." }) : /* @__PURE__ */ jsxs10("span", { className: "text-[var(--color-text-muted)]", children: [
+              /* @__PURE__ */ jsxs12("div", { className: "mt-2 text-[11px] flex items-center gap-2 flex-wrap", children: [
+                s.is_default ? /* @__PURE__ */ jsx20("span", { className: "text-[var(--color-text-muted)]", children: "Predvolen\xE1 hodnota." }) : /* @__PURE__ */ jsxs12("span", { className: "text-[var(--color-text-muted)]", children: [
                   "Ulo\u017Een\xFD override",
-                  s.updated_by_username && /* @__PURE__ */ jsxs10(Fragment7, { children: [
+                  s.updated_by_username && /* @__PURE__ */ jsxs12(Fragment9, { children: [
                     " \u2014 ",
-                    /* @__PURE__ */ jsx18("span", { className: "text-[var(--color-text-secondary)] font-medium", children: s.updated_by_username })
+                    /* @__PURE__ */ jsx20("span", { className: "text-[var(--color-text-secondary)] font-medium", children: s.updated_by_username })
                   ] }),
-                  s.updated_at && /* @__PURE__ */ jsxs10(Fragment7, { children: [
+                  s.updated_at && /* @__PURE__ */ jsxs12(Fragment9, { children: [
                     " \xB7 ",
                     new Date(s.updated_at).toLocaleString("sk-SK")
                   ] })
                 ] }),
-                flashKey === s.key && /* @__PURE__ */ jsx18("span", { className: "text-[var(--color-status-success)]", children: "\u2713 Ulo\u017Een\xE9" }),
-                err && /* @__PURE__ */ jsx18("span", { className: "text-[var(--color-status-error)]", children: err })
+                flashKey === s.key && /* @__PURE__ */ jsx20("span", { className: "text-[var(--color-status-success)]", children: "\u2713 Ulo\u017Een\xE9" }),
+                err && /* @__PURE__ */ jsx20("span", { className: "text-[var(--color-status-error)]", children: err })
               ] })
             ] }, s.key);
           }) })
         ] }, cat.id);
       }),
-      !canEdit && /* @__PURE__ */ jsx18("p", { className: "text-[11px] text-[var(--color-text-muted)] italic", children: "Read-only \u2014 na \xFApravu ch\xFDba opr\xE1vnenie." })
+      !canEdit && /* @__PURE__ */ jsx20("p", { className: "text-[11px] text-[var(--color-text-muted)] italic", children: "Read-only \u2014 na \xFApravu ch\xFDba opr\xE1vnenie." })
     ] })
   ] });
 }
 
 // src/AgentsPanel.tsx
-import { useEffect as useEffect4, useState as useState6 } from "react";
-import { jsx as jsx19, jsxs as jsxs11 } from "react/jsx-runtime";
+import { useEffect as useEffect4, useState as useState7 } from "react";
+import { jsx as jsx21, jsxs as jsxs13 } from "react/jsx-runtime";
 function seedState(roles, drafts) {
   const out = {};
   for (const r of roles) {
@@ -933,9 +1183,9 @@ function AgentsPanel({
   loadError = "",
   saveErrors = {}
 }) {
-  const [edit, setEdit] = useState6(() => seedState(roles, drafts));
-  const [savingRole, setSavingRole] = useState6(null);
-  const [flashRole, setFlashRole] = useState6(null);
+  const [edit, setEdit] = useState7(() => seedState(roles, drafts));
+  const [savingRole, setSavingRole] = useState7(null);
+  const [flashRole, setFlashRole] = useState7(null);
   useEffect4(() => {
     setEdit(seedState(roles, drafts));
   }, [roles, drafts]);
@@ -951,25 +1201,25 @@ function AgentsPanel({
       setSavingRole(null);
     }
   }
-  return /* @__PURE__ */ jsxs11("div", { className: "p-6 max-w-3xl", children: [
-    /* @__PURE__ */ jsx19("h2", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-1", children: "Agenti \u2014 model a effort" }),
-    /* @__PURE__ */ jsxs11("p", { className: "text-xs text-[var(--color-text-muted)] mb-4", children: [
+  return /* @__PURE__ */ jsxs13("div", { className: "p-6 max-w-3xl", children: [
+    /* @__PURE__ */ jsx21("h2", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-1", children: "Agenti \u2014 model a effort" }),
+    /* @__PURE__ */ jsxs13("p", { className: "text-xs text-[var(--color-text-muted)] mb-4", children: [
       "Per-rola konfigur\xE1cia modelu (",
-      /* @__PURE__ */ jsx19("code", { children: "--model" }),
+      /* @__PURE__ */ jsx21("code", { children: "--model" }),
       ") a \xFArovne (",
-      /* @__PURE__ */ jsx19("code", { children: "--effort" }),
+      /* @__PURE__ */ jsx21("code", { children: "--effort" }),
       "). Nenastaven\xE9 pole = predvolen\xE9 spr\xE1vanie (CLI default)."
     ] }),
-    loadError && /* @__PURE__ */ jsx19("div", { className: "rounded-lg border border-[var(--color-state-error-bg)] bg-[var(--color-state-error-bg)] px-3 py-2 text-xs text-[var(--color-state-error-fg)] mb-4", children: loadError }),
-    loading && !loadError && /* @__PURE__ */ jsx19("div", { className: "text-xs text-[var(--color-text-muted)]", children: "Na\u010D\xEDtavam\u2026" }),
-    !loading && !loadError && /* @__PURE__ */ jsx19("div", { className: "rounded-lg border border-[var(--color-border-default)] bg-[var(--color-canvas)] divide-y divide-[var(--color-border-default)]", children: roles.map((r) => {
+    loadError && /* @__PURE__ */ jsx21("div", { className: "rounded-lg border border-[var(--color-state-error-bg)] bg-[var(--color-state-error-bg)] px-3 py-2 text-xs text-[var(--color-state-error-fg)] mb-4", children: loadError }),
+    loading && !loadError && /* @__PURE__ */ jsx21("div", { className: "text-xs text-[var(--color-text-muted)]", children: "Na\u010D\xEDtavam\u2026" }),
+    !loading && !loadError && /* @__PURE__ */ jsx21("div", { className: "rounded-lg border border-[var(--color-border-default)] bg-[var(--color-canvas)] divide-y divide-[var(--color-border-default)]", children: roles.map((r) => {
       const draft = edit[r.id] ?? { model: "", effort: "" };
       const saving = savingRole === r.id;
       const err = saveErrors[r.id];
-      return /* @__PURE__ */ jsxs11("div", { className: "p-4", children: [
-        /* @__PURE__ */ jsxs11("div", { className: "flex items-start justify-between gap-4 mb-2", children: [
-          /* @__PURE__ */ jsx19("div", { className: "text-sm font-medium text-[var(--color-text-primary)]", children: r.label }),
-          /* @__PURE__ */ jsx19(
+      return /* @__PURE__ */ jsxs13("div", { className: "p-4", children: [
+        /* @__PURE__ */ jsxs13("div", { className: "flex items-start justify-between gap-4 mb-2", children: [
+          /* @__PURE__ */ jsx21("div", { className: "text-sm font-medium text-[var(--color-text-primary)]", children: r.label }),
+          /* @__PURE__ */ jsx21(
             "button",
             {
               type: "button",
@@ -980,41 +1230,41 @@ function AgentsPanel({
             }
           )
         ] }),
-        /* @__PURE__ */ jsxs11("div", { className: "grid grid-cols-2 gap-3", children: [
-          /* @__PURE__ */ jsxs11("label", { className: "block", children: [
-            /* @__PURE__ */ jsx19("span", { className: "text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest", children: "Model" }),
-            /* @__PURE__ */ jsxs11(
+        /* @__PURE__ */ jsxs13("div", { className: "grid grid-cols-2 gap-3", children: [
+          /* @__PURE__ */ jsxs13("label", { className: "block", children: [
+            /* @__PURE__ */ jsx21("span", { className: "text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest", children: "Model" }),
+            /* @__PURE__ */ jsxs13(
               "select",
               {
                 value: draft.model,
                 onChange: (e) => setEdit((prev) => ({ ...prev, [r.id]: { ...draft, model: e.target.value } })),
                 className: "mt-1 w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded px-3 py-1.5 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-primary-500",
                 children: [
-                  /* @__PURE__ */ jsx19("option", { value: "", children: "\u2014 Predvolen\xFD \u2014" }),
-                  models.map((m) => /* @__PURE__ */ jsx19("option", { value: m.id, children: m.label }, m.id))
+                  /* @__PURE__ */ jsx21("option", { value: "", children: "\u2014 Predvolen\xFD \u2014" }),
+                  models.map((m) => /* @__PURE__ */ jsx21("option", { value: m.id, children: m.label }, m.id))
                 ]
               }
             )
           ] }),
-          /* @__PURE__ */ jsxs11("label", { className: "block", children: [
-            /* @__PURE__ */ jsx19("span", { className: "text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest", children: "\xDArove\u0148" }),
-            /* @__PURE__ */ jsxs11(
+          /* @__PURE__ */ jsxs13("label", { className: "block", children: [
+            /* @__PURE__ */ jsx21("span", { className: "text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest", children: "\xDArove\u0148" }),
+            /* @__PURE__ */ jsxs13(
               "select",
               {
                 value: draft.effort,
                 onChange: (e) => setEdit((prev) => ({ ...prev, [r.id]: { ...draft, effort: e.target.value } })),
                 className: "mt-1 w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded px-3 py-1.5 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-primary-500",
                 children: [
-                  /* @__PURE__ */ jsx19("option", { value: "", children: "\u2014 Predvolen\xFD \u2014" }),
-                  efforts.map((ef) => /* @__PURE__ */ jsx19("option", { value: ef, children: ef }, ef))
+                  /* @__PURE__ */ jsx21("option", { value: "", children: "\u2014 Predvolen\xFD \u2014" }),
+                  efforts.map((ef) => /* @__PURE__ */ jsx21("option", { value: ef, children: ef }, ef))
                 ]
               }
             )
           ] })
         ] }),
-        /* @__PURE__ */ jsxs11("div", { className: "mt-2 text-[11px] flex items-center gap-2", children: [
-          flashRole === r.id && /* @__PURE__ */ jsx19("span", { className: "text-[var(--color-status-success)]", children: "\u2713 Ulo\u017Een\xE9" }),
-          err && /* @__PURE__ */ jsx19("span", { className: "text-[var(--color-status-error)]", children: err })
+        /* @__PURE__ */ jsxs13("div", { className: "mt-2 text-[11px] flex items-center gap-2", children: [
+          flashRole === r.id && /* @__PURE__ */ jsx21("span", { className: "text-[var(--color-status-success)]", children: "\u2713 Ulo\u017Een\xE9" }),
+          err && /* @__PURE__ */ jsx21("span", { className: "text-[var(--color-status-error)]", children: err })
         ] })
       ] }, r.id);
     }) })
@@ -1022,11 +1272,11 @@ function AgentsPanel({
 }
 
 // src/UsersPanel.tsx
-import { useMemo as useMemo2, useState as useState8 } from "react";
+import { useMemo as useMemo2, useState as useState9 } from "react";
 
 // src/UserForm.tsx
-import { useState as useState7 } from "react";
-import { Fragment as Fragment8, jsx as jsx20, jsxs as jsxs12 } from "react/jsx-runtime";
+import { useState as useState8 } from "react";
+import { Fragment as Fragment10, jsx as jsx22, jsxs as jsxs14 } from "react/jsx-runtime";
 function initialFromUser(user, roleOptions) {
   return {
     username: user?.username ?? "",
@@ -1051,7 +1301,7 @@ function UserForm({
 }) {
   const isEdit = mode === "edit";
   const minLen = fieldSchema.passwordMinLength;
-  const [data, setData] = useState7(
+  const [data, setData] = useState8(
     () => initialFromUser(initial, roleOptions)
   );
   const passwordTooShort = data.password.length > 0 && data.password.length < minLen;
@@ -1065,18 +1315,18 @@ function UserForm({
     if (submitDisabled) return;
     void onSubmit(data);
   }
-  return /* @__PURE__ */ jsxs12(Card, { className: "mt-4 p-4", children: [
-    /* @__PURE__ */ jsx20("h3", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-3", children: isEdit ? /* @__PURE__ */ jsxs12(Fragment8, { children: [
+  return /* @__PURE__ */ jsxs14(Card, { className: "mt-4 p-4", children: [
+    /* @__PURE__ */ jsx22("h3", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-3", children: isEdit ? /* @__PURE__ */ jsxs14(Fragment10, { children: [
       "Upravi\u0165 pou\u017E\xEDvate\u013Ea \xB7",
       " ",
-      /* @__PURE__ */ jsx20("span", { className: "font-mono text-[var(--color-text-secondary)]", children: initial?.username })
+      /* @__PURE__ */ jsx22("span", { className: "font-mono text-[var(--color-text-secondary)]", children: initial?.username })
     ] }) : "Vytvori\u0165 pou\u017E\xEDvate\u013Ea" }),
-    error && /* @__PURE__ */ jsx20("div", { className: "mb-3 text-xs text-[var(--color-state-error-fg)] rounded bg-[var(--color-state-error-bg)] border border-[var(--color-state-error-bg)] px-3 py-2", children: error }),
-    /* @__PURE__ */ jsxs12("div", { className: "grid grid-cols-2 gap-3 mb-3", children: [
-      fieldSchema.names && /* @__PURE__ */ jsxs12(Fragment8, { children: [
-        /* @__PURE__ */ jsxs12("div", { children: [
-          /* @__PURE__ */ jsx20("label", { htmlFor: "uf-first-name", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: "Meno" }),
-          /* @__PURE__ */ jsx20(
+    error && /* @__PURE__ */ jsx22("div", { className: "mb-3 text-xs text-[var(--color-state-error-fg)] rounded bg-[var(--color-state-error-bg)] border border-[var(--color-state-error-bg)] px-3 py-2", children: error }),
+    /* @__PURE__ */ jsxs14("div", { className: "grid grid-cols-2 gap-3 mb-3", children: [
+      fieldSchema.names && /* @__PURE__ */ jsxs14(Fragment10, { children: [
+        /* @__PURE__ */ jsxs14("div", { children: [
+          /* @__PURE__ */ jsx22("label", { htmlFor: "uf-first-name", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: "Meno" }),
+          /* @__PURE__ */ jsx22(
             Input,
             {
               id: "uf-first-name",
@@ -1087,9 +1337,9 @@ function UserForm({
             }
           )
         ] }),
-        /* @__PURE__ */ jsxs12("div", { children: [
-          /* @__PURE__ */ jsx20("label", { htmlFor: "uf-last-name", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: "Priezvisko" }),
-          /* @__PURE__ */ jsx20(
+        /* @__PURE__ */ jsxs14("div", { children: [
+          /* @__PURE__ */ jsx22("label", { htmlFor: "uf-last-name", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: "Priezvisko" }),
+          /* @__PURE__ */ jsx22(
             Input,
             {
               id: "uf-last-name",
@@ -1101,12 +1351,12 @@ function UserForm({
           )
         ] })
       ] }),
-      fieldSchema.username && /* @__PURE__ */ jsxs12("div", { children: [
-        /* @__PURE__ */ jsxs12("label", { htmlFor: "uf-username", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: [
+      fieldSchema.username && /* @__PURE__ */ jsxs14("div", { children: [
+        /* @__PURE__ */ jsxs14("label", { htmlFor: "uf-username", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: [
           "Pou\u017E\xEDvate\u013Esk\xE9 meno ",
           isEdit ? "" : "*"
         ] }),
-        /* @__PURE__ */ jsx20(
+        /* @__PURE__ */ jsx22(
           "input",
           {
             id: "uf-username",
@@ -1120,9 +1370,9 @@ function UserForm({
           }
         )
       ] }),
-      /* @__PURE__ */ jsxs12("div", { children: [
-        /* @__PURE__ */ jsx20("label", { htmlFor: "uf-email", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: "Email *" }),
-        /* @__PURE__ */ jsx20(
+      /* @__PURE__ */ jsxs14("div", { children: [
+        /* @__PURE__ */ jsx22("label", { htmlFor: "uf-email", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: "Email *" }),
+        /* @__PURE__ */ jsx22(
           Input,
           {
             id: "uf-email",
@@ -1133,13 +1383,13 @@ function UserForm({
           }
         )
       ] }),
-      /* @__PURE__ */ jsxs12("div", { children: [
-        /* @__PURE__ */ jsx20("label", { htmlFor: "uf-password", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: isEdit ? /* @__PURE__ */ jsxs12(Fragment8, { children: [
+      /* @__PURE__ */ jsxs14("div", { children: [
+        /* @__PURE__ */ jsx22("label", { htmlFor: "uf-password", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: isEdit ? /* @__PURE__ */ jsxs14(Fragment10, { children: [
           "Nov\xE9 heslo",
           " ",
-          /* @__PURE__ */ jsx20("span", { className: "text-[var(--color-text-muted)]", children: "(nechaj pr\xE1zdne ak nemeni\u0165)" })
+          /* @__PURE__ */ jsx22("span", { className: "text-[var(--color-text-muted)]", children: "(nechaj pr\xE1zdne ak nemeni\u0165)" })
         ] }) : "Heslo *" }),
-        /* @__PURE__ */ jsx20(
+        /* @__PURE__ */ jsx22(
           Input,
           {
             id: "uf-password",
@@ -1150,7 +1400,7 @@ function UserForm({
             invalid: passwordTooShort
           }
         ),
-        passwordTooShort && /* @__PURE__ */ jsxs12("div", { className: "mt-1 text-[10px] text-[var(--color-status-error)]", children: [
+        passwordTooShort && /* @__PURE__ */ jsxs14("div", { className: "mt-1 text-[10px] text-[var(--color-status-error)]", children: [
           "Heslo mus\xED ma\u0165 aspo\u0148 ",
           minLen,
           " znakov (",
@@ -1160,21 +1410,21 @@ function UserForm({
           ")."
         ] })
       ] }),
-      /* @__PURE__ */ jsxs12("div", { children: [
-        /* @__PURE__ */ jsx20("label", { htmlFor: "uf-role", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: "Rola" }),
-        /* @__PURE__ */ jsx20(
+      /* @__PURE__ */ jsxs14("div", { children: [
+        /* @__PURE__ */ jsx22("label", { htmlFor: "uf-role", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: "Rola" }),
+        /* @__PURE__ */ jsx22(
           Select,
           {
             id: "uf-role",
             value: data.role,
             onChange: (e) => update("role", e.target.value),
-            children: roleOptions.map((o) => /* @__PURE__ */ jsx20("option", { value: o.value, children: o.label }, o.value))
+            children: roleOptions.map((o) => /* @__PURE__ */ jsx22("option", { value: o.value, children: o.label }, o.value))
           }
         )
       ] }),
-      fieldSchema.telegram && /* @__PURE__ */ jsxs12("div", { children: [
-        /* @__PURE__ */ jsx20("label", { htmlFor: "uf-telegram", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: "Telegram chat_id" }),
-        /* @__PURE__ */ jsx20(
+      fieldSchema.telegram && /* @__PURE__ */ jsxs14("div", { children: [
+        /* @__PURE__ */ jsx22("label", { htmlFor: "uf-telegram", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: "Telegram chat_id" }),
+        /* @__PURE__ */ jsx22(
           Input,
           {
             id: "uf-telegram",
@@ -1185,8 +1435,8 @@ function UserForm({
           }
         )
       ] }),
-      isEdit && /* @__PURE__ */ jsx20("div", { className: "flex items-end", children: /* @__PURE__ */ jsxs12("label", { htmlFor: "uf-active", className: "flex items-center gap-2 text-xs text-[var(--color-text-secondary)] cursor-pointer", children: [
-        /* @__PURE__ */ jsx20(
+      isEdit && /* @__PURE__ */ jsx22("div", { className: "flex items-end", children: /* @__PURE__ */ jsxs14("label", { htmlFor: "uf-active", className: "flex items-center gap-2 text-xs text-[var(--color-text-secondary)] cursor-pointer", children: [
+        /* @__PURE__ */ jsx22(
           "input",
           {
             id: "uf-active",
@@ -1199,8 +1449,8 @@ function UserForm({
         "Akt\xEDvny"
       ] }) })
     ] }),
-    /* @__PURE__ */ jsxs12("div", { className: "flex gap-2 justify-end", children: [
-      onCancel && /* @__PURE__ */ jsx20(
+    /* @__PURE__ */ jsxs14("div", { className: "flex gap-2 justify-end", children: [
+      onCancel && /* @__PURE__ */ jsx22(
         "button",
         {
           type: "button",
@@ -1209,7 +1459,7 @@ function UserForm({
           children: "Zru\u0161i\u0165"
         }
       ),
-      /* @__PURE__ */ jsx20(
+      /* @__PURE__ */ jsx22(
         "button",
         {
           type: "button",
@@ -1224,7 +1474,7 @@ function UserForm({
 }
 
 // src/UsersPanel.tsx
-import { jsx as jsx21, jsxs as jsxs13 } from "react/jsx-runtime";
+import { jsx as jsx23, jsxs as jsxs15 } from "react/jsx-runtime";
 function UsersPanel({
   users,
   roleOptions,
@@ -1238,17 +1488,17 @@ function UsersPanel({
   roleClass
 }) {
   const roleCls = roleClass ?? (() => "");
-  const [roleFilter, setRoleFilter] = useState8("");
-  const [activeFilter, setActiveFilter] = useState8("");
-  const [showNewForm, setShowNewForm] = useState8(false);
-  const [editingUser, setEditingUser] = useState8(null);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState8(null);
-  const [creating, setCreating] = useState8(false);
-  const [createError, setCreateError] = useState8("");
-  const [editing, setEditing] = useState8(false);
-  const [editError, setEditError] = useState8("");
-  const [deleting, setDeleting] = useState8(false);
-  const [deleteError, setDeleteError] = useState8("");
+  const [roleFilter, setRoleFilter] = useState9("");
+  const [activeFilter, setActiveFilter] = useState9("");
+  const [showNewForm, setShowNewForm] = useState9(false);
+  const [editingUser, setEditingUser] = useState9(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState9(null);
+  const [creating, setCreating] = useState9(false);
+  const [createError, setCreateError] = useState9("");
+  const [editing, setEditing] = useState9(false);
+  const [editError, setEditError] = useState9("");
+  const [deleting, setDeleting] = useState9(false);
+  const [deleteError, setDeleteError] = useState9("");
   const filteredUsers = useMemo2(() => {
     return users.filter((u) => {
       if (roleFilter && u.role !== roleFilter) return false;
@@ -1308,10 +1558,10 @@ function UsersPanel({
     void onToggleActive(u).catch(() => {
     });
   }
-  return /* @__PURE__ */ jsxs13("div", { className: "p-6", children: [
-    /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-between mb-4", children: [
-      /* @__PURE__ */ jsx21("h2", { className: "text-sm font-semibold text-[var(--color-text-secondary)]", children: "Spr\xE1va pou\u017E\xEDvate\u013Eov" }),
-      canManage && /* @__PURE__ */ jsxs13(
+  return /* @__PURE__ */ jsxs15("div", { className: "p-6", children: [
+    /* @__PURE__ */ jsxs15("div", { className: "flex items-center justify-between mb-4", children: [
+      /* @__PURE__ */ jsx23("h2", { className: "text-sm font-semibold text-[var(--color-text-secondary)]", children: "Spr\xE1va pou\u017E\xEDvate\u013Eov" }),
+      canManage && /* @__PURE__ */ jsxs15(
         "button",
         {
           type: "button",
@@ -1322,64 +1572,64 @@ function UsersPanel({
           },
           className: "flex items-center gap-1.5 bg-primary-600 hover:bg-primary-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors",
           children: [
-            /* @__PURE__ */ jsx21("svg", { className: "w-3.5 h-3.5", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx21("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 4v16m8-8H4" }) }),
+            /* @__PURE__ */ jsx23("svg", { className: "w-3.5 h-3.5", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx23("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 4v16m8-8H4" }) }),
             "Nov\xFD pou\u017E\xEDvate\u013E"
           ]
         }
       )
     ] }),
-    /* @__PURE__ */ jsxs13("div", { className: "flex items-center gap-3 mb-3", children: [
-      /* @__PURE__ */ jsxs13(
+    /* @__PURE__ */ jsxs15("div", { className: "flex items-center gap-3 mb-3", children: [
+      /* @__PURE__ */ jsxs15(
         "select",
         {
           value: roleFilter,
           onChange: (e) => setRoleFilter(e.target.value),
           className: "bg-[var(--color-surface)] border border-[var(--color-border-default)] text-xs text-[var(--color-text-secondary)] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-primary-500",
           children: [
-            /* @__PURE__ */ jsx21("option", { value: "", children: "V\u0161etky role" }),
-            roleOptions.map((o) => /* @__PURE__ */ jsx21("option", { value: o.value, children: o.label }, o.value))
+            /* @__PURE__ */ jsx23("option", { value: "", children: "V\u0161etky role" }),
+            roleOptions.map((o) => /* @__PURE__ */ jsx23("option", { value: o.value, children: o.label }, o.value))
           ]
         }
       ),
-      /* @__PURE__ */ jsxs13(
+      /* @__PURE__ */ jsxs15(
         "select",
         {
           value: activeFilter,
           onChange: (e) => setActiveFilter(e.target.value),
           className: "bg-[var(--color-surface)] border border-[var(--color-border-default)] text-xs text-[var(--color-text-secondary)] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-primary-500",
           children: [
-            /* @__PURE__ */ jsx21("option", { value: "", children: "Ak\xFDko\u013Evek stav" }),
-            /* @__PURE__ */ jsx21("option", { value: "active", children: "Len akt\xEDvni" }),
-            /* @__PURE__ */ jsx21("option", { value: "inactive", children: "Len neakt\xEDvni" })
+            /* @__PURE__ */ jsx23("option", { value: "", children: "Ak\xFDko\u013Evek stav" }),
+            /* @__PURE__ */ jsx23("option", { value: "active", children: "Len akt\xEDvni" }),
+            /* @__PURE__ */ jsx23("option", { value: "inactive", children: "Len neakt\xEDvni" })
           ]
         }
       ),
-      /* @__PURE__ */ jsxs13("span", { className: "ml-auto text-xs text-[var(--color-text-muted)]", children: [
+      /* @__PURE__ */ jsxs15("span", { className: "ml-auto text-xs text-[var(--color-text-muted)]", children: [
         filteredUsers.length,
         " pou\u017E\xEDvate\u013Eov"
       ] })
     ] }),
-    /* @__PURE__ */ jsx21("div", { className: "rounded-xl border border-[var(--color-border-default)] overflow-hidden", children: /* @__PURE__ */ jsxs13("table", { className: "w-full text-sm", children: [
-      /* @__PURE__ */ jsx21("thead", { className: "bg-[var(--color-surface-hover)]", children: /* @__PURE__ */ jsxs13("tr", { className: "text-[10px] uppercase tracking-widest text-[var(--color-text-muted)]", children: [
-        showNames && /* @__PURE__ */ jsx21("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Meno" }),
-        showUsername && /* @__PURE__ */ jsx21("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Pou\u017E\xEDvate\u013Esk\xE9 meno" }),
-        /* @__PURE__ */ jsx21("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Email" }),
-        /* @__PURE__ */ jsx21("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Rola" }),
-        /* @__PURE__ */ jsx21("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Stav" }),
-        /* @__PURE__ */ jsx21("th", { className: "px-4 py-2.5 text-right font-semibold", children: "Akcie" })
+    /* @__PURE__ */ jsx23("div", { className: "rounded-xl border border-[var(--color-border-default)] overflow-hidden", children: /* @__PURE__ */ jsxs15("table", { className: "w-full text-sm", children: [
+      /* @__PURE__ */ jsx23("thead", { className: "bg-[var(--color-surface-hover)]", children: /* @__PURE__ */ jsxs15("tr", { className: "text-[10px] uppercase tracking-widest text-[var(--color-text-muted)]", children: [
+        showNames && /* @__PURE__ */ jsx23("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Meno" }),
+        showUsername && /* @__PURE__ */ jsx23("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Pou\u017E\xEDvate\u013Esk\xE9 meno" }),
+        /* @__PURE__ */ jsx23("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Email" }),
+        /* @__PURE__ */ jsx23("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Rola" }),
+        /* @__PURE__ */ jsx23("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Stav" }),
+        /* @__PURE__ */ jsx23("th", { className: "px-4 py-2.5 text-right font-semibold", children: "Akcie" })
       ] }) }),
-      /* @__PURE__ */ jsxs13("tbody", { className: "divide-y divide-[var(--color-border-default)]", children: [
+      /* @__PURE__ */ jsxs15("tbody", { className: "divide-y divide-[var(--color-border-default)]", children: [
         filteredUsers.map((u) => {
           const fullName = [u.first_name, u.last_name].filter(Boolean).join(" ");
-          return /* @__PURE__ */ jsxs13("tr", { className: "hover:bg-[var(--color-surface-hover)] transition-colors", children: [
-            showNames && /* @__PURE__ */ jsx21("td", { className: "px-4 py-3 text-sm text-[var(--color-text-secondary)]", children: fullName || /* @__PURE__ */ jsx21("span", { className: "text-[var(--color-text-muted)]", children: "\u2014" }) }),
-            showUsername && /* @__PURE__ */ jsx21("td", { className: "px-4 py-3 text-sm font-medium text-[var(--color-text-primary)] font-mono", children: u.username }),
-            /* @__PURE__ */ jsx21("td", { className: "px-4 py-3 text-xs text-[var(--color-text-secondary)]", children: u.email }),
-            /* @__PURE__ */ jsx21("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsx21("span", { className: `text-[11px] font-mono font-medium ${roleCls(u.role)}`, children: u.role }) }),
-            /* @__PURE__ */ jsx21("td", { className: "px-4 py-3", children: u.is_active ? /* @__PURE__ */ jsx21("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-state-success-bg)] border border-[var(--color-state-success-bg)] text-[var(--color-state-success-fg)]", children: "akt\xEDvny" }) : /* @__PURE__ */ jsx21("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-state-warning-bg)] border border-[var(--color-state-warning-bg)] text-[var(--color-state-warning-fg)]", children: "neakt\xEDvny" }) }),
-            /* @__PURE__ */ jsx21("td", { className: "px-4 py-3 text-right", children: !canManage ? /* @__PURE__ */ jsx21("span", { className: "text-xs text-[var(--color-text-muted)]", children: "\u2014" }) : confirmingDeleteId === u.id ? /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-end gap-2 text-xs", children: [
-              /* @__PURE__ */ jsx21("span", { className: "text-[var(--color-text-secondary)]", children: "Naozaj vymaza\u0165?" }),
-              /* @__PURE__ */ jsx21(
+          return /* @__PURE__ */ jsxs15("tr", { className: "hover:bg-[var(--color-surface-hover)] transition-colors", children: [
+            showNames && /* @__PURE__ */ jsx23("td", { className: "px-4 py-3 text-sm text-[var(--color-text-secondary)]", children: fullName || /* @__PURE__ */ jsx23("span", { className: "text-[var(--color-text-muted)]", children: "\u2014" }) }),
+            showUsername && /* @__PURE__ */ jsx23("td", { className: "px-4 py-3 text-sm font-medium text-[var(--color-text-primary)] font-mono", children: u.username }),
+            /* @__PURE__ */ jsx23("td", { className: "px-4 py-3 text-xs text-[var(--color-text-secondary)]", children: u.email }),
+            /* @__PURE__ */ jsx23("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsx23("span", { className: `text-[11px] font-mono font-medium ${roleCls(u.role)}`, children: u.role }) }),
+            /* @__PURE__ */ jsx23("td", { className: "px-4 py-3", children: u.is_active ? /* @__PURE__ */ jsx23("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-state-success-bg)] border border-[var(--color-state-success-bg)] text-[var(--color-state-success-fg)]", children: "akt\xEDvny" }) : /* @__PURE__ */ jsx23("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-state-warning-bg)] border border-[var(--color-state-warning-bg)] text-[var(--color-state-warning-fg)]", children: "neakt\xEDvny" }) }),
+            /* @__PURE__ */ jsx23("td", { className: "px-4 py-3 text-right", children: !canManage ? /* @__PURE__ */ jsx23("span", { className: "text-xs text-[var(--color-text-muted)]", children: "\u2014" }) : confirmingDeleteId === u.id ? /* @__PURE__ */ jsxs15("div", { className: "flex items-center justify-end gap-2 text-xs", children: [
+              /* @__PURE__ */ jsx23("span", { className: "text-[var(--color-text-secondary)]", children: "Naozaj vymaza\u0165?" }),
+              /* @__PURE__ */ jsx23(
                 "button",
                 {
                   type: "button",
@@ -1389,7 +1639,7 @@ function UsersPanel({
                   children: "\xC1no"
                 }
               ),
-              /* @__PURE__ */ jsx21(
+              /* @__PURE__ */ jsx23(
                 "button",
                 {
                   type: "button",
@@ -1399,8 +1649,8 @@ function UsersPanel({
                   children: "Nie"
                 }
               )
-            ] }) : /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-end gap-3", children: [
-              /* @__PURE__ */ jsx21(
+            ] }) : /* @__PURE__ */ jsxs15("div", { className: "flex items-center justify-end gap-3", children: [
+              /* @__PURE__ */ jsx23(
                 "button",
                 {
                   type: "button",
@@ -1412,10 +1662,10 @@ function UsersPanel({
                   },
                   title: "Upravi\u0165",
                   className: "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors",
-                  children: /* @__PURE__ */ jsx21("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx21("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" }) })
+                  children: /* @__PURE__ */ jsx23("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx23("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" }) })
                 }
               ),
-              /* @__PURE__ */ jsx21(
+              /* @__PURE__ */ jsx23(
                 "button",
                 {
                   type: "button",
@@ -1425,10 +1675,10 @@ function UsersPanel({
                   },
                   title: "Vymaza\u0165",
                   className: "text-[var(--color-text-muted)] hover:text-[var(--color-status-error)] transition-colors",
-                  children: /* @__PURE__ */ jsx21("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx21("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" }) })
+                  children: /* @__PURE__ */ jsx23("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx23("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" }) })
                 }
               ),
-              /* @__PURE__ */ jsx21(
+              /* @__PURE__ */ jsx23(
                 "button",
                 {
                   type: "button",
@@ -1440,14 +1690,14 @@ function UsersPanel({
             ] }) })
           ] }, u.id);
         }),
-        filteredUsers.length === 0 && /* @__PURE__ */ jsx21("tr", { children: /* @__PURE__ */ jsx21("td", { colSpan: colCount, className: "px-4 py-6 text-center text-xs text-[var(--color-text-muted)]", children: "\u017Diadni pou\u017E\xEDvatelia" }) })
+        filteredUsers.length === 0 && /* @__PURE__ */ jsx23("tr", { children: /* @__PURE__ */ jsx23("td", { colSpan: colCount, className: "px-4 py-6 text-center text-xs text-[var(--color-text-muted)]", children: "\u017Diadni pou\u017E\xEDvatelia" }) })
       ] })
     ] }) }),
-    deleteError && /* @__PURE__ */ jsxs13("div", { className: "mt-3 text-xs text-[var(--color-state-error-fg)] rounded bg-[var(--color-state-error-bg)] border border-[var(--color-state-error-bg)] px-3 py-2 flex items-center justify-between", children: [
-      /* @__PURE__ */ jsx21("span", { children: deleteError }),
-      /* @__PURE__ */ jsx21("button", { type: "button", onClick: () => setDeleteError(""), className: "text-[var(--color-state-error-fg)] hover:opacity-80 ml-2", children: "\xD7" })
+    deleteError && /* @__PURE__ */ jsxs15("div", { className: "mt-3 text-xs text-[var(--color-state-error-fg)] rounded bg-[var(--color-state-error-bg)] border border-[var(--color-state-error-bg)] px-3 py-2 flex items-center justify-between", children: [
+      /* @__PURE__ */ jsx23("span", { children: deleteError }),
+      /* @__PURE__ */ jsx23("button", { type: "button", onClick: () => setDeleteError(""), className: "text-[var(--color-state-error-fg)] hover:opacity-80 ml-2", children: "\xD7" })
     ] }),
-    canManage && editingUser && /* @__PURE__ */ jsx21(
+    canManage && editingUser && /* @__PURE__ */ jsx23(
       UserForm,
       {
         mode: "edit",
@@ -1464,7 +1714,7 @@ function UsersPanel({
       },
       `edit-${editingUser.id}`
     ),
-    canManage && showNewForm && /* @__PURE__ */ jsx21(
+    canManage && showNewForm && /* @__PURE__ */ jsx23(
       UserForm,
       {
         mode: "create",
@@ -1483,8 +1733,8 @@ function UsersPanel({
 }
 
 // src/SessionsPanel.tsx
-import { useMemo as useMemo3, useState as useState9 } from "react";
-import { jsx as jsx22, jsxs as jsxs14 } from "react/jsx-runtime";
+import { useMemo as useMemo3, useState as useState10 } from "react";
+import { jsx as jsx24, jsxs as jsxs16 } from "react/jsx-runtime";
 function fmt(ts) {
   if (!ts) return "\u2014";
   const d = new Date(ts);
@@ -1500,9 +1750,9 @@ function SessionsPanel({
   filterUserId,
   onFilterChange
 }) {
-  const [confirmingId, setConfirmingId] = useState9(null);
-  const [revoking, setRevoking] = useState9(false);
-  const [revokeError, setRevokeError] = useState9("");
+  const [confirmingId, setConfirmingId] = useState10(null);
+  const [revoking, setRevoking] = useState10(false);
+  const [revokeError, setRevokeError] = useState10("");
   const nameOf = (uid) => resolveUsername?.(uid) ?? uid;
   const rows = useMemo3(
     () => filterUserId ? sessions.filter((s) => s.user_id === filterUserId) : sessions,
@@ -1522,16 +1772,16 @@ function SessionsPanel({
       setRevoking(false);
     }
   }
-  return /* @__PURE__ */ jsxs14("div", { className: "p-6", children: [
-    /* @__PURE__ */ jsx22("h2", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-1", children: "Rel\xE1cie pou\u017E\xEDvate\u013Ea" }),
-    /* @__PURE__ */ jsx22("p", { className: "text-xs text-[var(--color-text-muted)] mb-4", children: "Kotvy \u017Eivotn\xE9ho cyklu JWT. Zru\u0161enie rel\xE1cie zneplatn\xED v\u0161etky jej zost\xE1vaj\xFAce tokeny." }),
-    filterUserId && onFilterChange && /* @__PURE__ */ jsxs14("div", { className: "mb-3 flex items-center gap-2 text-xs", children: [
-      /* @__PURE__ */ jsxs14("span", { className: "text-[var(--color-text-muted)]", children: [
+  return /* @__PURE__ */ jsxs16("div", { className: "p-6", children: [
+    /* @__PURE__ */ jsx24("h2", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-1", children: "Rel\xE1cie pou\u017E\xEDvate\u013Ea" }),
+    /* @__PURE__ */ jsx24("p", { className: "text-xs text-[var(--color-text-muted)] mb-4", children: "Kotvy \u017Eivotn\xE9ho cyklu JWT. Zru\u0161enie rel\xE1cie zneplatn\xED v\u0161etky jej zost\xE1vaj\xFAce tokeny." }),
+    filterUserId && onFilterChange && /* @__PURE__ */ jsxs16("div", { className: "mb-3 flex items-center gap-2 text-xs", children: [
+      /* @__PURE__ */ jsxs16("span", { className: "text-[var(--color-text-muted)]", children: [
         "Filtrovan\xE9 pod\u013Ea pou\u017E\xEDvate\u013Ea:",
         " ",
-        /* @__PURE__ */ jsx22("span", { className: "text-[var(--color-text-secondary)] font-medium", children: nameOf(filterUserId) })
+        /* @__PURE__ */ jsx24("span", { className: "text-[var(--color-text-secondary)] font-medium", children: nameOf(filterUserId) })
       ] }),
-      /* @__PURE__ */ jsx22(
+      /* @__PURE__ */ jsx24(
         "button",
         {
           type: "button",
@@ -1541,27 +1791,27 @@ function SessionsPanel({
         }
       )
     ] }),
-    loadError && /* @__PURE__ */ jsx22("div", { className: "rounded-lg border border-[var(--color-state-error-bg)] bg-[var(--color-state-error-bg)] px-3 py-2 text-xs text-[var(--color-state-error-fg)] mb-4", children: loadError }),
-    loading && !loadError && /* @__PURE__ */ jsx22("div", { className: "text-xs text-[var(--color-text-muted)]", children: "Na\u010D\xEDtavam\u2026" }),
-    !loading && !loadError && /* @__PURE__ */ jsx22("div", { className: "rounded-xl border border-[var(--color-border-default)] overflow-hidden", children: /* @__PURE__ */ jsxs14("table", { className: "w-full text-sm", children: [
-      /* @__PURE__ */ jsx22("thead", { className: "bg-[var(--color-surface-hover)]", children: /* @__PURE__ */ jsxs14("tr", { className: "text-[10px] uppercase tracking-widest text-[var(--color-text-muted)]", children: [
-        /* @__PURE__ */ jsx22("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Pou\u017E\xEDvate\u013E" }),
-        /* @__PURE__ */ jsx22("th", { className: "px-4 py-2.5 text-left font-semibold", children: "ID rel\xE1cie" }),
-        /* @__PURE__ */ jsx22("th", { className: "px-4 py-2.5 text-right font-semibold", children: "tv" }),
-        /* @__PURE__ */ jsx22("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Naposledy viden\xFD" }),
-        /* @__PURE__ */ jsx22("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Vytvoren\xE9" }),
-        /* @__PURE__ */ jsx22("th", { className: "px-4 py-2.5 text-right font-semibold", children: "Akcie" })
+    loadError && /* @__PURE__ */ jsx24("div", { className: "rounded-lg border border-[var(--color-state-error-bg)] bg-[var(--color-state-error-bg)] px-3 py-2 text-xs text-[var(--color-state-error-fg)] mb-4", children: loadError }),
+    loading && !loadError && /* @__PURE__ */ jsx24("div", { className: "text-xs text-[var(--color-text-muted)]", children: "Na\u010D\xEDtavam\u2026" }),
+    !loading && !loadError && /* @__PURE__ */ jsx24("div", { className: "rounded-xl border border-[var(--color-border-default)] overflow-hidden", children: /* @__PURE__ */ jsxs16("table", { className: "w-full text-sm", children: [
+      /* @__PURE__ */ jsx24("thead", { className: "bg-[var(--color-surface-hover)]", children: /* @__PURE__ */ jsxs16("tr", { className: "text-[10px] uppercase tracking-widest text-[var(--color-text-muted)]", children: [
+        /* @__PURE__ */ jsx24("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Pou\u017E\xEDvate\u013E" }),
+        /* @__PURE__ */ jsx24("th", { className: "px-4 py-2.5 text-left font-semibold", children: "ID rel\xE1cie" }),
+        /* @__PURE__ */ jsx24("th", { className: "px-4 py-2.5 text-right font-semibold", children: "tv" }),
+        /* @__PURE__ */ jsx24("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Naposledy viden\xFD" }),
+        /* @__PURE__ */ jsx24("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Vytvoren\xE9" }),
+        /* @__PURE__ */ jsx24("th", { className: "px-4 py-2.5 text-right font-semibold", children: "Akcie" })
       ] }) }),
-      /* @__PURE__ */ jsxs14("tbody", { className: "divide-y divide-[var(--color-border-default)]", children: [
-        rows.map((s) => /* @__PURE__ */ jsxs14("tr", { className: "hover:bg-[var(--color-surface-hover)] transition-colors", children: [
-          /* @__PURE__ */ jsx22("td", { className: "px-4 py-3 text-sm font-medium text-[var(--color-text-primary)]", children: nameOf(s.user_id) }),
-          /* @__PURE__ */ jsx22("td", { className: "px-4 py-3 font-mono text-[10px] text-[var(--color-text-muted)]", children: s.id }),
-          /* @__PURE__ */ jsx22("td", { className: "px-4 py-3 text-right font-mono text-xs text-[var(--color-text-secondary)]", children: s.token_version }),
-          /* @__PURE__ */ jsx22("td", { className: "px-4 py-3 text-xs text-[var(--color-text-muted)]", children: fmt(s.last_seen_at) }),
-          /* @__PURE__ */ jsx22("td", { className: "px-4 py-3 text-xs text-[var(--color-text-muted)]", children: fmt(s.created_at) }),
-          /* @__PURE__ */ jsx22("td", { className: "px-4 py-3 text-right", children: !canRevoke ? /* @__PURE__ */ jsx22("span", { className: "text-xs text-[var(--color-text-muted)]", children: "\u2014" }) : confirmingId === s.id ? /* @__PURE__ */ jsxs14("div", { className: "flex items-center justify-end gap-2 text-xs", children: [
-            /* @__PURE__ */ jsx22("span", { className: "text-[var(--color-text-secondary)]", children: "Zru\u0161i\u0165 rel\xE1ciu?" }),
-            /* @__PURE__ */ jsx22(
+      /* @__PURE__ */ jsxs16("tbody", { className: "divide-y divide-[var(--color-border-default)]", children: [
+        rows.map((s) => /* @__PURE__ */ jsxs16("tr", { className: "hover:bg-[var(--color-surface-hover)] transition-colors", children: [
+          /* @__PURE__ */ jsx24("td", { className: "px-4 py-3 text-sm font-medium text-[var(--color-text-primary)]", children: nameOf(s.user_id) }),
+          /* @__PURE__ */ jsx24("td", { className: "px-4 py-3 font-mono text-[10px] text-[var(--color-text-muted)]", children: s.id }),
+          /* @__PURE__ */ jsx24("td", { className: "px-4 py-3 text-right font-mono text-xs text-[var(--color-text-secondary)]", children: s.token_version }),
+          /* @__PURE__ */ jsx24("td", { className: "px-4 py-3 text-xs text-[var(--color-text-muted)]", children: fmt(s.last_seen_at) }),
+          /* @__PURE__ */ jsx24("td", { className: "px-4 py-3 text-xs text-[var(--color-text-muted)]", children: fmt(s.created_at) }),
+          /* @__PURE__ */ jsx24("td", { className: "px-4 py-3 text-right", children: !canRevoke ? /* @__PURE__ */ jsx24("span", { className: "text-xs text-[var(--color-text-muted)]", children: "\u2014" }) : confirmingId === s.id ? /* @__PURE__ */ jsxs16("div", { className: "flex items-center justify-end gap-2 text-xs", children: [
+            /* @__PURE__ */ jsx24("span", { className: "text-[var(--color-text-secondary)]", children: "Zru\u0161i\u0165 rel\xE1ciu?" }),
+            /* @__PURE__ */ jsx24(
               "button",
               {
                 type: "button",
@@ -1571,7 +1821,7 @@ function SessionsPanel({
                 children: "\xC1no"
               }
             ),
-            /* @__PURE__ */ jsx22(
+            /* @__PURE__ */ jsx24(
               "button",
               {
                 type: "button",
@@ -1581,7 +1831,7 @@ function SessionsPanel({
                 children: "Nie"
               }
             )
-          ] }) : /* @__PURE__ */ jsx22(
+          ] }) : /* @__PURE__ */ jsx24(
             "button",
             {
               type: "button",
@@ -1594,12 +1844,12 @@ function SessionsPanel({
             }
           ) })
         ] }, s.id)),
-        rows.length === 0 && /* @__PURE__ */ jsx22("tr", { children: /* @__PURE__ */ jsx22("td", { colSpan: 6, className: "px-4 py-6 text-center text-xs text-[var(--color-text-muted)]", children: "\u017Diadne rel\xE1cie" }) })
+        rows.length === 0 && /* @__PURE__ */ jsx24("tr", { children: /* @__PURE__ */ jsx24("td", { colSpan: 6, className: "px-4 py-6 text-center text-xs text-[var(--color-text-muted)]", children: "\u017Diadne rel\xE1cie" }) })
       ] })
     ] }) }),
-    revokeError && /* @__PURE__ */ jsxs14("div", { className: "mt-3 text-xs text-[var(--color-state-error-fg)] rounded bg-[var(--color-state-error-bg)] border border-[var(--color-state-error-bg)] px-3 py-2 flex items-center justify-between", children: [
-      /* @__PURE__ */ jsx22("span", { children: revokeError }),
-      /* @__PURE__ */ jsx22("button", { type: "button", onClick: () => setRevokeError(""), className: "text-[var(--color-state-error-fg)] hover:opacity-80 ml-2", children: "\xD7" })
+    revokeError && /* @__PURE__ */ jsxs16("div", { className: "mt-3 text-xs text-[var(--color-state-error-fg)] rounded bg-[var(--color-state-error-bg)] border border-[var(--color-state-error-bg)] px-3 py-2 flex items-center justify-between", children: [
+      /* @__PURE__ */ jsx24("span", { children: revokeError }),
+      /* @__PURE__ */ jsx24("button", { type: "button", onClick: () => setRevokeError(""), className: "text-[var(--color-state-error-fg)] hover:opacity-80 ml-2", children: "\xD7" })
     ] })
   ] });
 }
@@ -1611,12 +1861,14 @@ export {
   Brand,
   Button,
   Card,
+  CodeBlock,
   Header,
   Input,
   LoginForm,
   NavIcon,
   NavItem,
   ProtectedRoute,
+  ReleaseNotes,
   SectionLabel,
   Select,
   SessionsPanel,

@@ -40,6 +40,12 @@ export type { CardProps } from "./Card";
 export { Badge } from "./Badge";
 export type { BadgeProps, BadgeVariant } from "./Badge";
 
+export { ReleaseNotes } from "./ReleaseNotes";
+export type { ReleaseNotesProps, ReleaseNote } from "./ReleaseNotes";
+
+export { CodeBlock } from "./CodeBlock";
+export type { CodeBlockProps } from "./CodeBlock";
+
 export { createApiClient, ApiError, registerAuthCallback } from "./api-client";
 export type {
   ApiClient,

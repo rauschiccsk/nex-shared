@@ -221,6 +221,47 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 declare function Badge({ variant, pulse, className, children, ...rest }: BadgeProps): react.JSX.Element;
 
 /**
+ * ReleaseNotes — the unified, user-facing changelog renderer ("Čo je nové")
+ * for ALL ICC apps (E1 unification; the changelog look lives in nex-shared like
+ * the chrome, Director-approved). Ported 1:1 from the NEX Studio vzor
+ * (`pages/UpdatesPage.tsx`) as a pure presentation component: the consumer
+ * fetches its own release notes and feeds them in via props.
+ *
+ * Markdown is rendered with react-markdown + remark-gfm + the local CodeBlock
+ * override. Both react-markdown and remark-gfm are peerDependencies (provided
+ * by the consuming app at runtime) and are NOT bundled into dist.
+ */
+interface ReleaseNote {
+    version: string;
+    released_at: string | null;
+    markdown: string;
+}
+interface ReleaseNotesProps {
+    notes: ReleaseNote[];
+    loading?: boolean;
+    error?: string | null;
+    onDismissError?: () => void;
+    /** Appended to the subtitle, e.g. "… v jednotlivých verziách NEX Studio." */
+    appName?: string;
+}
+/**
+ * Full "Aktualizácie" page content: title + subtitle, error banner, loading /
+ * empty states, and the expandable per-version card list (newest default-open).
+ */
+declare function ReleaseNotes({ notes, loading, error, onDismissError, appName, }: ReleaseNotesProps): react.JSX.Element;
+
+interface CodeBlockProps {
+    children: string;
+    language?: string;
+}
+/**
+ * Code block with copy-to-clipboard button. Ported into nex-shared (E1
+ * unification) from the NEX Studio vzor `components/markdown/CodeBlock.tsx`.
+ * Icons are inline SVG (no lucide) per the nex-shared zero-dep / emoji+SVG rule.
+ */
+declare function CodeBlock({ children, language }: CodeBlockProps): react.JSX.Element;
+
+/**
  * Generic, configurable HTTP-client factory (E1 Phase B4, CR-NS-051).
  *
  * Extracted verbatim from NEX Studio's `services/api.ts` machinery — the moving
@@ -708,4 +749,4 @@ interface SessionsPanelProps {
 }
 declare function SessionsPanel({ sessions, resolveUsername, canRevoke, onRevoke, loading, loadError, filterUserId, onFilterChange, }: SessionsPanelProps): react.JSX.Element;
 
-export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, Header, type HeaderProps, type HttpMethod, Input, type InputProps, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, NavIcon, type NavIconProps, NavItem, type NavItemProps, ProtectedRoute, type ProtectedRouteProps, type RequestOptions, SectionLabel, type SectionLabelProps, Select, type SelectProps, SessionsPanel, type SessionsPanelProps, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, Sidebar, type SidebarProps, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, createApiClient, createAuthStore, registerAuthCallback };
+export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, Header, type HeaderProps, type HttpMethod, Input, type InputProps, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, NavIcon, type NavIconProps, NavItem, type NavItemProps, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, SectionLabel, type SectionLabelProps, Select, type SelectProps, SessionsPanel, type SessionsPanelProps, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, Sidebar, type SidebarProps, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, createApiClient, createAuthStore, registerAuthCallback };
