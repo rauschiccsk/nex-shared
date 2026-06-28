@@ -10,10 +10,13 @@
 
 import { useEffect, useState } from "react";
 
-/** One role's draft model/effort selection. Empty string = "use the default". */
+/** One role's draft selection. Empty string = "use the default". ``helperModel`` (optional) is the model
+ * a role's dynamically-spawned helper agents run on — only meaningful for roles in
+ * ``helperModelRoleIds`` (the doer that spawns helpers); absent/"" = the dispatch default. */
 export interface AgentDraft {
   model: string;
   effort: string;
+  helperModel?: string;
 }
 
 export interface AgentsPanelProps {
@@ -24,6 +27,12 @@ export interface AgentsPanelProps {
   drafts: Record<string, AgentDraft>;
   /** Persist one role's config. Resolve → flash; reject → app sets `saveErrors`. */
   onSave: (roleId: string, value: AgentDraft) => Promise<void>;
+  /** Options for the optional per-role "helper model" selector (model IDs the spawned helpers may run on).
+   * Omitted/empty → no helper-model selector is shown for any role. */
+  helperModels?: { id: string; label: string }[];
+  /** Role ids that spawn dynamic helpers → show the helper-model selector (e.g. ["ai_agent"]). Other roles
+   * never render it (the verifier does not spawn helpers). No-op unless ``helperModels`` is also given. */
+  helperModelRoleIds?: string[];
   /** Initial load in flight. */
   loading?: boolean;
   /** Load error message (empty/undefined = none). */
@@ -39,7 +48,7 @@ function seedState(
   const out: Record<string, AgentDraft> = {};
   for (const r of roles) {
     const d = drafts[r.id];
-    out[r.id] = { model: d?.model ?? "", effort: d?.effort ?? "" };
+    out[r.id] = { model: d?.model ?? "", effort: d?.effort ?? "", helperModel: d?.helperModel ?? "" };
   }
   return out;
 }
@@ -50,6 +59,8 @@ export function AgentsPanel({
   efforts,
   drafts,
   onSave,
+  helperModels,
+  helperModelRoleIds = [],
   loading = false,
   loadError = "",
   saveErrors = {},
@@ -57,6 +68,8 @@ export function AgentsPanel({
   const [edit, setEdit] = useState<Record<string, AgentDraft>>(() => seedState(roles, drafts));
   const [savingRole, setSavingRole] = useState<string | null>(null);
   const [flashRole, setFlashRole] = useState<string | null>(null);
+  const showHelperModel = (roleId: string) =>
+    Boolean(helperModels && helperModels.length > 0 && helperModelRoleIds.includes(roleId));
 
   // Re-seed when the app finishes loading (drafts/roles become available).
   useEffect(() => {
@@ -64,7 +77,7 @@ export function AgentsPanel({
   }, [roles, drafts]);
 
   async function handleSave(roleId: string) {
-    const draft = edit[roleId] ?? { model: "", effort: "" };
+    const draft = edit[roleId] ?? { model: "", effort: "", helperModel: "" };
     setSavingRole(roleId);
     try {
       await onSave(roleId, draft);
@@ -97,7 +110,7 @@ export function AgentsPanel({
       {!loading && !loadError && (
         <div className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-canvas)] divide-y divide-[var(--color-border-default)]">
           {roles.map((r) => {
-            const draft = edit[r.id] ?? { model: "", effort: "" };
+            const draft = edit[r.id] ?? { model: "", effort: "", helperModel: "" };
             const saving = savingRole === r.id;
             const err = saveErrors[r.id];
             return (
@@ -149,6 +162,31 @@ export function AgentsPanel({
                     </select>
                   </label>
                 </div>
+                {showHelperModel(r.id) && (
+                  <label className="block mt-3">
+                    <span className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest">
+                      Model pomocníkov
+                    </span>
+                    <select
+                      value={draft.helperModel ?? ""}
+                      onChange={(e) =>
+                        setEdit((prev) => ({ ...prev, [r.id]: { ...draft, helperModel: e.target.value } }))
+                      }
+                      className="mt-1 w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded px-3 py-1.5 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-primary-500"
+                    >
+                      <option value="">— Predvolený (lacný/rýchly) —</option>
+                      {(helperModels ?? []).map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.label}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="mt-1 block text-[10px] text-[var(--color-text-muted)]">
+                      Model dynamických pomocníkov pre paralelnú/hromadnú prácu. Predvolene lacný/rýchly;
+                      zvýš na silný len pre prioritný build (drahšie tokeny).
+                    </span>
+                  </label>
+                )}
                 <div className="mt-2 text-[11px] flex items-center gap-2">
                   {flashRole === r.id && <span className="text-[var(--color-status-success)]">✓ Uložené</span>}
                   {err && <span className="text-[var(--color-status-error)]">{err}</span>}

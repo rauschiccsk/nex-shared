@@ -639,10 +639,13 @@ declare function SystemSettingsPanel({ settings, categories, canEdit, onSave, lo
  * editable grid from it and persists a row via `onSave(roleId, { model, effort })`
  * (resolve → ✓ flash; reject → the app surfaces the message via `saveErrors`).
  */
-/** One role's draft model/effort selection. Empty string = "use the default". */
+/** One role's draft selection. Empty string = "use the default". ``helperModel`` (optional) is the model
+ * a role's dynamically-spawned helper agents run on — only meaningful for roles in
+ * ``helperModelRoleIds`` (the doer that spawns helpers); absent/"" = the dispatch default. */
 interface AgentDraft {
     model: string;
     effort: string;
+    helperModel?: string;
 }
 interface AgentsPanelProps {
     roles: {
@@ -658,6 +661,15 @@ interface AgentsPanelProps {
     drafts: Record<string, AgentDraft>;
     /** Persist one role's config. Resolve → flash; reject → app sets `saveErrors`. */
     onSave: (roleId: string, value: AgentDraft) => Promise<void>;
+    /** Options for the optional per-role "helper model" selector (model IDs the spawned helpers may run on).
+     * Omitted/empty → no helper-model selector is shown for any role. */
+    helperModels?: {
+        id: string;
+        label: string;
+    }[];
+    /** Role ids that spawn dynamic helpers → show the helper-model selector (e.g. ["ai_agent"]). Other roles
+     * never render it (the verifier does not spawn helpers). No-op unless ``helperModels`` is also given. */
+    helperModelRoleIds?: string[];
     /** Initial load in flight. */
     loading?: boolean;
     /** Load error message (empty/undefined = none). */
@@ -665,7 +677,7 @@ interface AgentsPanelProps {
     /** Per-role save error messages, keyed by role id. */
     saveErrors?: Record<string, string>;
 }
-declare function AgentsPanel({ roles, models, efforts, drafts, onSave, loading, loadError, saveErrors, }: AgentsPanelProps): react.JSX.Element;
+declare function AgentsPanel({ roles, models, efforts, drafts, onSave, helperModels, helperModelRoleIds, loading, loadError, saveErrors, }: AgentsPanelProps): react.JSX.Element;
 
 /** Collected form values handed to the parent on submit. */
 interface UserFormData {

@@ -1169,7 +1169,7 @@ function seedState(roles, drafts) {
   const out = {};
   for (const r of roles) {
     const d = drafts[r.id];
-    out[r.id] = { model: d?.model ?? "", effort: d?.effort ?? "" };
+    out[r.id] = { model: d?.model ?? "", effort: d?.effort ?? "", helperModel: d?.helperModel ?? "" };
   }
   return out;
 }
@@ -1179,6 +1179,8 @@ function AgentsPanel({
   efforts,
   drafts,
   onSave,
+  helperModels,
+  helperModelRoleIds = [],
   loading = false,
   loadError = "",
   saveErrors = {}
@@ -1186,11 +1188,12 @@ function AgentsPanel({
   const [edit, setEdit] = useState7(() => seedState(roles, drafts));
   const [savingRole, setSavingRole] = useState7(null);
   const [flashRole, setFlashRole] = useState7(null);
+  const showHelperModel = (roleId) => Boolean(helperModels && helperModels.length > 0 && helperModelRoleIds.includes(roleId));
   useEffect4(() => {
     setEdit(seedState(roles, drafts));
   }, [roles, drafts]);
   async function handleSave(roleId) {
-    const draft = edit[roleId] ?? { model: "", effort: "" };
+    const draft = edit[roleId] ?? { model: "", effort: "", helperModel: "" };
     setSavingRole(roleId);
     try {
       await onSave(roleId, draft);
@@ -1213,7 +1216,7 @@ function AgentsPanel({
     loadError && /* @__PURE__ */ jsx21("div", { className: "rounded-lg border border-[var(--color-state-error-bg)] bg-[var(--color-state-error-bg)] px-3 py-2 text-xs text-[var(--color-state-error-fg)] mb-4", children: loadError }),
     loading && !loadError && /* @__PURE__ */ jsx21("div", { className: "text-xs text-[var(--color-text-muted)]", children: "Na\u010D\xEDtavam\u2026" }),
     !loading && !loadError && /* @__PURE__ */ jsx21("div", { className: "rounded-lg border border-[var(--color-border-default)] bg-[var(--color-canvas)] divide-y divide-[var(--color-border-default)]", children: roles.map((r) => {
-      const draft = edit[r.id] ?? { model: "", effort: "" };
+      const draft = edit[r.id] ?? { model: "", effort: "", helperModel: "" };
       const saving = savingRole === r.id;
       const err = saveErrors[r.id];
       return /* @__PURE__ */ jsxs13("div", { className: "p-4", children: [
@@ -1261,6 +1264,22 @@ function AgentsPanel({
               }
             )
           ] })
+        ] }),
+        showHelperModel(r.id) && /* @__PURE__ */ jsxs13("label", { className: "block mt-3", children: [
+          /* @__PURE__ */ jsx21("span", { className: "text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest", children: "Model pomocn\xEDkov" }),
+          /* @__PURE__ */ jsxs13(
+            "select",
+            {
+              value: draft.helperModel ?? "",
+              onChange: (e) => setEdit((prev) => ({ ...prev, [r.id]: { ...draft, helperModel: e.target.value } })),
+              className: "mt-1 w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded px-3 py-1.5 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-primary-500",
+              children: [
+                /* @__PURE__ */ jsx21("option", { value: "", children: "\u2014 Predvolen\xFD (lacn\xFD/r\xFDchly) \u2014" }),
+                (helperModels ?? []).map((m) => /* @__PURE__ */ jsx21("option", { value: m.id, children: m.label }, m.id))
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsx21("span", { className: "mt-1 block text-[10px] text-[var(--color-text-muted)]", children: "Model dynamick\xFDch pomocn\xEDkov pre paraleln\xFA/hromadn\xFA pr\xE1cu. Predvolene lacn\xFD/r\xFDchly; zv\xFD\u0161 na siln\xFD len pre prioritn\xFD build (drah\u0161ie tokeny)." })
         ] }),
         /* @__PURE__ */ jsxs13("div", { className: "mt-2 text-[11px] flex items-center gap-2", children: [
           flashRole === r.id && /* @__PURE__ */ jsx21("span", { className: "text-[var(--color-status-success)]", children: "\u2713 Ulo\u017Een\xE9" }),
