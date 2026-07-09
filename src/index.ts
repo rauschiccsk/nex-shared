@@ -40,6 +40,19 @@ export type { CardProps } from "./Card";
 export { Badge } from "./Badge";
 export type { BadgeProps, BadgeVariant } from "./Badge";
 
+// ── Unified admin-screen building blocks (CR-NS-082, v0.12.0) ──
+export { StatusBadge } from "./StatusBadge";
+export type { StatusBadgeProps, StatusBadgeStatus } from "./StatusBadge";
+
+export { IconButton } from "./IconButton";
+export type { IconButtonProps } from "./IconButton";
+
+export { DataTable } from "./DataTable";
+export type { DataTableProps, DataTableColumn, DataTableAlign } from "./DataTable";
+
+export { FormGrid, FormField, FormActions } from "./FormGrid";
+export type { FormGridProps, FormFieldProps, FormActionsProps } from "./FormGrid";
+
 export { ReleaseNotes } from "./ReleaseNotes";
 export type { ReleaseNotesProps, ReleaseNote } from "./ReleaseNotes";
 

@@ -220,6 +220,121 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 }
 declare function Badge({ variant, pulse, className, children, ...rest }: BadgeProps): react.JSX.Element;
 
+type StatusBadgeStatus = "success" | "warning" | "error" | "info" | "neutral";
+interface StatusBadgeProps extends HTMLAttributes<HTMLSpanElement> {
+    /** Semantic state → color pair from tokens.css. Defaults to `neutral`. */
+    status?: StatusBadgeStatus;
+    /** Subtle attention animation (e.g. a pending state). */
+    pulse?: boolean;
+    children?: ReactNode;
+}
+declare function StatusBadge({ status, pulse, className, children, ...rest }: StatusBadgeProps): react.JSX.Element;
+
+interface IconButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
+    /** The icon element. Consumer-supplied — nex-shared ships no icon library, so the
+     *  app passes its own icon node (e.g. a lucide element or an inline <svg>). */
+    icon: ReactNode;
+    /** REQUIRED accessible name — an icon-only button has no visible text label. */
+    "aria-label": string;
+    /** Visual style (shared vocabulary with <Button>). Defaults to `ghost` — the
+     *  quiet look used for table row actions (edit / deactivate). */
+    variant?: ButtonVariant;
+    /** Square padding scale. Defaults to `md`. */
+    size?: ButtonSize;
+}
+declare function IconButton({ icon, variant, size, className, type, ...rest }: IconButtonProps): react.JSX.Element;
+
+type DataTableAlign = "left" | "center" | "right";
+interface DataTableColumn<Row> {
+    /** Stable column id (React key). Also the property read from the row when
+     *  `render` is omitted. */
+    key: string;
+    /** Header cell content. */
+    header: ReactNode;
+    /** Custom cell renderer. When omitted, `row[key]` is shown as text. */
+    render?: (row: Row) => ReactNode;
+    /** Horizontal alignment of the header + body cells. Defaults to `left`. */
+    align?: DataTableAlign;
+    /** Extra classes appended to each body cell in this column. */
+    className?: string;
+}
+interface DataTableProps<Row> {
+    /** Column config (in display order). Generic over the row type. */
+    columns: DataTableColumn<Row>[];
+    /** Row data. */
+    rows: Row[];
+    /** Stable React key per row. */
+    getRowKey: (row: Row) => string | number;
+    /** Optional trailing actions column (e.g. <IconButton> edit / deactivate). */
+    rowActions?: (row: Row) => ReactNode;
+    /** Header label for the trailing actions column. Defaults to empty. */
+    rowActionsHeader?: ReactNode;
+    /** Shown (spanning all columns) when `rows` is empty. */
+    emptyMessage?: ReactNode;
+    /** Appended to the outer wrapper. */
+    className?: string;
+}
+declare function DataTable<Row>({ columns, rows, getRowKey, rowActions, rowActionsHeader, emptyMessage, className, }: DataTableProps<Row>): react.JSX.Element;
+
+/**
+ * Structured create/edit form layout kit — the canonical NEX admin form look
+ * (see the NEX Studio Users create/edit form): a responsive grid of labelled
+ * fields plus a consistent right-aligned action row. All labels are props/children,
+ * so nothing is hardcoded Slovak — the consumer supplies "Uložiť" / "Zrušiť" etc.
+ *
+ *   <FormGrid>
+ *     <FormField label="Email" htmlFor="email" required>
+ *       <Input id="email" … />
+ *     </FormField>
+ *     <FormField label="Rola" htmlFor="role">
+ *       <Select id="role" …>…</Select>
+ *     </FormField>
+ *   </FormGrid>
+ *   <FormActions submitLabel="Uložiť" onSubmit={…} cancelLabel="Zrušiť" onCancel={…} />
+ */
+interface FormGridProps extends HTMLAttributes<HTMLDivElement> {
+    /** Column count on desktop (md+). Mobile is always a single column. Defaults to 2. */
+    columns?: 1 | 2;
+    children?: ReactNode;
+}
+declare function FormGrid({ columns, className, children, ...rest }: FormGridProps): react.JSX.Element;
+interface FormFieldProps {
+    /** Field label text. */
+    label: ReactNode;
+    /** `id` of the control — wires `<label htmlFor>` for a11y. */
+    htmlFor?: string;
+    /** Appends a `*` marker to the label. */
+    required?: boolean;
+    /** Helper text under the control (hidden when `error` is set). */
+    hint?: ReactNode;
+    /** Error text under the control (replaces `hint`, error-colored). */
+    error?: ReactNode;
+    /** Span both columns of a 2-column FormGrid. */
+    full?: boolean;
+    /** The control (Input / Select / …). */
+    children?: ReactNode;
+}
+declare function FormField({ label, htmlFor, required, hint, error, full, children, }: FormFieldProps): react.JSX.Element;
+interface FormActionsProps {
+    /** Custom action content. When supplied, the built-in buttons are NOT rendered —
+     *  the row becomes a plain right-aligned flex container for the consumer's nodes. */
+    children?: ReactNode;
+    /** Primary button label (consumer-supplied, e.g. "Uložiť"). Renders a primary
+     *  button when set. */
+    submitLabel?: ReactNode;
+    /** Primary button click handler. */
+    onSubmit?: () => void;
+    /** Secondary button label (e.g. "Zrušiť"). Renders a secondary button when set. */
+    cancelLabel?: ReactNode;
+    /** Secondary button click handler. */
+    onCancel?: () => void;
+    /** Disables the primary button (in-flight call or invalid form). */
+    submitDisabled?: boolean;
+    /** Appended to the row wrapper. */
+    className?: string;
+}
+declare function FormActions({ children, submitLabel, onSubmit, cancelLabel, onCancel, submitDisabled, className, }: FormActionsProps): react.JSX.Element;
+
 /**
  * ReleaseNotes — the unified, user-facing changelog renderer ("Čo je nové")
  * for ALL ICC apps (E1 unification; the changelog look lives in nex-shared like
@@ -761,4 +876,4 @@ interface SessionsPanelProps {
 }
 declare function SessionsPanel({ sessions, resolveUsername, canRevoke, onRevoke, loading, loadError, filterUserId, onFilterChange, }: SessionsPanelProps): react.JSX.Element;
 
-export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, Header, type HeaderProps, type HttpMethod, Input, type InputProps, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, NavIcon, type NavIconProps, NavItem, type NavItemProps, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, SectionLabel, type SectionLabelProps, Select, type SelectProps, SessionsPanel, type SessionsPanelProps, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, Sidebar, type SidebarProps, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, createApiClient, createAuthStore, registerAuthCallback };
+export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, DataTable, type DataTableAlign, type DataTableColumn, type DataTableProps, FormActions, type FormActionsProps, FormField, type FormFieldProps, FormGrid, type FormGridProps, Header, type HeaderProps, type HttpMethod, IconButton, type IconButtonProps, Input, type InputProps, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, NavIcon, type NavIconProps, NavItem, type NavItemProps, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, SectionLabel, type SectionLabelProps, Select, type SelectProps, SessionsPanel, type SessionsPanelProps, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, Sidebar, type SidebarProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, createApiClient, createAuthStore, registerAuthCallback };
