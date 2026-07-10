@@ -99,6 +99,9 @@ export interface UserFieldSchema {
   names: boolean;
   /** Show the Telegram chat_id field. */
   telegram: boolean;
+  /** Show the Email field. Optional — absent/`true` = shown + required (unchanged default);
+   *  `false` = hidden + not required, for apps whose users have no email (login is by username). */
+  email?: boolean;
   /** Minimum password length (mirrors the app's backend constraint). */
   passwordMinLength: number;
 }

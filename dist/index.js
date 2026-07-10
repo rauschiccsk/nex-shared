@@ -1502,8 +1502,9 @@ function UserForm({
     () => initialFromUser(initial, roleOptions)
   );
   const passwordTooShort = data.password.length > 0 && data.password.length < minLen;
+  const emailShown = fieldSchema.email !== false;
   const usernameRequired = !isEdit && fieldSchema.username;
-  const submitDisabled = submitting || !data.email || usernameRequired && !data.username || !isEdit && !data.password || passwordTooShort;
+  const submitDisabled = submitting || emailShown && !data.email || usernameRequired && !data.username || !isEdit && !data.password || passwordTooShort;
   const submitLabel = isEdit ? submitting ? "Uklad\xE1m\u2026" : "Ulo\u017Ei\u0165" : submitting ? "Vytv\xE1ram\u2026" : "Vytvori\u0165";
   function update(key, value) {
     setData((prev) => ({ ...prev, [key]: value }));
@@ -1567,7 +1568,7 @@ function UserForm({
           }
         )
       ] }),
-      /* @__PURE__ */ jsxs16("div", { children: [
+      emailShown && /* @__PURE__ */ jsxs16("div", { children: [
         /* @__PURE__ */ jsx26("label", { htmlFor: "uf-email", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: "Email *" }),
         /* @__PURE__ */ jsx26(
           Input,

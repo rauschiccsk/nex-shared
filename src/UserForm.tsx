@@ -90,15 +90,19 @@ export function UserForm({
 
   const passwordTooShort = data.password.length > 0 && data.password.length < minLen;
 
+  // Email is optional per-app (framework fix): hidden + not required when `fieldSchema.email === false`
+  // (apps whose users have no email — login is by username). Absent/true = shown + required, unchanged.
+  const emailShown = fieldSchema.email !== false;
+
   // Submit is disabled when:
   //   - currently submitting (in-flight call)
-  //   - email empty (always required)
+  //   - email empty (required only when the Email field is shown)
   //   - create mode: username (when shown) or password empty (both required)
   //   - any mode: password filled but below min length
   const usernameRequired = !isEdit && fieldSchema.username;
   const submitDisabled =
     submitting ||
-    !data.email ||
+    (emailShown && !data.email) ||
     (usernameRequired && !data.username) ||
     (!isEdit && !data.password) ||
     passwordTooShort;
@@ -188,16 +192,18 @@ export function UserForm({
           </div>
         )}
 
-        <div>
-          <label htmlFor="uf-email" className="block text-xs text-[var(--color-text-muted)] mb-1">Email *</label>
-          <Input
-            id="uf-email"
-            type="email"
-            value={data.email}
-            onChange={(e) => update("email", e.target.value)}
-            placeholder="napr. tibi@isnex.ai"
-          />
-        </div>
+        {emailShown && (
+          <div>
+            <label htmlFor="uf-email" className="block text-xs text-[var(--color-text-muted)] mb-1">Email *</label>
+            <Input
+              id="uf-email"
+              type="email"
+              value={data.email}
+              onChange={(e) => update("email", e.target.value)}
+              placeholder="napr. tibi@isnex.ai"
+            />
+          </div>
+        )}
 
         <div>
           <label htmlFor="uf-password" className="block text-xs text-[var(--color-text-muted)] mb-1">
