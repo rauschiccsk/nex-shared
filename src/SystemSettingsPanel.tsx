@@ -140,7 +140,12 @@ export function SystemSettingsPanel({
                       <div key={s.key} className="p-4">
                         <div className="flex items-start justify-between gap-4 mb-1">
                           <div className="min-w-0">
-                            <div className="text-sm font-medium text-[var(--color-text-primary)] font-mono">{s.key}</div>
+                            {/* Human label is the title (prose, not mono); the raw key drops to a small mono
+                                info line. No label → the key IS the title (backward-compatible). */}
+                            <div className={s.label ? "text-sm font-medium text-[var(--color-text-primary)]" : "text-sm font-medium text-[var(--color-text-primary)] font-mono"}>{s.label || s.key}</div>
+                            {s.label && (
+                              <div className="text-[10px] text-[var(--color-text-muted)] font-mono mt-0.5">{s.key}</div>
+                            )}
                             <div className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest mt-0.5">{s.value_type}</div>
                           </div>
                           {canEdit && (
@@ -171,14 +176,18 @@ export function SystemSettingsPanel({
                             <span className="font-mono">{draft}</span>
                           </label>
                         ) : (
-                          <input
-                            type={inputType}
-                            value={draft}
-                            onChange={(e) => setDrafts((prev) => ({ ...prev, [s.key]: e.target.value }))}
-                            disabled={!canEdit}
-                            step={s.value_type === "float" ? "any" : undefined}
-                            className="w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded px-3 py-1.5 text-xs text-[var(--color-text-primary)] font-mono focus:outline-none focus:border-primary-500 disabled:opacity-50"
-                          />
+                          <div className="flex items-center gap-2">
+                            <input
+                              type={inputType}
+                              value={draft}
+                              onChange={(e) => setDrafts((prev) => ({ ...prev, [s.key]: e.target.value }))}
+                              disabled={!canEdit}
+                              step={s.value_type === "float" ? "any" : undefined}
+                              className="w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded px-3 py-1.5 text-xs text-[var(--color-text-primary)] font-mono focus:outline-none focus:border-primary-500 disabled:opacity-50"
+                            />
+                            {/* passive unit hint after the editor — "sekúnd", "€ / hod", … */}
+                            {s.unit && <span className="shrink-0 text-xs text-[var(--color-text-muted)]">{s.unit}</span>}
+                          </div>
                         )}
                         <div className="mt-2 text-[11px] flex items-center gap-2 flex-wrap">
                           {s.is_default ? (

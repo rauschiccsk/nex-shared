@@ -665,6 +665,11 @@ interface SystemSettingRead {
     value: string;
     value_type: SystemSettingValueType;
     description: string | null;
+    /** Human display name (the card title); the raw `key` drops to small info. Optional — when absent the
+     *  `key` is the title (backward-compatible for apps that don't supply a label). */
+    label?: string | null;
+    /** Unit shown after the editor (e.g. "sekúnd", "€ / hod"). Optional; empty/absent → no suffix. */
+    unit?: string | null;
     /** ISO-8601 timestamp of last edit; `null` when the value is a default. */
     updated_at: string | null;
     /** UUID of the user who last edited; `null` for defaults. */

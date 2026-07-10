@@ -1274,7 +1274,8 @@ function SystemSettingsPanel({
             return /* @__PURE__ */ jsxs14("div", { className: "p-4", children: [
               /* @__PURE__ */ jsxs14("div", { className: "flex items-start justify-between gap-4 mb-1", children: [
                 /* @__PURE__ */ jsxs14("div", { className: "min-w-0", children: [
-                  /* @__PURE__ */ jsx24("div", { className: "text-sm font-medium text-[var(--color-text-primary)] font-mono", children: s.key }),
+                  /* @__PURE__ */ jsx24("div", { className: s.label ? "text-sm font-medium text-[var(--color-text-primary)]" : "text-sm font-medium text-[var(--color-text-primary)] font-mono", children: s.label || s.key }),
+                  s.label && /* @__PURE__ */ jsx24("div", { className: "text-[10px] text-[var(--color-text-muted)] font-mono mt-0.5", children: s.key }),
                   /* @__PURE__ */ jsx24("div", { className: "text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest mt-0.5", children: s.value_type })
                 ] }),
                 canEdit && /* @__PURE__ */ jsx24(
@@ -1301,17 +1302,20 @@ function SystemSettingsPanel({
                   }
                 ),
                 /* @__PURE__ */ jsx24("span", { className: "font-mono", children: draft })
-              ] }) : /* @__PURE__ */ jsx24(
-                "input",
-                {
-                  type: inputType,
-                  value: draft,
-                  onChange: (e) => setDrafts((prev) => ({ ...prev, [s.key]: e.target.value })),
-                  disabled: !canEdit,
-                  step: s.value_type === "float" ? "any" : void 0,
-                  className: "w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded px-3 py-1.5 text-xs text-[var(--color-text-primary)] font-mono focus:outline-none focus:border-primary-500 disabled:opacity-50"
-                }
-              ),
+              ] }) : /* @__PURE__ */ jsxs14("div", { className: "flex items-center gap-2", children: [
+                /* @__PURE__ */ jsx24(
+                  "input",
+                  {
+                    type: inputType,
+                    value: draft,
+                    onChange: (e) => setDrafts((prev) => ({ ...prev, [s.key]: e.target.value })),
+                    disabled: !canEdit,
+                    step: s.value_type === "float" ? "any" : void 0,
+                    className: "w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded px-3 py-1.5 text-xs text-[var(--color-text-primary)] font-mono focus:outline-none focus:border-primary-500 disabled:opacity-50"
+                  }
+                ),
+                s.unit && /* @__PURE__ */ jsx24("span", { className: "shrink-0 text-xs text-[var(--color-text-muted)]", children: s.unit })
+              ] }),
               /* @__PURE__ */ jsxs14("div", { className: "mt-2 text-[11px] flex items-center gap-2 flex-wrap", children: [
                 s.is_default ? /* @__PURE__ */ jsx24("span", { className: "text-[var(--color-text-muted)]", children: "Predvolen\xE1 hodnota." }) : /* @__PURE__ */ jsxs14("span", { className: "text-[var(--color-text-muted)]", children: [
                   "Ulo\u017Een\xFD override",
