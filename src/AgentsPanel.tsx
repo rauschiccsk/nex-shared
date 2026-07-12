@@ -10,6 +10,18 @@
 
 import { useEffect, useState } from "react";
 
+// Human Slovak labels for the known Claude reasoning-effort levels — a non-expert Manažér should read
+// "Nízka"/"Maximálna", not the raw "low"/"xhigh"/"max" jargon. The option VALUE stays the raw level (what
+// the CLI needs); only the DISPLAYED text changes. Any value not in this map falls back to itself, so an
+// app passing custom effort levels still renders correctly.
+const EFFORT_LABELS: Record<string, string> = {
+  low: "Nízka",
+  medium: "Stredná",
+  high: "Vysoká",
+  xhigh: "Veľmi vysoká",
+  max: "Maximálna",
+};
+
 /** One role's draft selection. Empty string = "use the default". ``helperModel`` (optional) is the model
  * a role's dynamically-spawned helper agents run on — only meaningful for roles in
  * ``helperModelRoleIds`` (the doer that spawns helpers); absent/"" = the dispatch default. */
@@ -92,10 +104,12 @@ export function AgentsPanel({
 
   return (
     <div className="p-6 max-w-3xl">
-      <h2 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-1">Agenti — model a effort</h2>
+      <h2 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-1">
+        Agenti — model a úroveň uvažovania
+      </h2>
       <p className="text-xs text-[var(--color-text-muted)] mb-4">
-        Per-rola konfigurácia modelu (<code>--model</code>) a úrovne (<code>--effort</code>).
-        Nenastavené pole = predvolené správanie (CLI default).
+        Pre každú rolu vyber, ktorý AI model použije a ako dôkladne má uvažovať (vyššia úroveň = dôkladnejšie,
+        ale pomalšie a drahšie). Nevyplnené pole = ponechá sa predvolené nastavenie.
       </p>
 
       {loadError && (
@@ -156,7 +170,7 @@ export function AgentsPanel({
                       <option value="">— Predvolený —</option>
                       {efforts.map((ef) => (
                         <option key={ef} value={ef}>
-                          {ef}
+                          {EFFORT_LABELS[ef] ?? ef}
                         </option>
                       ))}
                     </select>

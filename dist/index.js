@@ -1343,6 +1343,13 @@ function SystemSettingsPanel({
 // src/AgentsPanel.tsx
 import { useEffect as useEffect4, useState as useState7 } from "react";
 import { jsx as jsx25, jsxs as jsxs15 } from "react/jsx-runtime";
+var EFFORT_LABELS = {
+  low: "N\xEDzka",
+  medium: "Stredn\xE1",
+  high: "Vysok\xE1",
+  xhigh: "Ve\u013Emi vysok\xE1",
+  max: "Maxim\xE1lna"
+};
 function seedState(roles, drafts) {
   const out = {};
   for (const r of roles) {
@@ -1383,14 +1390,8 @@ function AgentsPanel({
     }
   }
   return /* @__PURE__ */ jsxs15("div", { className: "p-6 max-w-3xl", children: [
-    /* @__PURE__ */ jsx25("h2", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-1", children: "Agenti \u2014 model a effort" }),
-    /* @__PURE__ */ jsxs15("p", { className: "text-xs text-[var(--color-text-muted)] mb-4", children: [
-      "Per-rola konfigur\xE1cia modelu (",
-      /* @__PURE__ */ jsx25("code", { children: "--model" }),
-      ") a \xFArovne (",
-      /* @__PURE__ */ jsx25("code", { children: "--effort" }),
-      "). Nenastaven\xE9 pole = predvolen\xE9 spr\xE1vanie (CLI default)."
-    ] }),
+    /* @__PURE__ */ jsx25("h2", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-1", children: "Agenti \u2014 model a \xFArove\u0148 uva\u017Eovania" }),
+    /* @__PURE__ */ jsx25("p", { className: "text-xs text-[var(--color-text-muted)] mb-4", children: "Pre ka\u017Ed\xFA rolu vyber, ktor\xFD AI model pou\u017Eije a ako d\xF4kladne m\xE1 uva\u017Eova\u0165 (vy\u0161\u0161ia \xFArove\u0148 = d\xF4kladnej\u0161ie, ale pomal\u0161ie a drah\u0161ie). Nevyplnen\xE9 pole = ponech\xE1 sa predvolen\xE9 nastavenie." }),
     loadError && /* @__PURE__ */ jsx25("div", { className: "rounded-lg border border-[var(--color-state-error-bg)] bg-[var(--color-state-error-bg)] px-3 py-2 text-xs text-[var(--color-state-error-fg)] mb-4", children: loadError }),
     loading && !loadError && /* @__PURE__ */ jsx25("div", { className: "text-xs text-[var(--color-text-muted)]", children: "Na\u010D\xEDtavam\u2026" }),
     !loading && !loadError && /* @__PURE__ */ jsx25("div", { className: "rounded-lg border border-[var(--color-border-default)] bg-[var(--color-canvas)] divide-y divide-[var(--color-border-default)]", children: roles.map((r) => {
@@ -1437,7 +1438,7 @@ function AgentsPanel({
                 className: "mt-1 w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded px-3 py-1.5 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-primary-500",
                 children: [
                   /* @__PURE__ */ jsx25("option", { value: "", children: "\u2014 Predvolen\xFD \u2014" }),
-                  efforts.map((ef) => /* @__PURE__ */ jsx25("option", { value: ef, children: ef }, ef))
+                  efforts.map((ef) => /* @__PURE__ */ jsx25("option", { value: ef, children: EFFORT_LABELS[ef] ?? ef }, ef))
                 ]
               }
             )
