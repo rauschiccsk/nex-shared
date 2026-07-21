@@ -18,6 +18,9 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.16.0
+- `[vzhľad]` **Nová paleta — schválený Vizuál dizajn.** Značkový akcent sa mení z indiga na **fialovú `#6d5efc`** (tlačidlá, odkazy, focus, verzný chip). Tmavý režim dostáva **hlbšie, teplejšie plochy** (plátno `#0e1116`, povrch `#161b22`, orámovanie `#2a323d`, text `#e6e9ee`) namiesto slate. Sémantické stavy zladené s dizajnom (info = tyrkysová `#22d3ee`). Svetlý režim ostáva svetlý, len s novým akcentom. Bez zmeny API — každý `var(--color-…)` konzument dostane nový vzhľad bez úpravy.
+
 ## v0.15.0
 - `[vzhľad]` **AgentsPanel**: úrovne uvažovania sa zobrazujú po slovensky (Nízka / Stredná / Vysoká / Veľmi vysoká / Maximálna) namiesto surových hodnôt, panel prepísaný do ľudskej reči namiesto CLI žargónu (`--model`/`--effort`). Spätne kompatibilné — prop `efforts` bez zmeny, neznáme hodnoty ostávajú tak, ako sú.
 
