@@ -1,0 +1,32 @@
+name: Changelog
+
+# Discipline gate: the version in package.json must be documented in CHANGELOG.md.
+# nex-shared is consumed by every ICC app via a pinned version; the auto-notify upgrade
+# prompt in NEX Studio reads CHANGELOG.md to tell the manager what a bump brings. A release
+# without an entry would leave that prompt blind — so a missing section fails CI.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  changelog-entry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Release version must have a CHANGELOG entry
+        run: |
+          VERSION=$(grep -oE '"version"[[:space:]]*:[[:space:]]*"[^"]+"' package.json | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          if [ -z "$VERSION" ]; then
+            echo "::error::could not read version from package.json"
+            exit 1
+          fi
+          echo "package.json version: $VERSION"
+          ESC=$(printf '%s' "$VERSION" | sed 's/\./\\./g')
+          if grep -qE "^## v${ESC}([^0-9]|$)" CHANGELOG.md; then
+            echo "OK — CHANGELOG.md documents v$VERSION"
+          else
+            echo "::error::CHANGELOG.md has no '## v$VERSION' section. Add the entry (with [vzhľad]/[API]/[nové]/[oprava] tags) before bumping the version."
+            exit 1
+          fi
