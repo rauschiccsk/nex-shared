@@ -1948,6 +1948,7 @@ function MyAccountPanel({
   roleLabel,
   onSaveProfile,
   onChangePassword,
+  onTestTelegram,
   passwordMinLength = 5
 }) {
   const [firstName, setFirstName] = useState10(user.first_name ?? "");
@@ -1957,6 +1958,20 @@ function MyAccountPanel({
   const [savingProfile, setSavingProfile] = useState10(false);
   const [profileError, setProfileError] = useState10("");
   const [profileSaved, setProfileSaved] = useState10(false);
+  const [testBusy, setTestBusy] = useState10(false);
+  const [testResult, setTestResult] = useState10(null);
+  async function testTelegram() {
+    if (!onTestTelegram) return;
+    setTestBusy(true);
+    setTestResult(null);
+    try {
+      setTestResult(await onTestTelegram());
+    } catch {
+      setTestResult({ ok: false, detail: "Test zlyhal (chyba spojenia)." });
+    } finally {
+      setTestBusy(false);
+    }
+  }
   const [currentPw, setCurrentPw] = useState10("");
   const [newPw, setNewPw] = useState10("");
   const [confirmPw, setConfirmPw] = useState10("");
@@ -2037,6 +2052,39 @@ function MyAccountPanel({
         ] }),
         /* @__PURE__ */ jsx28(ReadOnly, { label: "Pou\u017E\xEDvate\u013Esk\xE9 meno", value: user.username }),
         /* @__PURE__ */ jsx28(ReadOnly, { label: "Rola", value: roleLabel })
+      ] }),
+      onTestTelegram && /* @__PURE__ */ jsxs18("div", { className: "mb-3 rounded-lg bg-[var(--color-surface-hover)] px-3 py-2 text-xs", children: [
+        /* @__PURE__ */ jsxs18("p", { className: "text-[var(--color-text-muted)] mb-2", children: [
+          "Ako za\u010Da\u0165 dost\xE1va\u0165 upozornenia na Telegram: nap\xED\u0161 n\xE1\u0161mu botovi",
+          " ",
+          /* @__PURE__ */ jsx28("span", { className: "font-mono", children: "/start" }),
+          ", zisti svoje chat ID (napr. cez",
+          " ",
+          /* @__PURE__ */ jsx28("span", { className: "font-mono", children: "@userinfobot" }),
+          '), vlo\u017E ho vy\u0161\u0161ie, ulo\u017E a klikni \u201EPosla\u0165 test".'
+        ] }),
+        /* @__PURE__ */ jsxs18("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ jsx28(
+            "button",
+            {
+              type: "button",
+              onClick: testTelegram,
+              disabled: testBusy,
+              className: "px-3 py-1 rounded-lg border border-[var(--color-border-default)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)] disabled:opacity-40 transition-colors",
+              children: testBusy ? "Posielam\u2026" : "Posla\u0165 test"
+            }
+          ),
+          testResult && /* @__PURE__ */ jsxs18(
+            "span",
+            {
+              className: testResult.ok ? "text-[var(--color-status-success)]" : "text-[var(--color-status-error)]",
+              children: [
+                testResult.ok ? "\u2705 " : "\u274C ",
+                testResult.detail
+              ]
+            }
+          )
+        ] })
       ] }),
       /* @__PURE__ */ jsx28("div", { className: "flex justify-end", children: /* @__PURE__ */ jsx28("button", { type: "button", onClick: saveProfile, disabled: savingProfile, className: BTN, children: savingProfile ? "Uklad\xE1m\u2026" : "Ulo\u017Ei\u0165" }) })
     ] }),

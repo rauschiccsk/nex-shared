@@ -901,10 +901,17 @@ interface MyAccountPanelProps {
     }) => Promise<void>;
     /** Change own password (current-password verification is the app's concern). Rejection → error. */
     onChangePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+    /** Optional (v0.15.2) — send a TEST Telegram to the saved chat_id + report the outcome, so the user can
+     *  confirm notifications actually reach them (a silent fail is otherwise invisible). When supplied, a
+     *  "Poslať test" button + a short how-to appear under the Telegram field. */
+    onTestTelegram?: () => Promise<{
+        ok: boolean;
+        detail: string;
+    }>;
     /** Minimum new-password length (mirrors the app's backend constraint). Default 5. */
     passwordMinLength?: number;
 }
-declare function MyAccountPanel({ user, roleLabel, onSaveProfile, onChangePassword, passwordMinLength, }: MyAccountPanelProps): react.JSX.Element;
+declare function MyAccountPanel({ user, roleLabel, onSaveProfile, onChangePassword, onTestTelegram, passwordMinLength, }: MyAccountPanelProps): react.JSX.Element;
 
 interface SessionsPanelProps {
     sessions: UserSessionRead[];

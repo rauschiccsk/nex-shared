@@ -38,6 +38,10 @@ export interface MyAccountPanelProps {
   }) => Promise<void>;
   /** Change own password (current-password verification is the app's concern). Rejection → error. */
   onChangePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  /** Optional (v0.15.2) — send a TEST Telegram to the saved chat_id + report the outcome, so the user can
+   *  confirm notifications actually reach them (a silent fail is otherwise invisible). When supplied, a
+   *  "Poslať test" button + a short how-to appear under the Telegram field. */
+  onTestTelegram?: () => Promise<{ ok: boolean; detail: string }>;
   /** Minimum new-password length (mirrors the app's backend constraint). Default 5. */
   passwordMinLength?: number;
 }
@@ -60,6 +64,7 @@ export function MyAccountPanel({
   roleLabel,
   onSaveProfile,
   onChangePassword,
+  onTestTelegram,
   passwordMinLength = 5,
 }: MyAccountPanelProps) {
   // Profile fields (editable).
@@ -70,6 +75,22 @@ export function MyAccountPanel({
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileError, setProfileError] = useState("");
   const [profileSaved, setProfileSaved] = useState(false);
+  // Telegram "Poslať test" (v0.15.2).
+  const [testBusy, setTestBusy] = useState(false);
+  const [testResult, setTestResult] = useState<{ ok: boolean; detail: string } | null>(null);
+
+  async function testTelegram() {
+    if (!onTestTelegram) return;
+    setTestBusy(true);
+    setTestResult(null);
+    try {
+      setTestResult(await onTestTelegram());
+    } catch {
+      setTestResult({ ok: false, detail: "Test zlyhal (chyba spojenia)." });
+    } finally {
+      setTestBusy(false);
+    }
+  }
 
   // Password change.
   const [currentPw, setCurrentPw] = useState("");
@@ -174,6 +195,35 @@ export function MyAccountPanel({
           <ReadOnly label="Používateľské meno" value={user.username} />
           <ReadOnly label="Rola" value={roleLabel} />
         </div>
+        {onTestTelegram && (
+          <div className="mb-3 rounded-lg bg-[var(--color-surface-hover)] px-3 py-2 text-xs">
+            <p className="text-[var(--color-text-muted)] mb-2">
+              Ako začať dostávať upozornenia na Telegram: napíš nášmu botovi{" "}
+              <span className="font-mono">/start</span>, zisti svoje chat ID (napr. cez{" "}
+              <span className="font-mono">@userinfobot</span>), vlož ho vyššie, ulož a klikni „Poslať test".
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={testTelegram}
+                disabled={testBusy}
+                className="px-3 py-1 rounded-lg border border-[var(--color-border-default)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)] disabled:opacity-40 transition-colors"
+              >
+                {testBusy ? "Posielam…" : "Poslať test"}
+              </button>
+              {testResult && (
+                <span
+                  className={
+                    testResult.ok ? "text-[var(--color-status-success)]" : "text-[var(--color-status-error)]"
+                  }
+                >
+                  {testResult.ok ? "✅ " : "❌ "}
+                  {testResult.detail}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
         <div className="flex justify-end">
           <button type="button" onClick={saveProfile} disabled={savingProfile} className={BTN}>
             {savingProfile ? "Ukladám…" : "Uložiť"}
