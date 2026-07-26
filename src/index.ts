@@ -98,6 +98,9 @@ export type { AgentsPanelProps, AgentDraft } from "./AgentsPanel";
 export { UsersPanel } from "./UsersPanel";
 export type { UsersPanelProps } from "./UsersPanel";
 
+export { MyAccountPanel } from "./MyAccountPanel";
+export type { MyAccountPanelProps, MyAccountUser } from "./MyAccountPanel";
+
 export { SessionsPanel } from "./SessionsPanel";
 export type { SessionsPanelProps } from "./SessionsPanel";
 
