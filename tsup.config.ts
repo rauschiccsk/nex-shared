@@ -1,5 +1,5 @@
 import { defineConfig } from "tsup";
-import { copyFileSync } from "node:fs";
+import { copyFileSync, cpSync } from "node:fs";
 
 // Pre-built ESM library (E1 Phase B1, CR-NS-048). Emits ESM + d.ts and ships
 // `tokens.css` as-is (NOT bundled) — the Tailwind v4 @theme/@layer source that
@@ -20,5 +20,8 @@ export default defineConfig({
   clean: true,
   onSuccess: async () => {
     copyFileSync("src/tokens.css", "dist/tokens.css");
+      // The @font-face URLs in tokens.css are relative to it, so the woff2 files must sit next to
+      // it in dist/ — the consuming app resolves them from node_modules and bundles them itself.
+      cpSync("src/fonts", "dist/fonts", { recursive: true });
   },
 });

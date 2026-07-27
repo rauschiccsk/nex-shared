@@ -1,3 +1,32 @@
+
+/* ── Inter, actually delivered ────────────────────────────────────────────────
+ * `--font-sans` has asked for Inter since the first token release, but nothing ever
+ * shipped the file: the built CSS carried ZERO @font-face rules, so every app silently
+ * fell back to `system-ui` — whatever the viewer's desktop happens to use. On Linux that
+ * is typically a thin UI face that renders poorly at small sizes, worst of all on Slovak
+ * diacritics. Self-hosted (never a CDN): an internal tool must not depend on a third party
+ * being reachable, and the rendering must be identical on every machine.
+ *
+ * Variable weight axis 100–900 in ONE file per subset, so every weight the UI uses costs no
+ * extra request. `latin-ext` carries ľ š č ť ž ô ŕ ď ň — the browser fetches it only when a
+ * glyph needs it, per unicode-range. `swap` so text is readable while the font loads.
+ * SIL Open Font License — see fonts/LICENSE-Inter.txt. */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("./fonts/inter-latin-ext-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("./fonts/inter-latin-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 /* nex-shared canonical design tokens + primitive component classes.
  *
  * THEME-AWARE (E1 Phase D, CR-NS-058): a full light+dark semantic token layer (promoted from NEX Inbox's
@@ -50,7 +79,12 @@
   /* === Text === */
   --color-text-primary: #0f172a; /* slate-900 — WCAG AAA */
   --color-text-secondary: #475569; /* slate-600 — WCAG AA */
-  --color-text-muted: #94a3b8; /* slate-400 — WCAG AA Large */
+  /* #64748b (slate-500), not #94a3b8: on the light canvas #f8fafc the lighter value scores 2.45:1 —
+     it fails WCAG AA for normal text. EVERY consuming app had independently patched it back to this
+     value with a local `:root:not(.dark)` override (five identical copies found 2026-07-27), which is
+     the library shipping a defect and each app paying for it. Fixed at the source; apps can drop the
+     override. 4.55:1 — AA for normal text. */
+  --color-text-muted: #64748b;
   --color-text-inverse: #ffffff;
   --color-text-link: #5b4ce0; /* violet (primary-600) — brand link */
   --color-text-error: #b91c1c; /* red-700 */

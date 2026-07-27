@@ -18,6 +18,20 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.18.0
+- `[oprava]` **Písmo Inter sa konečne aj dodáva.** `--font-sans` si Inter pýtal od prvého vydania
+  tokenov, ale v postavenom CSS nebolo **ani jedno** pravidlo `@font-face` a žiadny súbor — appky
+  teda ticho padali na systémové písmo prehliadača. Na Linuxe to býva tenká UI fontina, ktorá pri
+  malých veľkostiach a slovenskej diakritike vyzerá zle. Knižnica teraz nesie Inter ako variabilné
+  woff2 (podmnožiny `latin` + `latin-ext`, spolu ~132 kB, sťahuje sa len to, čo text potrebuje),
+  hosťované u nás — nie z CDN. Appka nemusí spraviť nič, príde to cez `@import
+  "nex-shared/tokens.css"`. SIL Open Font License.
+- `[vzhľad]` **Potlačený text vo svetlom režime opravený na `#64748b`.** Doterajšia hodnota
+  `#94a3b8` má na svetlom plátne kontrast **2,45 : 1** — pod normou AA pre bežný text. **Všetkých
+  päť appiek** si ju nezávisle prepisovalo lokálnym `:root:not(.dark)` na presne tú istú hodnotu, čiže
+  knižnica posielala chybu a každá appka za ňu platila. Opravené pri zdroji (4,55 : 1), appky môžu
+  svoj lokálny prepis odstrániť.
+
 ## v0.17.0
 - `[oprava]` **Zlúčené dve rozbehnuté vetvy.** Knižnica sa po v0.15.0 rozdvojila a nikdy nespojila:
   jedna vetva priniesla `MyAccountPanel` + tab `konto` (v0.15.1) a tlačidlo „Poslať test" pre
