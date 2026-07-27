@@ -18,6 +18,19 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.17.0
+- `[oprava]` **Zlúčené dve rozbehnuté vetvy.** Knižnica sa po v0.15.0 rozdvojila a nikdy nespojila:
+  jedna vetva priniesla `MyAccountPanel` + tab `konto` (v0.15.1) a tlačidlo „Poslať test" pre
+  Telegram (v0.15.2), druhá changelog a novú paletu (v0.16.0). Ani jedna nemala to druhé, takže
+  appka na v0.15.x by povýšením na v0.16.0 **stratila „Moje konto"** — hoci changelog v0.16.0
+  uvádza „bez zmeny API" (voči vlastnej línii pravdivo, voči v0.15.x nie). Táto verzia obsahuje
+  obe línie naraz; povýšenie z ktorejkoľvek strany už nič neuberá.
+- `[vzhľad]` **NavItem: pevná výška riadku 35 px.** Rozostup sa dovtedy nastavoval odsadením a
+  výška z neho nikdy nevychádzala — emoji ikona sa vykresľuje vyššia než jej riadkový box a ťahala
+  riadok so sebou (47 px pri `py-2`, 40 px pri `py-1.5`). Pevná výška + pevný rámček ikony 16×16 to
+  ukotvia bez ohľadu na glyf. Pätnásť položiek zaberie ~555 px namiesto ~705 px, takže bočný panel
+  prestal rolovať. Prevzaté z v0.15.3/v0.15.4.
+
 ## v0.16.0
 - `[vzhľad]` **Nová paleta — schválený Vizuál dizajn.** Značkový akcent sa mení z indiga na **fialovú `#6d5efc`** (tlačidlá, odkazy, focus, verzný chip). Tmavý režim dostáva **hlbšie, teplejšie plochy** (plátno `#0e1116`, povrch `#161b22`, orámovanie `#2a323d`, text `#e6e9ee`) namiesto slate. Sémantické stavy zladené s dizajnom (info = tyrkysová `#22d3ee`). Svetlý režim ostáva svetlý, len s novým akcentom. Bez zmeny API — každý `var(--color-…)` konzument dostane nový vzhľad bez úpravy.
 

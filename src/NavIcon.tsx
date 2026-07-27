@@ -14,7 +14,7 @@ export function NavIcon({ glyph }: NavIconProps) {
   return (
     <span
       aria-hidden="true"
-      className="text-base leading-none shrink-0 w-4 inline-flex items-center justify-center"
+      className="text-base leading-none shrink-0 w-4 h-4 overflow-hidden inline-flex items-center justify-center"
     >
       {glyph}
     </span>

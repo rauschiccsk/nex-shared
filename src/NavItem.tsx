@@ -41,7 +41,12 @@ export function NavItem({
 }: NavItemProps) {
   const collapsed = useCollapsed();
 
-  const base = "flex items-center gap-2.5 py-2 rounded-lg text-sm transition-colors w-full";
+  // A FIXED 35px row (Director, 2026-07-27), not vertical padding. Padding gave an unpredictable
+  // height: the emoji nav glyph renders taller than its `leading-none` line box, so the flex row grew
+  // to ~47px at py-2 and ~40px at py-1.5 — never the value the padding implied. An explicit height
+  // with `items-center` pins the row regardless of glyph metrics, and apps keep gaining nav entries,
+  // so the rail must stop scrolling.
+  const base = "flex items-center gap-2.5 h-[35px] rounded-lg text-sm transition-colors w-full";
   const px = collapsed ? "px-0 justify-center" : "px-3";
   const color = disabled
     ? "text-[var(--color-text-muted)] opacity-40 cursor-not-allowed"

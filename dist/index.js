@@ -104,7 +104,7 @@ function NavItem({
   href
 }) {
   const collapsed = useCollapsed();
-  const base = "flex items-center gap-2.5 py-2 rounded-lg text-sm transition-colors w-full";
+  const base = "flex items-center gap-2.5 h-[35px] rounded-lg text-sm transition-colors w-full";
   const px = collapsed ? "px-0 justify-center" : "px-3";
   const color = disabled ? "text-[var(--color-text-muted)] opacity-40 cursor-not-allowed" : active ? "bg-primary-600/10 text-[var(--color-accent-primary)]" : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]";
   const tooltip = disabled ? disabledTitle ?? label : collapsed ? label : void 0;
@@ -287,7 +287,7 @@ function NavIcon({ glyph }) {
     "span",
     {
       "aria-hidden": "true",
-      className: "text-base leading-none shrink-0 w-4 inline-flex items-center justify-center",
+      className: "text-base leading-none shrink-0 w-4 h-4 overflow-hidden inline-flex items-center justify-center",
       children: glyph
     }
   );
@@ -1150,7 +1150,8 @@ var DEFAULT_TAB_LABELS = {
   system: "Syst\xE9m",
   agents: "Agenti",
   users: "Pou\u017E\xEDvatelia",
-  sessions: "Rel\xE1cie"
+  sessions: "Rel\xE1cie",
+  konto: "Moje konto"
 };
 function SettingsShell({
   config,
@@ -1931,9 +1932,213 @@ function UsersPanel({
   ] });
 }
 
-// src/SessionsPanel.tsx
-import { useMemo as useMemo3, useState as useState10 } from "react";
+// src/MyAccountPanel.tsx
+import { useState as useState10 } from "react";
 import { jsx as jsx28, jsxs as jsxs18 } from "react/jsx-runtime";
+var LABEL = "block text-xs text-[var(--color-text-muted)] mb-1";
+var BTN = "px-3 py-1.5 text-xs font-medium text-white bg-primary-600 hover:bg-primary-500 disabled:opacity-40 rounded-lg transition-colors";
+function ReadOnly({ label, value }) {
+  return /* @__PURE__ */ jsxs18("div", { children: [
+    /* @__PURE__ */ jsx28("div", { className: LABEL, children: label }),
+    /* @__PURE__ */ jsx28("div", { className: "text-sm text-[var(--color-text-secondary)] font-mono", children: value || "\u2014" })
+  ] });
+}
+function MyAccountPanel({
+  user,
+  roleLabel,
+  onSaveProfile,
+  onChangePassword,
+  onTestTelegram,
+  passwordMinLength = 5
+}) {
+  const [firstName, setFirstName] = useState10(user.first_name ?? "");
+  const [lastName, setLastName] = useState10(user.last_name ?? "");
+  const [email, setEmail] = useState10(user.email ?? "");
+  const [telegram, setTelegram] = useState10(user.telegram_chat_id ?? "");
+  const [savingProfile, setSavingProfile] = useState10(false);
+  const [profileError, setProfileError] = useState10("");
+  const [profileSaved, setProfileSaved] = useState10(false);
+  const [testBusy, setTestBusy] = useState10(false);
+  const [testResult, setTestResult] = useState10(null);
+  async function testTelegram() {
+    if (!onTestTelegram) return;
+    setTestBusy(true);
+    setTestResult(null);
+    try {
+      setTestResult(await onTestTelegram());
+    } catch {
+      setTestResult({ ok: false, detail: "Test zlyhal (chyba spojenia)." });
+    } finally {
+      setTestBusy(false);
+    }
+  }
+  const [currentPw, setCurrentPw] = useState10("");
+  const [newPw, setNewPw] = useState10("");
+  const [confirmPw, setConfirmPw] = useState10("");
+  const [savingPw, setSavingPw] = useState10(false);
+  const [pwError, setPwError] = useState10("");
+  const [pwDone, setPwDone] = useState10(false);
+  async function saveProfile() {
+    setProfileError("");
+    setProfileSaved(false);
+    if (!email.trim()) {
+      setProfileError("E-mail je povinn\xFD.");
+      return;
+    }
+    setSavingProfile(true);
+    try {
+      await onSaveProfile({
+        email: email.trim(),
+        first_name: firstName,
+        last_name: lastName,
+        telegram_chat_id: telegram
+      });
+      setProfileSaved(true);
+    } catch {
+      setProfileError("Ulo\u017Eenie zlyhalo. Sk\xFAs to znova.");
+    } finally {
+      setSavingProfile(false);
+    }
+  }
+  const pwTooShort = newPw.length > 0 && newPw.length < passwordMinLength;
+  const pwMismatch = confirmPw.length > 0 && newPw !== confirmPw;
+  const pwDisabled = savingPw || !currentPw || !newPw || newPw.length < passwordMinLength || newPw !== confirmPw;
+  async function changePassword() {
+    setPwError("");
+    setPwDone(false);
+    if (pwDisabled) return;
+    setSavingPw(true);
+    try {
+      await onChangePassword(currentPw, newPw);
+      setPwDone(true);
+      setCurrentPw("");
+      setNewPw("");
+      setConfirmPw("");
+    } catch {
+      setPwError("Zmena hesla zlyhala \u2014 skontroluj s\xFA\u010Dasn\xE9 heslo.");
+    } finally {
+      setSavingPw(false);
+    }
+  }
+  return /* @__PURE__ */ jsxs18("div", { className: "p-4 max-w-3xl", children: [
+    /* @__PURE__ */ jsxs18(Card, { className: "p-4", children: [
+      /* @__PURE__ */ jsx28("h3", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-3", children: "Moje \xFAdaje" }),
+      profileError && /* @__PURE__ */ jsx28("div", { className: "mb-3 text-xs text-[var(--color-state-error-fg)] rounded bg-[var(--color-state-error-bg)] px-3 py-2", children: profileError }),
+      profileSaved && !profileError && /* @__PURE__ */ jsx28("div", { className: "mb-3 text-xs text-[var(--color-text-primary)] rounded bg-[var(--color-state-success-bg)] px-3 py-2", children: "\xDAdaje boli ulo\u017Een\xE9." }),
+      /* @__PURE__ */ jsxs18("div", { className: "grid grid-cols-2 gap-3 mb-3", children: [
+        /* @__PURE__ */ jsxs18("div", { children: [
+          /* @__PURE__ */ jsx28("label", { htmlFor: "ma-first", className: LABEL, children: "Meno" }),
+          /* @__PURE__ */ jsx28(Input, { id: "ma-first", value: firstName, onChange: (e) => setFirstName(e.target.value) })
+        ] }),
+        /* @__PURE__ */ jsxs18("div", { children: [
+          /* @__PURE__ */ jsx28("label", { htmlFor: "ma-last", className: LABEL, children: "Priezvisko" }),
+          /* @__PURE__ */ jsx28(Input, { id: "ma-last", value: lastName, onChange: (e) => setLastName(e.target.value) })
+        ] }),
+        /* @__PURE__ */ jsxs18("div", { children: [
+          /* @__PURE__ */ jsx28("label", { htmlFor: "ma-email", className: LABEL, children: "Email *" }),
+          /* @__PURE__ */ jsx28(Input, { id: "ma-email", type: "email", value: email, onChange: (e) => setEmail(e.target.value) })
+        ] }),
+        /* @__PURE__ */ jsxs18("div", { children: [
+          /* @__PURE__ */ jsx28("label", { htmlFor: "ma-tg", className: LABEL, children: "Telegram chat_id" }),
+          /* @__PURE__ */ jsx28(
+            Input,
+            {
+              id: "ma-tg",
+              value: telegram,
+              onChange: (e) => setTelegram(e.target.value),
+              placeholder: "napr. 123456789 (notifik\xE1cie)"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsx28(ReadOnly, { label: "Pou\u017E\xEDvate\u013Esk\xE9 meno", value: user.username }),
+        /* @__PURE__ */ jsx28(ReadOnly, { label: "Rola", value: roleLabel })
+      ] }),
+      onTestTelegram && /* @__PURE__ */ jsxs18("div", { className: "mb-3 rounded-lg bg-[var(--color-surface-hover)] px-3 py-2 text-xs", children: [
+        /* @__PURE__ */ jsxs18("p", { className: "text-[var(--color-text-muted)] mb-2", children: [
+          "Ako za\u010Da\u0165 dost\xE1va\u0165 upozornenia na Telegram: nap\xED\u0161 n\xE1\u0161mu botovi",
+          " ",
+          /* @__PURE__ */ jsx28("span", { className: "font-mono", children: "/start" }),
+          ", zisti svoje chat ID (napr. cez",
+          " ",
+          /* @__PURE__ */ jsx28("span", { className: "font-mono", children: "@userinfobot" }),
+          '), vlo\u017E ho vy\u0161\u0161ie, ulo\u017E a klikni \u201EPosla\u0165 test".'
+        ] }),
+        /* @__PURE__ */ jsxs18("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ jsx28(
+            "button",
+            {
+              type: "button",
+              onClick: testTelegram,
+              disabled: testBusy,
+              className: "px-3 py-1 rounded-lg border border-[var(--color-border-default)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)] disabled:opacity-40 transition-colors",
+              children: testBusy ? "Posielam\u2026" : "Posla\u0165 test"
+            }
+          ),
+          testResult && /* @__PURE__ */ jsxs18(
+            "span",
+            {
+              className: testResult.ok ? "text-[var(--color-status-success)]" : "text-[var(--color-status-error)]",
+              children: [
+                testResult.ok ? "\u2705 " : "\u274C ",
+                testResult.detail
+              ]
+            }
+          )
+        ] })
+      ] }),
+      /* @__PURE__ */ jsx28("div", { className: "flex justify-end", children: /* @__PURE__ */ jsx28("button", { type: "button", onClick: saveProfile, disabled: savingProfile, className: BTN, children: savingProfile ? "Uklad\xE1m\u2026" : "Ulo\u017Ei\u0165" }) })
+    ] }),
+    /* @__PURE__ */ jsxs18(Card, { className: "p-4 mt-4", children: [
+      /* @__PURE__ */ jsx28("h3", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-3", children: "Zmena hesla" }),
+      pwError && /* @__PURE__ */ jsx28("div", { className: "mb-3 text-xs text-[var(--color-state-error-fg)] rounded bg-[var(--color-state-error-bg)] px-3 py-2", children: pwError }),
+      pwDone && !pwError && /* @__PURE__ */ jsx28("div", { className: "mb-3 text-xs text-[var(--color-text-primary)] rounded bg-[var(--color-state-success-bg)] px-3 py-2", children: "Heslo bolo zmenen\xE9." }),
+      /* @__PURE__ */ jsxs18("div", { className: "grid grid-cols-3 gap-3 mb-2", children: [
+        /* @__PURE__ */ jsxs18("div", { children: [
+          /* @__PURE__ */ jsx28("label", { htmlFor: "ma-cur", className: LABEL, children: "S\xFA\u010Dasn\xE9 heslo" }),
+          /* @__PURE__ */ jsx28(Input, { id: "ma-cur", type: "password", value: currentPw, onChange: (e) => setCurrentPw(e.target.value) })
+        ] }),
+        /* @__PURE__ */ jsxs18("div", { children: [
+          /* @__PURE__ */ jsx28("label", { htmlFor: "ma-new", className: LABEL, children: "Nov\xE9 heslo" }),
+          /* @__PURE__ */ jsx28(
+            Input,
+            {
+              id: "ma-new",
+              type: "password",
+              value: newPw,
+              onChange: (e) => setNewPw(e.target.value),
+              placeholder: `min. ${passwordMinLength} znakov`,
+              invalid: pwTooShort
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs18("div", { children: [
+          /* @__PURE__ */ jsx28("label", { htmlFor: "ma-conf", className: LABEL, children: "Zopakuj nov\xE9 heslo" }),
+          /* @__PURE__ */ jsx28(
+            Input,
+            {
+              id: "ma-conf",
+              type: "password",
+              value: confirmPw,
+              onChange: (e) => setConfirmPw(e.target.value),
+              invalid: pwMismatch
+            }
+          )
+        ] })
+      ] }),
+      pwTooShort && /* @__PURE__ */ jsxs18("div", { className: "mb-2 text-[10px] text-[var(--color-status-error)]", children: [
+        "Heslo mus\xED ma\u0165 aspo\u0148 ",
+        passwordMinLength,
+        " znakov."
+      ] }),
+      pwMismatch && /* @__PURE__ */ jsx28("div", { className: "mb-2 text-[10px] text-[var(--color-status-error)]", children: "Hesl\xE1 sa nezhoduj\xFA." }),
+      /* @__PURE__ */ jsx28("div", { className: "flex justify-end", children: /* @__PURE__ */ jsx28("button", { type: "button", onClick: changePassword, disabled: pwDisabled, className: BTN, children: savingPw ? "Uklad\xE1m\u2026" : "Zmeni\u0165 heslo" }) })
+    ] })
+  ] });
+}
+
+// src/SessionsPanel.tsx
+import { useMemo as useMemo3, useState as useState11 } from "react";
+import { jsx as jsx29, jsxs as jsxs19 } from "react/jsx-runtime";
 function fmt(ts) {
   if (!ts) return "\u2014";
   const d = new Date(ts);
@@ -1949,9 +2154,9 @@ function SessionsPanel({
   filterUserId,
   onFilterChange
 }) {
-  const [confirmingId, setConfirmingId] = useState10(null);
-  const [revoking, setRevoking] = useState10(false);
-  const [revokeError, setRevokeError] = useState10("");
+  const [confirmingId, setConfirmingId] = useState11(null);
+  const [revoking, setRevoking] = useState11(false);
+  const [revokeError, setRevokeError] = useState11("");
   const nameOf = (uid) => resolveUsername?.(uid) ?? uid;
   const rows = useMemo3(
     () => filterUserId ? sessions.filter((s) => s.user_id === filterUserId) : sessions,
@@ -1971,16 +2176,16 @@ function SessionsPanel({
       setRevoking(false);
     }
   }
-  return /* @__PURE__ */ jsxs18("div", { className: "p-6", children: [
-    /* @__PURE__ */ jsx28("h2", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-1", children: "Rel\xE1cie pou\u017E\xEDvate\u013Ea" }),
-    /* @__PURE__ */ jsx28("p", { className: "text-xs text-[var(--color-text-muted)] mb-4", children: "Kotvy \u017Eivotn\xE9ho cyklu JWT. Zru\u0161enie rel\xE1cie zneplatn\xED v\u0161etky jej zost\xE1vaj\xFAce tokeny." }),
-    filterUserId && onFilterChange && /* @__PURE__ */ jsxs18("div", { className: "mb-3 flex items-center gap-2 text-xs", children: [
-      /* @__PURE__ */ jsxs18("span", { className: "text-[var(--color-text-muted)]", children: [
+  return /* @__PURE__ */ jsxs19("div", { className: "p-6", children: [
+    /* @__PURE__ */ jsx29("h2", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-1", children: "Rel\xE1cie pou\u017E\xEDvate\u013Ea" }),
+    /* @__PURE__ */ jsx29("p", { className: "text-xs text-[var(--color-text-muted)] mb-4", children: "Kotvy \u017Eivotn\xE9ho cyklu JWT. Zru\u0161enie rel\xE1cie zneplatn\xED v\u0161etky jej zost\xE1vaj\xFAce tokeny." }),
+    filterUserId && onFilterChange && /* @__PURE__ */ jsxs19("div", { className: "mb-3 flex items-center gap-2 text-xs", children: [
+      /* @__PURE__ */ jsxs19("span", { className: "text-[var(--color-text-muted)]", children: [
         "Filtrovan\xE9 pod\u013Ea pou\u017E\xEDvate\u013Ea:",
         " ",
-        /* @__PURE__ */ jsx28("span", { className: "text-[var(--color-text-secondary)] font-medium", children: nameOf(filterUserId) })
+        /* @__PURE__ */ jsx29("span", { className: "text-[var(--color-text-secondary)] font-medium", children: nameOf(filterUserId) })
       ] }),
-      /* @__PURE__ */ jsx28(
+      /* @__PURE__ */ jsx29(
         "button",
         {
           type: "button",
@@ -1990,27 +2195,27 @@ function SessionsPanel({
         }
       )
     ] }),
-    loadError && /* @__PURE__ */ jsx28("div", { className: "rounded-lg border border-[var(--color-state-error-bg)] bg-[var(--color-state-error-bg)] px-3 py-2 text-xs text-[var(--color-state-error-fg)] mb-4", children: loadError }),
-    loading && !loadError && /* @__PURE__ */ jsx28("div", { className: "text-xs text-[var(--color-text-muted)]", children: "Na\u010D\xEDtavam\u2026" }),
-    !loading && !loadError && /* @__PURE__ */ jsx28("div", { className: "rounded-xl border border-[var(--color-border-default)] overflow-hidden", children: /* @__PURE__ */ jsxs18("table", { className: "w-full text-sm", children: [
-      /* @__PURE__ */ jsx28("thead", { className: "bg-[var(--color-surface-hover)]", children: /* @__PURE__ */ jsxs18("tr", { className: "text-[10px] uppercase tracking-widest text-[var(--color-text-muted)]", children: [
-        /* @__PURE__ */ jsx28("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Pou\u017E\xEDvate\u013E" }),
-        /* @__PURE__ */ jsx28("th", { className: "px-4 py-2.5 text-left font-semibold", children: "ID rel\xE1cie" }),
-        /* @__PURE__ */ jsx28("th", { className: "px-4 py-2.5 text-right font-semibold", children: "tv" }),
-        /* @__PURE__ */ jsx28("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Naposledy viden\xFD" }),
-        /* @__PURE__ */ jsx28("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Vytvoren\xE9" }),
-        /* @__PURE__ */ jsx28("th", { className: "px-4 py-2.5 text-right font-semibold", children: "Akcie" })
+    loadError && /* @__PURE__ */ jsx29("div", { className: "rounded-lg border border-[var(--color-state-error-bg)] bg-[var(--color-state-error-bg)] px-3 py-2 text-xs text-[var(--color-state-error-fg)] mb-4", children: loadError }),
+    loading && !loadError && /* @__PURE__ */ jsx29("div", { className: "text-xs text-[var(--color-text-muted)]", children: "Na\u010D\xEDtavam\u2026" }),
+    !loading && !loadError && /* @__PURE__ */ jsx29("div", { className: "rounded-xl border border-[var(--color-border-default)] overflow-hidden", children: /* @__PURE__ */ jsxs19("table", { className: "w-full text-sm", children: [
+      /* @__PURE__ */ jsx29("thead", { className: "bg-[var(--color-surface-hover)]", children: /* @__PURE__ */ jsxs19("tr", { className: "text-[10px] uppercase tracking-widest text-[var(--color-text-muted)]", children: [
+        /* @__PURE__ */ jsx29("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Pou\u017E\xEDvate\u013E" }),
+        /* @__PURE__ */ jsx29("th", { className: "px-4 py-2.5 text-left font-semibold", children: "ID rel\xE1cie" }),
+        /* @__PURE__ */ jsx29("th", { className: "px-4 py-2.5 text-right font-semibold", children: "tv" }),
+        /* @__PURE__ */ jsx29("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Naposledy viden\xFD" }),
+        /* @__PURE__ */ jsx29("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Vytvoren\xE9" }),
+        /* @__PURE__ */ jsx29("th", { className: "px-4 py-2.5 text-right font-semibold", children: "Akcie" })
       ] }) }),
-      /* @__PURE__ */ jsxs18("tbody", { className: "divide-y divide-[var(--color-border-default)]", children: [
-        rows.map((s) => /* @__PURE__ */ jsxs18("tr", { className: "hover:bg-[var(--color-surface-hover)] transition-colors", children: [
-          /* @__PURE__ */ jsx28("td", { className: "px-4 py-3 text-sm font-medium text-[var(--color-text-primary)]", children: nameOf(s.user_id) }),
-          /* @__PURE__ */ jsx28("td", { className: "px-4 py-3 font-mono text-[10px] text-[var(--color-text-muted)]", children: s.id }),
-          /* @__PURE__ */ jsx28("td", { className: "px-4 py-3 text-right font-mono text-xs text-[var(--color-text-secondary)]", children: s.token_version }),
-          /* @__PURE__ */ jsx28("td", { className: "px-4 py-3 text-xs text-[var(--color-text-muted)]", children: fmt(s.last_seen_at) }),
-          /* @__PURE__ */ jsx28("td", { className: "px-4 py-3 text-xs text-[var(--color-text-muted)]", children: fmt(s.created_at) }),
-          /* @__PURE__ */ jsx28("td", { className: "px-4 py-3 text-right", children: !canRevoke ? /* @__PURE__ */ jsx28("span", { className: "text-xs text-[var(--color-text-muted)]", children: "\u2014" }) : confirmingId === s.id ? /* @__PURE__ */ jsxs18("div", { className: "flex items-center justify-end gap-2 text-xs", children: [
-            /* @__PURE__ */ jsx28("span", { className: "text-[var(--color-text-secondary)]", children: "Zru\u0161i\u0165 rel\xE1ciu?" }),
-            /* @__PURE__ */ jsx28(
+      /* @__PURE__ */ jsxs19("tbody", { className: "divide-y divide-[var(--color-border-default)]", children: [
+        rows.map((s) => /* @__PURE__ */ jsxs19("tr", { className: "hover:bg-[var(--color-surface-hover)] transition-colors", children: [
+          /* @__PURE__ */ jsx29("td", { className: "px-4 py-3 text-sm font-medium text-[var(--color-text-primary)]", children: nameOf(s.user_id) }),
+          /* @__PURE__ */ jsx29("td", { className: "px-4 py-3 font-mono text-[10px] text-[var(--color-text-muted)]", children: s.id }),
+          /* @__PURE__ */ jsx29("td", { className: "px-4 py-3 text-right font-mono text-xs text-[var(--color-text-secondary)]", children: s.token_version }),
+          /* @__PURE__ */ jsx29("td", { className: "px-4 py-3 text-xs text-[var(--color-text-muted)]", children: fmt(s.last_seen_at) }),
+          /* @__PURE__ */ jsx29("td", { className: "px-4 py-3 text-xs text-[var(--color-text-muted)]", children: fmt(s.created_at) }),
+          /* @__PURE__ */ jsx29("td", { className: "px-4 py-3 text-right", children: !canRevoke ? /* @__PURE__ */ jsx29("span", { className: "text-xs text-[var(--color-text-muted)]", children: "\u2014" }) : confirmingId === s.id ? /* @__PURE__ */ jsxs19("div", { className: "flex items-center justify-end gap-2 text-xs", children: [
+            /* @__PURE__ */ jsx29("span", { className: "text-[var(--color-text-secondary)]", children: "Zru\u0161i\u0165 rel\xE1ciu?" }),
+            /* @__PURE__ */ jsx29(
               "button",
               {
                 type: "button",
@@ -2020,7 +2225,7 @@ function SessionsPanel({
                 children: "\xC1no"
               }
             ),
-            /* @__PURE__ */ jsx28(
+            /* @__PURE__ */ jsx29(
               "button",
               {
                 type: "button",
@@ -2030,7 +2235,7 @@ function SessionsPanel({
                 children: "Nie"
               }
             )
-          ] }) : /* @__PURE__ */ jsx28(
+          ] }) : /* @__PURE__ */ jsx29(
             "button",
             {
               type: "button",
@@ -2043,12 +2248,12 @@ function SessionsPanel({
             }
           ) })
         ] }, s.id)),
-        rows.length === 0 && /* @__PURE__ */ jsx28("tr", { children: /* @__PURE__ */ jsx28("td", { colSpan: 6, className: "px-4 py-6 text-center text-xs text-[var(--color-text-muted)]", children: "\u017Diadne rel\xE1cie" }) })
+        rows.length === 0 && /* @__PURE__ */ jsx29("tr", { children: /* @__PURE__ */ jsx29("td", { colSpan: 6, className: "px-4 py-6 text-center text-xs text-[var(--color-text-muted)]", children: "\u017Diadne rel\xE1cie" }) })
       ] })
     ] }) }),
-    revokeError && /* @__PURE__ */ jsxs18("div", { className: "mt-3 text-xs text-[var(--color-state-error-fg)] rounded bg-[var(--color-state-error-bg)] border border-[var(--color-state-error-bg)] px-3 py-2 flex items-center justify-between", children: [
-      /* @__PURE__ */ jsx28("span", { children: revokeError }),
-      /* @__PURE__ */ jsx28("button", { type: "button", onClick: () => setRevokeError(""), className: "text-[var(--color-state-error-fg)] hover:opacity-80 ml-2", children: "\xD7" })
+    revokeError && /* @__PURE__ */ jsxs19("div", { className: "mt-3 text-xs text-[var(--color-state-error-fg)] rounded bg-[var(--color-state-error-bg)] border border-[var(--color-state-error-bg)] px-3 py-2 flex items-center justify-between", children: [
+      /* @__PURE__ */ jsx29("span", { children: revokeError }),
+      /* @__PURE__ */ jsx29("button", { type: "button", onClick: () => setRevokeError(""), className: "text-[var(--color-state-error-fg)] hover:opacity-80 ml-2", children: "\xD7" })
     ] })
   ] });
 }
@@ -2069,6 +2274,7 @@ export {
   IconButton,
   Input,
   LoginForm,
+  MyAccountPanel,
   NavIcon,
   NavItem,
   ProtectedRoute,

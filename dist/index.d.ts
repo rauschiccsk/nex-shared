@@ -616,8 +616,9 @@ declare function LoginForm({ fieldLabel, onSubmit, loading, error, onChange, aut
  * predicates, NEVER role-string literals). Apps map their own serializer field
  * names onto these on the way in.
  */
-/** The four canonical settings tabs. An app enables a subset via `SettingsKitConfig.tabs`. */
-type SettingsTabId = "system" | "agents" | "users" | "sessions";
+/** The canonical settings tabs. An app enables a subset via `SettingsKitConfig.tabs`. `konto` (v0.15.1) is
+ *  the self-service "Moje konto" tab (every user edits their OWN account — the self-scoped Users tab). */
+type SettingsTabId = "system" | "agents" | "users" | "sessions" | "konto";
 /**
  * Serialised user row. `role` is an opaque string (role-agnostic kit) — the app
  * supplies `roleOptions` + a `roleClass` predicate for display, never a literal.
@@ -714,10 +715,11 @@ interface UserFieldSchema {
  * (when supplied) returns true.
  */
 interface SettingsKitConfig {
-    /** Enabled tabs, in display order (subset of the four canonical ids). */
+    /** Enabled tabs, in display order (subset of the canonical ids). */
     tabs: SettingsTabId[];
-    /** Slovak tab labels (app-overridable). */
-    labels: Record<SettingsTabId, string>;
+    /** Slovak tab labels (app-overridable). Partial — the SettingsShell falls back to the built-in default
+     *  for any tab an app does not override, so adding a new tab id never forces every app to supply it. */
+    labels: Partial<Record<SettingsTabId, string>>;
     /** Optional capability predicate — hide a tab from a role entirely. */
     tabVisibleForRole?: (tab: SettingsTabId, role: string) => boolean;
 }
@@ -865,6 +867,52 @@ interface UsersPanelProps {
 }
 declare function UsersPanel({ users, roleOptions, canManage, fieldSchema, onCreate, onUpdate, onDelete, onChangePassword, onToggleActive, roleClass, }: UsersPanelProps): react.JSX.Element;
 
+/**
+ * MyAccountPanel — the shared "Moje konto" self-service account panel for the Settings → `konto` tab
+ * (v0.15.1). It IS the Users-tab edit form, self-scoped: the logged-in user edits their OWN safe fields
+ * (name, e-mail, Telegram id) and changes their OWN password. Login (username) + access rights (role) are
+ * shown READ-ONLY — a user cannot change those about themselves; managing OTHER users (incl. role +
+ * activation) stays in the admin-only Users tab.
+ *
+ * Role-agnostic kit (like UsersPanel): the parent supplies the Slovak role label + the two I/O callbacks
+ * (no fetch here — the app maps them to PATCH /me + its change-password API with current-password
+ * verification).
+ */
+interface MyAccountUser {
+    username: string;
+    /** Opaque per-app role id (the kit never compares against literals — the app passes `roleLabel`). */
+    role: string;
+    email?: string | null;
+    first_name?: string | null;
+    last_name?: string | null;
+    telegram_chat_id?: string | null;
+}
+interface MyAccountPanelProps {
+    /** The current (logged-in) user. */
+    user: MyAccountUser;
+    /** Slovak display label for `user.role` (role-agnostic kit — the app owns role naming). */
+    roleLabel: string;
+    /** Persist the safe profile fields. The app maps this to PATCH /me. A rejection surfaces as the error. */
+    onSaveProfile: (data: {
+        email: string;
+        first_name: string;
+        last_name: string;
+        telegram_chat_id: string;
+    }) => Promise<void>;
+    /** Change own password (current-password verification is the app's concern). Rejection → error. */
+    onChangePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+    /** Optional (v0.15.2) — send a TEST Telegram to the saved chat_id + report the outcome, so the user can
+     *  confirm notifications actually reach them (a silent fail is otherwise invisible). When supplied, a
+     *  "Poslať test" button + a short how-to appear under the Telegram field. */
+    onTestTelegram?: () => Promise<{
+        ok: boolean;
+        detail: string;
+    }>;
+    /** Minimum new-password length (mirrors the app's backend constraint). Default 5. */
+    passwordMinLength?: number;
+}
+declare function MyAccountPanel({ user, roleLabel, onSaveProfile, onChangePassword, onTestTelegram, passwordMinLength, }: MyAccountPanelProps): react.JSX.Element;
+
 interface SessionsPanelProps {
     sessions: UserSessionRead[];
     /** Resolve a user id to a display name (falls back to the id). */
@@ -884,4 +932,4 @@ interface SessionsPanelProps {
 }
 declare function SessionsPanel({ sessions, resolveUsername, canRevoke, onRevoke, loading, loadError, filterUserId, onFilterChange, }: SessionsPanelProps): react.JSX.Element;
 
-export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, DataTable, type DataTableAlign, type DataTableColumn, type DataTableProps, FormActions, type FormActionsProps, FormField, type FormFieldProps, FormGrid, type FormGridProps, Header, type HeaderProps, type HttpMethod, IconButton, type IconButtonProps, Input, type InputProps, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, NavIcon, type NavIconProps, NavItem, type NavItemProps, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, SectionLabel, type SectionLabelProps, Select, type SelectProps, SessionsPanel, type SessionsPanelProps, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, Sidebar, type SidebarProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, createApiClient, createAuthStore, registerAuthCallback };
+export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, DataTable, type DataTableAlign, type DataTableColumn, type DataTableProps, FormActions, type FormActionsProps, FormField, type FormFieldProps, FormGrid, type FormGridProps, Header, type HeaderProps, type HttpMethod, IconButton, type IconButtonProps, Input, type InputProps, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, MyAccountPanel, type MyAccountPanelProps, type MyAccountUser, NavIcon, type NavIconProps, NavItem, type NavItemProps, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, SectionLabel, type SectionLabelProps, Select, type SelectProps, SessionsPanel, type SessionsPanelProps, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, Sidebar, type SidebarProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, createApiClient, createAuthStore, registerAuthCallback };

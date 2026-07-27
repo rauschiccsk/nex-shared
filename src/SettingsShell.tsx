@@ -17,6 +17,7 @@ const DEFAULT_TAB_LABELS: Record<SettingsTabId, string> = {
   agents: "Agenti",
   users: "Používatelia",
   sessions: "Relácie",
+  konto: "Moje konto",
 };
 
 export interface SettingsShellProps {

@@ -1,10 +1,12 @@
 {
   "name": "nex-shared",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "private": true,
   "type": "module",
-  "description": "NEX shared frontend library — canonical design tokens + UI primitives (E1 unification; NEX Studio is the vzor).",
-  "files": ["dist"],
+  "description": "NEX shared frontend library \u2014 canonical design tokens + UI primitives (E1 unification; NEX Studio is the vzor).",
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

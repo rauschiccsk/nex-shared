@@ -8,8 +8,9 @@
  * names onto these on the way in.
  */
 
-/** The four canonical settings tabs. An app enables a subset via `SettingsKitConfig.tabs`. */
-export type SettingsTabId = "system" | "agents" | "users" | "sessions";
+/** The canonical settings tabs. An app enables a subset via `SettingsKitConfig.tabs`. `konto` (v0.15.1) is
+ *  the self-service "Moje konto" tab (every user edits their OWN account — the self-scoped Users tab). */
+export type SettingsTabId = "system" | "agents" | "users" | "sessions" | "konto";
 
 /**
  * Serialised user row. `role` is an opaque string (role-agnostic kit) — the app
@@ -113,10 +114,11 @@ export interface UserFieldSchema {
  * (when supplied) returns true.
  */
 export interface SettingsKitConfig {
-  /** Enabled tabs, in display order (subset of the four canonical ids). */
+  /** Enabled tabs, in display order (subset of the canonical ids). */
   tabs: SettingsTabId[];
-  /** Slovak tab labels (app-overridable). */
-  labels: Record<SettingsTabId, string>;
+  /** Slovak tab labels (app-overridable). Partial — the SettingsShell falls back to the built-in default
+   *  for any tab an app does not override, so adding a new tab id never forces every app to supply it. */
+  labels: Partial<Record<SettingsTabId, string>>;
   /** Optional capability predicate — hide a tab from a role entirely. */
   tabVisibleForRole?: (tab: SettingsTabId, role: string) => boolean;
 }
