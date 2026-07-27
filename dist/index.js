@@ -104,7 +104,7 @@ function NavItem({
   href
 }) {
   const collapsed = useCollapsed();
-  const base = "flex items-center gap-2.5 py-2 rounded-lg text-sm transition-colors w-full";
+  const base = "flex items-center gap-2.5 py-1.5 rounded-lg text-sm transition-colors w-full";
   const px = collapsed ? "px-0 justify-center" : "px-3";
   const color = disabled ? "text-[var(--color-text-muted)] opacity-40 cursor-not-allowed" : active ? "bg-primary-600/10 text-[var(--color-accent-primary)]" : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]";
   const tooltip = disabled ? disabledTitle ?? label : collapsed ? label : void 0;

@@ -41,7 +41,10 @@ export function NavItem({
 }: NavItemProps) {
   const collapsed = useCollapsed();
 
-  const base = "flex items-center gap-2.5 py-2 rounded-lg text-sm transition-colors w-full";
+  // py-1.5, not py-2: apps keep gaining nav entries and the rail started scrolling, which hides
+  // the tail of the menu behind a scrollbar. 12px vertical padding on a 20px line still leaves a
+  // ~40px row — comfortable on a desktop tool — and buys back ~4px per item.
+  const base = "flex items-center gap-2.5 py-1.5 rounded-lg text-sm transition-colors w-full";
   const px = collapsed ? "px-0 justify-center" : "px-3";
   const color = disabled
     ? "text-[var(--color-text-muted)] opacity-40 cursor-not-allowed"
