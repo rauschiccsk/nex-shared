@@ -27,8 +27,12 @@ export function Brand({ initials, name, version, squareClassName = "bg-primary-6
       >
         {initials}
       </div>
-      <div className="flex-1 min-w-0">
-        <div className="text-sm font-bold text-[var(--color-text-primary)] leading-tight">{name}</div>
+      {/* The product name is pinned to 14px, NOT `text-sm`: the rail has a fixed width, so when an app
+          raises its base type scale the name starts WRAPPING to two lines — which pushes the whole nav
+          down and can put the tail of the menu behind a scrollbar (seen in NEX Studio Visual v4.0.70,
+          text-sm 14px→15px). Brand is fixed chrome; it must not track body text. */}
+        <div className="flex-1 min-w-0">
+        <div className="text-[14px] font-bold text-[var(--color-text-primary)] leading-tight">{name}</div>
         {version != null && version !== "" && (
           // Indigo (brand-tinted) version line — the NEX Studio vzor (primary-400,
           // resolves in both light & dark). All apps converge on this, not Inbox's violet.

@@ -18,6 +18,13 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.18.1
+- `[oprava]` **Brand: názov appky sa už nezalomí.** Bol písaný veľkosťou `text-sm`, čiže rástol spolu
+  so základnou veľkosťou textu appky. Keď NEX Studio Visual zdvihlo `text-sm` zo 14 na 15 px,
+  „NEX Studio Visual" prestal sadnúť na jeden riadok bočného panela, zalomil sa na dva a **posunul
+  celú ponuku o ~15 px nadol** — až sa jej koniec schoval za rolovaciu lištu. Značka je pevná časť
+  rámu a nemá sledovať veľkosť obsahového textu; je pripnutá na 14 px.
+
 ## v0.18.0
 - `[oprava]` **Písmo Inter sa konečne aj dodáva.** `--font-sans` si Inter pýtal od prvého vydania
   tokenov, ale v postavenom CSS nebolo **ani jedno** pravidlo `@font-face` a žiadny súbor — appky
