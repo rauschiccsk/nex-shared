@@ -18,6 +18,15 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.19.0
+- `[oprava]` **Strojopisné písmo sa konečne aj dodáva.** `--font-mono` si pýtal JetBrains Mono a Fira
+  Code od prvého vydania tokenov a **ani jedno sa nikdy nedodalo** — presne tá istá chyba, akú
+  v0.18.0 opravila pri Interi, len o písmo nižšie. Každá plocha s kódom (terminál agenta, bloky kódu
+  v Špecifikácii a Znalostnej báze, identifikátory požiadaviek, čipy verzií) sa preto vykresľovala
+  tým, čo mal kto na počítači — na každom stroji inak. Knižnica teraz nesie JetBrains Mono ako
+  variabilné woff2 (`latin` + `latin-ext`, ~76 kB), hosťované u nás. Appka nemusí spraviť nič.
+  SIL Open Font License.
+
 ## v0.18.1
 - `[oprava]` **Brand: názov appky sa už nezalomí.** Bol písaný veľkosťou `text-sm`, čiže rástol spolu
   so základnou veľkosťou textu appky. Keď NEX Studio Visual zdvihlo `text-sm` zo 14 na 15 px,
