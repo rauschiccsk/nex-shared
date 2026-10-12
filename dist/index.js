@@ -322,6 +322,7 @@ function NavItem({
   disabledTitle,
   badge,
   badgeLabel,
+  badgeTone = "attention",
   onClick,
   href
 }) {
@@ -344,7 +345,8 @@ function NavItem({
       "span",
       {
         "aria-label": badgeLabel,
-        className: collapsed ? "absolute right-1 top-1 h-2 w-2 rounded-full bg-[var(--color-status-in-design)]" : "ml-auto h-2 w-2 rounded-full bg-[var(--color-status-in-design)]"
+        "data-tone": badgeTone,
+        className: `${collapsed ? "absolute right-1 top-1" : "ml-auto"} h-2 w-2 rounded-full ${badgeTone === "danger" ? "bg-[var(--color-status-error)]" : "bg-[var(--color-status-in-design)]"}`
       }
     )
   ] });

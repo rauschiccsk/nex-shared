@@ -164,10 +164,15 @@ interface NavItemProps {
     disabled?: boolean;
     /** Tooltip shown when disabled — explain why + how to enable. */
     disabledTitle?: string;
-    /** Show an amber attention dot (e.g. a queue awaiting the user). */
+    /** Show a dot beside the label (e.g. a queue awaiting the user). */
     badge?: boolean;
     /** Accessible name for the badge dot (only used when `badge`). */
     badgeLabel?: string;
+    /**
+     * The dot's colour: `attention` (amber, the default) when something waits for the user, `danger` (red) when
+     * something is broken — e.g. failed checks.
+     */
+    badgeTone?: "attention" | "danger";
     /** Click handler — the app wires navigation here (router-agnostic lib). */
     onClick?: () => void;
     /** Optional anchor target; when set (and enabled) the item renders as `<a>`. */
@@ -179,7 +184,7 @@ interface NavItemProps {
  * and no `href` it renders a `<button>` (NEX Studio's navigate-on-click model);
  * with an `href` it renders an `<a>`. Reads the collapsed state from context.
  */
-declare function NavItem({ icon, label, active, disabled, disabledTitle, badge, badgeLabel, onClick, href, }: NavItemProps): react.JSX.Element;
+declare function NavItem({ icon, label, active, disabled, disabledTitle, badge, badgeLabel, badgeTone, onClick, href, }: NavItemProps): react.JSX.Element;
 
 interface SectionLabelProps {
     /** Section heading text (rendered uppercase). */

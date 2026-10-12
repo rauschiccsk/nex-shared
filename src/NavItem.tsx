@@ -14,10 +14,15 @@ export interface NavItemProps {
   disabled?: boolean;
   /** Tooltip shown when disabled — explain why + how to enable. */
   disabledTitle?: string;
-  /** Show an amber attention dot (e.g. a queue awaiting the user). */
+  /** Show a dot beside the label (e.g. a queue awaiting the user). */
   badge?: boolean;
   /** Accessible name for the badge dot (only used when `badge`). */
   badgeLabel?: string;
+  /**
+   * The dot's colour: `attention` (amber, the default) when something waits for the user, `danger` (red) when
+   * something is broken — e.g. failed checks.
+   */
+  badgeTone?: "attention" | "danger";
   /** Click handler — the app wires navigation here (router-agnostic lib). */
   onClick?: () => void;
   /** Optional anchor target; when set (and enabled) the item renders as `<a>`. */
@@ -38,6 +43,7 @@ export function NavItem({
   disabledTitle,
   badge,
   badgeLabel,
+  badgeTone = "attention",
   onClick,
   href,
 }: NavItemProps) {
@@ -73,11 +79,10 @@ export function NavItem({
       {badge && (
         <span
           aria-label={badgeLabel}
-          className={
-            collapsed
-              ? "absolute right-1 top-1 h-2 w-2 rounded-full bg-[var(--color-status-in-design)]"
-              : "ml-auto h-2 w-2 rounded-full bg-[var(--color-status-in-design)]"
-          }
+          data-tone={badgeTone}
+          className={`${collapsed ? "absolute right-1 top-1" : "ml-auto"} h-2 w-2 rounded-full ${
+            badgeTone === "danger" ? "bg-[var(--color-status-error)]" : "bg-[var(--color-status-in-design)]"
+          }`}
         />
       )}
     </>

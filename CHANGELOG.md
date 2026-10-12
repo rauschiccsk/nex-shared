@@ -18,6 +18,11 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.22.0
+- `[nové]` **Červená bodka pri záložke** (`<NavItem badge badgeTone="danger">`). Bodka pri záložke môže byť okrem
+  oranžovej („niečo čaká na teba“) aj červená, keď je niečo pokazené — napríklad zlyhané kontroly. Bez `badgeTone`
+  ostáva oranžová ako doteraz.
+
 ## v0.21.0
 - `[nové]` **Hustý bočný panel** (`<Sidebar dense>`). Záložky majú 28 px namiesto 35 px a blok s logom je nižší:
   menší štvorec, názov a verzia sú v jednom riadku a celé sú v bublinke. Pätička je v jednom riadku a zmestí sa
