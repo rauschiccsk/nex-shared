@@ -18,6 +18,21 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.21.0
+- `[nové]` **Hustý bočný panel** (`<Sidebar dense>`). Záložky majú 28 px namiesto 35 px a blok s logom je nižší:
+  menší štvorec, názov a verzia sú v jednom riadku a celé sú v bublinke. Pätička je v jednom riadku a zmestí sa
+  tak viac záložiek bez posúvania. Na dotykovej obrazovke ostáva každý riadok aspoň 44 px. Bez `dense` sa nemení nič.
+- `[nové]` **Šírka bočného panela sa dá meniť ťahadlom** (`<Sidebar width onWidthChange minWidth maxWidth
+  defaultWidth>`). Pravý okraj panela sa dá potiahnuť myšou alebo prstom a posunúť šípkami (Home/End = najužší a
+  najširší). Dvojklik vráti predvolenú šírku a hranice platia vždy. Aplikácia dostane šírku raz, po skončení zmeny,
+  a uloží si ju, kam chce. Len na širokej obrazovke a nie v zbalenom paneli. Bez `onWidthChange` ostáva panel
+  pevný a široký 14rem.
+- `[nové]` `ResizeHandle` — to isté ťahadlo pre ľubovoľný panel aplikácie (napr. pravý stĺpec). Je to `separator`
+  s `aria-valuenow`, takže čítačka povie šírku.
+- `[nové]` `SectionDivider` — tenká čiara medzi skupinami záložiek tam, kde skupina nepotrebuje nadpis.
+- `[nové]` `UserCard` má slot `actions` pre malé ovládacie prvky aplikácie vedľa tlačidla Odhlásiť (napr. prepínač
+  prítomnosti), takže pätička ostane v jednom riadku.
+
 ## v0.20.0
 - `[vzhľad]` **Aplikácia sa dá používať na mobile a tablete.** Pod šírkou 1024 px (mobil, tablet na výšku)
   sa bočný panel schová za tlačidlo „Ponuka“ na začiatku hornej lišty a obsah dostane celú šírku. Panel sa

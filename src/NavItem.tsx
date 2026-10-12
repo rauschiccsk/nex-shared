@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useCollapsed } from "./CollapseContext";
+import { useDense } from "./DensityContext";
 import { useShell } from "./ShellContext";
 
 export interface NavItemProps {
@@ -41,6 +42,7 @@ export function NavItem({
   href,
 }: NavItemProps) {
   const collapsed = useCollapsed();
+  const dense = useDense();
   // In the drawer of a narrow screen, choosing an entry also closes the drawer — the chosen page is underneath it.
   const { closeMenu } = useShell();
   const choose = () => {
@@ -52,8 +54,8 @@ export function NavItem({
   // height: the emoji nav glyph renders taller than its `leading-none` line box, so the flex row grew
   // to ~47px at py-2 and ~40px at py-1.5 — never the value the padding implied. An explicit height
   // with `items-center` pins the row regardless of glyph metrics, and apps keep gaining nav entries,
-  // so the rail must stop scrolling.
-  const base = "flex items-center gap-2.5 h-[35px] rounded-lg text-sm transition-colors w-full";
+  // so the rail must stop scrolling. v0.21.0: 28px in a dense sidebar (on a touch screen still at least 44px).
+  const base = `flex items-center gap-2.5 ${dense ? "h-7" : "h-[35px]"} rounded-lg text-sm transition-colors w-full`;
   const px = collapsed ? "px-0 justify-center" : "px-3";
   const color = disabled
     ? "text-[var(--color-text-muted)] opacity-40 cursor-not-allowed"

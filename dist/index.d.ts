@@ -65,6 +65,8 @@ declare const useShell: () => ShellState;
  */
 declare function useWideScreen(): boolean;
 
+/** The expanded width when the app sets none — the sidebar's width before v0.21.0 (14rem). */
+declare const SIDEBAR_DEFAULT_WIDTH = 224;
 interface SidebarProps {
     /** Whether the rail is collapsed. State is OWNED BY THE APP. */
     collapsed: boolean;
@@ -82,6 +84,19 @@ interface SidebarProps {
     expandTitle?: string;
     /** Tooltip of the button that closes the sidebar while it is a drawer (narrow screen). NEX-Slovak default. */
     closeMenuTitle?: string;
+    /** v0.21.0 — 28 px rows, a lower brand block and footer (see `DensityContext`). Off by default. */
+    dense?: boolean;
+    /** v0.21.0 — the expanded width in px; omitted = {@link SIDEBAR_DEFAULT_WIDTH}. */
+    width?: number;
+    /** v0.21.0 — with it the right edge becomes a handle that changes the width on a wide screen (not in the drawer,
+        not collapsed); called once per finished change, so the app keeps the width where it wants. */
+    onWidthChange?: (width: number) => void;
+    minWidth?: number;
+    maxWidth?: number;
+    /** What a double click on the handle returns to. */
+    defaultWidth?: number;
+    /** The handle's accessible name. NEX-Slovak default. */
+    resizeLabel?: string;
 }
 /**
  * The collapsible sidebar container: a fixed-width rail (3.5rem collapsed /
@@ -93,7 +108,50 @@ interface SidebarProps {
  * Inside `<AppShell>` on a narrow screen the sidebar is a drawer: always expanded (a drawer of icons would hide
  * the labels and save no room), and the collapse toggle becomes the button that closes the drawer.
  */
-declare function Sidebar({ collapsed, onToggleCollapse, logo, footer, children, collapseTitle, expandTitle, closeMenuTitle, }: SidebarProps): react.JSX.Element;
+declare function Sidebar({ collapsed, onToggleCollapse, logo, footer, children, collapseTitle, expandTitle, closeMenuTitle, dense, width, onWidthChange, minWidth, maxWidth, defaultWidth, resizeLabel, }: SidebarProps): react.JSX.Element;
+
+interface ResizeHandleProps {
+    /** The panel's width in px as it is now. */
+    value: number;
+    min: number;
+    max: number;
+    /** The width a double click returns to. */
+    defaultValue: number;
+    /** Which side of the handle the panel lies on — dragging away from the panel widens it. */
+    panel: "left" | "right";
+    /** Called while the width changes (drag, key) — the app shows it at once. */
+    onResize: (width: number) => void;
+    /** Called once when a change is finished (drag released, key pressed, double click) — the app keeps it. A drag
+        that ends where it began still ends: the app learns that the dragging is over. */
+    onResizeEnd: (width: number) => void;
+    /** The accessible name, e.g. „Šírka bočného panela“. */
+    label: string;
+    /** Extra classes — the app positions the handle (e.g. `absolute inset-y-0 -right-1`). */
+    className?: string;
+}
+/**
+ * A draggable edge between a panel and the content (v0.21.0). Drag it with a mouse or a finger, move it with the arrow
+ * keys (Home / End = narrowest / widest) or double-click it to return to the default width. It never leaves the
+ * bounds. A `separator` with `aria-valuenow`, so a screen reader says the width. Store-agnostic: the app keeps the
+ * width wherever it wants (`onResizeEnd`).
+ */
+declare function ResizeHandle({ value, min, max, defaultValue, panel, onResize, onResizeEnd, label, className, }: ResizeHandleProps): react.JSX.Element;
+
+/**
+ * v0.21.0 — whether the sidebar is dense: 28 px rows, a lower brand block and a one-line footer, so an app with many
+ * entries keeps them all in view (NEX Studio Visual: 17 entries and more coming). Provided by the shared `<Sidebar
+ * dense>`; `<NavItem>`, `<Brand>` and `<SectionDivider>` read it. Off by default — every other app keeps its look.
+ * On a touch screen a row stays at least 44 px regardless (the `pointer: coarse` rule in `tokens.css`).
+ */
+declare const DensityContext: react.Context<boolean>;
+/** Read whether the nearest `<Sidebar>` is dense. */
+declare const useDense: () => boolean;
+
+/**
+ * A thin line between groups of sidebar entries (v0.21.0) — where a group needs no heading of its own (NEX Studio
+ * Visual: „Nastavenia“ above the single entry „Nastavenia“ said the same thing twice). Takes no room for words.
+ */
+declare function SectionDivider(): react.JSX.Element;
 
 interface NavItemProps {
     /** Leading icon (decorative — the `label` is the accessible name). */
@@ -184,6 +242,9 @@ interface UserCardProps {
     onLogout?: () => void;
     /** Tooltip for the logout button. NEX-Slovak default. */
     logoutTitle?: string;
+    /** v0.21.0 — the app's own small controls beside the logout button (e.g. a presence toggle), so the footer
+        stays one line. Shown also when the sidebar is collapsed. */
+    actions?: ReactNode;
 }
 /**
  * The sidebar-footer user card: a round avatar with initials, the user name, an
@@ -191,7 +252,7 @@ interface UserCardProps {
  * Studio vzor (E1 unification, CR-NS-066) — pass `footer={<UserCard .../>}`.
  * Collapse-aware (avatar-only when the rail is collapsed) and theme-aware.
  */
-declare function UserCard({ initials, name, subtitle, onLogout, logoutTitle, }: UserCardProps): react.JSX.Element;
+declare function UserCard({ initials, name, subtitle, onLogout, logoutTitle, actions, }: UserCardProps): react.JSX.Element;
 
 interface ThemeToggleProps {
     /** Current theme. State is OWNED BY THE APP (Studio ThemeContext / Inbox uiStore). */
@@ -969,4 +1030,4 @@ interface SessionsPanelProps {
 }
 declare function SessionsPanel({ sessions, resolveUsername, canRevoke, onRevoke, loading, loadError, filterUserId, onFilterChange, }: SessionsPanelProps): react.JSX.Element;
 
-export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, DataTable, type DataTableAlign, type DataTableColumn, type DataTableProps, FormActions, type FormActionsProps, FormField, type FormFieldProps, FormGrid, type FormGridProps, Header, type HeaderProps, type HttpMethod, IconButton, type IconButtonProps, Input, type InputProps, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, MyAccountPanel, type MyAccountPanelProps, type MyAccountUser, NavIcon, type NavIconProps, NavItem, type NavItemProps, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, SectionLabel, type SectionLabelProps, Select, type SelectProps, SessionsPanel, type SessionsPanelProps, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, ShellContext, type ShellState, Sidebar, type SidebarProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, WIDE_SCREEN_QUERY, createApiClient, createAuthStore, registerAuthCallback, useShell, useWideScreen };
+export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, DataTable, type DataTableAlign, type DataTableColumn, type DataTableProps, DensityContext, FormActions, type FormActionsProps, FormField, type FormFieldProps, FormGrid, type FormGridProps, Header, type HeaderProps, type HttpMethod, IconButton, type IconButtonProps, Input, type InputProps, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, MyAccountPanel, type MyAccountPanelProps, type MyAccountUser, NavIcon, type NavIconProps, NavItem, type NavItemProps, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, ResizeHandle, type ResizeHandleProps, SIDEBAR_DEFAULT_WIDTH, SectionDivider, SectionLabel, type SectionLabelProps, Select, type SelectProps, SessionsPanel, type SessionsPanelProps, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, ShellContext, type ShellState, Sidebar, type SidebarProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, WIDE_SCREEN_QUERY, createApiClient, createAuthStore, registerAuthCallback, useDense, useShell, useWideScreen };

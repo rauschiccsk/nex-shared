@@ -1,4 +1,6 @@
+import type { ReactNode } from "react";
 import { useCollapsed } from "./CollapseContext";
+import { useDense } from "./DensityContext";
 
 export interface UserCardProps {
   /** Avatar initials (e.g. first letter of the username, uppercased). */
@@ -12,6 +14,9 @@ export interface UserCardProps {
   onLogout?: () => void;
   /** Tooltip for the logout button. NEX-Slovak default. */
   logoutTitle?: string;
+  /** v0.21.0 — the app's own small controls beside the logout button (e.g. a presence toggle), so the footer
+      stays one line. Shown also when the sidebar is collapsed. */
+  actions?: ReactNode;
 }
 
 /**
@@ -26,21 +31,31 @@ export function UserCard({
   subtitle,
   onLogout,
   logoutTitle = "Odhlásiť sa",
+  actions,
 }: UserCardProps) {
   const collapsed = useCollapsed();
+  // v0.21.0: in a dense sidebar the subtitle stays on one line too (the whole text on hover).
+  const dense = useDense();
   return (
-    <div className={`flex items-center gap-2.5 px-2 py-1.5 rounded-lg ${collapsed ? "justify-center" : ""}`}>
+    <div className={`flex items-center gap-2.5 px-2 py-1.5 rounded-lg ${collapsed ? "flex-col justify-center" : ""}`}>
       <div className="w-7 h-7 rounded-full bg-primary-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
         {initials}
       </div>
+      {collapsed && actions}
       {!collapsed && (
         <>
           <div className="min-w-0 flex-1">
             <div className="text-xs font-medium text-[var(--color-text-primary)] truncate">{name}</div>
             {subtitle != null && subtitle !== "" && (
-              <div className="text-[10px] text-[var(--color-text-muted)]">{subtitle}</div>
+              <div
+                className={`text-[10px] text-[var(--color-text-muted)] ${dense ? "truncate" : ""}`}
+                title={dense ? subtitle : undefined}
+              >
+                {subtitle}
+              </div>
             )}
           </div>
+          {actions}
           {onLogout != null && (
             <button
               type="button"

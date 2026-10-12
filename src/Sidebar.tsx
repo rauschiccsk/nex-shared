@@ -1,6 +1,11 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { CollapseContext } from "./CollapseContext";
+import { DensityContext } from "./DensityContext";
+import { ResizeHandle } from "./ResizeHandle";
 import { useShell } from "./ShellContext";
+
+/** The expanded width when the app sets none — the sidebar's width before v0.21.0 (14rem). */
+export const SIDEBAR_DEFAULT_WIDTH = 224;
 
 export interface SidebarProps {
   /** Whether the rail is collapsed. State is OWNED BY THE APP. */
@@ -19,6 +24,19 @@ export interface SidebarProps {
   expandTitle?: string;
   /** Tooltip of the button that closes the sidebar while it is a drawer (narrow screen). NEX-Slovak default. */
   closeMenuTitle?: string;
+  /** v0.21.0 — 28 px rows, a lower brand block and footer (see `DensityContext`). Off by default. */
+  dense?: boolean;
+  /** v0.21.0 — the expanded width in px; omitted = {@link SIDEBAR_DEFAULT_WIDTH}. */
+  width?: number;
+  /** v0.21.0 — with it the right edge becomes a handle that changes the width on a wide screen (not in the drawer,
+      not collapsed); called once per finished change, so the app keeps the width where it wants. */
+  onWidthChange?: (width: number) => void;
+  minWidth?: number;
+  maxWidth?: number;
+  /** What a double click on the handle returns to. */
+  defaultWidth?: number;
+  /** The handle's accessible name. NEX-Slovak default. */
+  resizeLabel?: string;
 }
 
 const IconClose = () => (
@@ -54,46 +72,86 @@ export function Sidebar({
   collapseTitle = "Zúžiť",
   expandTitle = "Rozšíriť",
   closeMenuTitle = "Zavrieť ponuku",
+  dense = false,
+  width,
+  onWidthChange,
+  minWidth = 180,
+  maxWidth = 360,
+  defaultWidth = SIDEBAR_DEFAULT_WIDTH,
+  resizeLabel = "Šírka bočného panela",
 }: SidebarProps) {
   const { narrow, closeMenu } = useShell();
   const rail = collapsed && !narrow;
+  // While the edge is dragged the width follows the pointer here; the app hears it once, at the end.
+  const [dragged, setDragged] = useState<number | null>(null);
+  const expanded = dragged ?? width ?? defaultWidth;
+  const resizable = onWidthChange != null && !narrow && !rail;
+  // An app that sets no width keeps the width it always had, in rem (it follows the app's root font size).
+  const shown = rail ? "3.5rem" : dragged != null || width != null ? `${expanded}px` : "14rem";
   return (
     <CollapseContext.Provider value={rail}>
-      <aside
-        className="flex-shrink-0 bg-[var(--color-surface)] border-r border-[var(--color-border-default)] flex flex-col select-none transition-all duration-200 overflow-x-hidden"
-        style={{ width: rail ? "3.5rem" : "14rem" }}
-      >
-        {/* Logo + toggle */}
-        <div className="px-3 py-3 border-b border-[var(--color-border-default)] flex items-center gap-3 min-h-[56px]">
-          {!rail && logo}
-          {narrow ? (
-            <button
-              type="button"
-              onClick={closeMenu}
-              className="ml-auto flex items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)] transition-colors shrink-0 w-8 h-8"
-              title={closeMenuTitle}
-              aria-label={closeMenuTitle}
-            >
-              <IconClose />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={onToggleCollapse}
-              className={`flex items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)] transition-colors shrink-0 ${rail ? "w-8 h-8" : "w-6 h-6"}`}
-              title={rail ? expandTitle : collapseTitle}
-            >
-              <IconSidebarToggle />
-            </button>
+      <DensityContext.Provider value={dense}>
+        <aside
+          className={`relative flex-shrink-0 bg-[var(--color-surface)] border-r border-[var(--color-border-default)] flex flex-col select-none overflow-x-hidden ${
+            dragged == null ? "transition-all duration-200" : ""
+          }`}
+          style={{ width: shown }}
+        >
+          {/* Logo + toggle */}
+          <div
+            className={`border-b border-[var(--color-border-default)] flex items-center ${
+              dense ? "px-3 py-2 gap-2 min-h-[48px]" : "px-3 py-3 gap-3 min-h-[56px]"
+            }`}
+          >
+            {!rail && logo}
+            {narrow ? (
+              <button
+                type="button"
+                onClick={closeMenu}
+                className="ml-auto flex items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)] transition-colors shrink-0 w-8 h-8"
+                title={closeMenuTitle}
+                aria-label={closeMenuTitle}
+              >
+                <IconClose />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onToggleCollapse}
+                className={`flex items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)] transition-colors shrink-0 ${rail ? "w-8 h-8" : "w-6 h-6"}`}
+                title={rail ? expandTitle : collapseTitle}
+              >
+                <IconSidebarToggle />
+              </button>
+            )}
+          </div>
+
+          {/* Navigation body */}
+          <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto overflow-x-hidden">{children}</nav>
+
+          {/* Footer */}
+          {footer != null && (
+            <div className={`border-t border-[var(--color-border-default)] ${dense ? "px-2 py-1.5" : "p-3"}`}>{footer}</div>
           )}
-        </div>
 
-        {/* Navigation body */}
-        <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto overflow-x-hidden">{children}</nav>
-
-        {/* Footer */}
-        {footer != null && <div className="p-3 border-t border-[var(--color-border-default)]">{footer}</div>}
-      </aside>
+          {resizable && (
+            <ResizeHandle
+              value={expanded}
+              min={minWidth}
+              max={maxWidth}
+              defaultValue={defaultWidth}
+              panel="left"
+              onResize={setDragged}
+              onResizeEnd={(w) => {
+                setDragged(null);
+                if (w !== (width ?? defaultWidth)) onWidthChange(w);
+              }}
+              label={resizeLabel}
+              className="absolute inset-y-0 right-0"
+            />
+          )}
+        </aside>
+      </DensityContext.Provider>
     </CollapseContext.Provider>
   );
 }

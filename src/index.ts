@@ -7,8 +7,15 @@ export type { AppShellProps } from "./AppShell";
 export { ShellContext, useShell, useWideScreen, WIDE_SCREEN_QUERY } from "./ShellContext";
 export type { ShellState } from "./ShellContext";
 
-export { Sidebar } from "./Sidebar";
+export { Sidebar, SIDEBAR_DEFAULT_WIDTH } from "./Sidebar";
 export type { SidebarProps } from "./Sidebar";
+
+export { ResizeHandle } from "./ResizeHandle";
+export type { ResizeHandleProps } from "./ResizeHandle";
+
+export { DensityContext, useDense } from "./DensityContext";
+
+export { SectionDivider } from "./SectionDivider";
 
 export { NavItem } from "./NavItem";
 export type { NavItemProps } from "./NavItem";

@@ -1,3 +1,5 @@
+import { useDense } from "./DensityContext";
+
 export interface BrandProps {
   /** 1–2 letter app initials shown in the colored square (e.g. "NS", "NI"). */
   initials: string;
@@ -20,10 +22,13 @@ export interface BrandProps {
  * collapse-aware.
  */
 export function Brand({ initials, name, version, squareClassName = "bg-primary-600" }: BrandProps) {
+  // v0.21.0: in a dense sidebar a smaller square and the name on one line (the whole name on hover) — the block is
+  // two lines high instead of three.
+  const dense = useDense();
   return (
     <>
       <div
-        className={`w-8 h-8 rounded-lg ${squareClassName} flex items-center justify-center text-white font-black text-sm shrink-0`}
+        className={`${dense ? "w-7 h-7 text-xs" : "w-8 h-8 text-sm"} rounded-lg ${squareClassName} flex items-center justify-center text-white font-black shrink-0`}
       >
         {initials}
       </div>
@@ -32,11 +37,18 @@ export function Brand({ initials, name, version, squareClassName = "bg-primary-6
           down and can put the tail of the menu behind a scrollbar (seen in NEX Studio Visual v4.0.70,
           text-sm 14px→15px). Brand is fixed chrome; it must not track body text. */}
         <div className="flex-1 min-w-0">
-        <div className="text-[14px] font-bold text-[var(--color-text-primary)] leading-tight">{name}</div>
+        <div
+          className={`text-[14px] font-bold text-[var(--color-text-primary)] leading-tight ${dense ? "truncate" : ""}`}
+          title={dense ? name : undefined}
+        >
+          {name}
+        </div>
         {version != null && version !== "" && (
           // Indigo (brand-tinted) version line — the NEX Studio vzor (primary-400,
           // resolves in both light & dark). All apps converge on this, not Inbox's violet.
-          <div className="text-[10px] text-primary-400 font-mono">{version}</div>
+          <div className={`text-[10px] text-primary-400 font-mono ${dense ? "truncate" : ""}`} title={dense ? version : undefined}>
+            {version}
+          </div>
         )}
       </div>
     </>
