@@ -206,6 +206,33 @@ html.dark {
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+
+  /* v0.20.0: on a touch screen every control is at least 44 px — the smallest target a finger hits reliably
+     (Apple HIG, WCAG 2.5.5). Only where the primary pointer is coarse: with a mouse nothing changes. In the base
+     layer on purpose, so an app's own utility class (e.g. `min-h-0` on a deliberate exception) still wins. A link
+     inside running text keeps the height of its line and is not listed here. */
+  @media (pointer: coarse) {
+    button,
+    [role="button"],
+    [role="tab"],
+    select,
+    textarea,
+    summary,
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]) {
+      min-height: 44px;
+    }
+
+    button,
+    [role="button"],
+    [role="tab"] {
+      min-width: 44px;
+    }
+
+    /* A checkbox or radio is touched through its label — the whole row is the target. */
+    label:has(input[type="checkbox"], input[type="radio"]) {
+      min-height: 44px;
+    }
+  }
 }
 
 @layer components {

@@ -64,7 +64,8 @@ export function DataTable<Row>({
   const colCount = columns.length + (rowActions ? 1 : 0);
   return (
     <div
-      className={`rounded-xl border border-[var(--color-border-default)] overflow-hidden ${className}`.trim()}
+      data-scroll-x
+      className={`rounded-xl border border-[var(--color-border-default)] overflow-x-auto ${className}`.trim()}
     >
       <table className="w-full text-sm">
         <thead className="bg-[var(--color-surface-hover)]">

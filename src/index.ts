@@ -4,6 +4,9 @@ export type { ButtonProps, ButtonVariant, ButtonSize } from "./Button";
 export { AppShell } from "./AppShell";
 export type { AppShellProps } from "./AppShell";
 
+export { ShellContext, useShell, useWideScreen, WIDE_SCREEN_QUERY } from "./ShellContext";
+export type { ShellState } from "./ShellContext";
+
 export { Sidebar } from "./Sidebar";
 export type { SidebarProps } from "./Sidebar";
 

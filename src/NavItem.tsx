@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useCollapsed } from "./CollapseContext";
+import { useShell } from "./ShellContext";
 
 export interface NavItemProps {
   /** Leading icon (decorative — the `label` is the accessible name). */
@@ -40,6 +41,12 @@ export function NavItem({
   href,
 }: NavItemProps) {
   const collapsed = useCollapsed();
+  // In the drawer of a narrow screen, choosing an entry also closes the drawer — the chosen page is underneath it.
+  const { closeMenu } = useShell();
+  const choose = () => {
+    onClick?.();
+    closeMenu();
+  };
 
   // A FIXED 35px row (Director, 2026-07-27), not vertical padding. Padding gave an unpredictable
   // height: the emoji nav glyph renders taller than its `leading-none` line box, so the flex row grew
@@ -76,7 +83,7 @@ export function NavItem({
 
   if (href && !disabled) {
     return (
-      <a className={className} href={href} title={tooltip} onClick={onClick}>
+      <a className={className} href={href} title={tooltip} onClick={choose}>
         {inner}
       </a>
     );
@@ -84,7 +91,7 @@ export function NavItem({
 
   const handleClick = () => {
     if (disabled) return;
-    onClick?.();
+    choose();
   };
 
   return (

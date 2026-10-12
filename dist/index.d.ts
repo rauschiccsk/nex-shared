@@ -22,16 +22,48 @@ interface AppShellProps {
     topBanner?: ReactNode;
     /** Page content rendered in the scrollable main region. */
     children?: ReactNode;
+    /** Accessible name of the menu button that opens the sidebar on a narrow screen. NEX-Slovak default. */
+    menuLabel?: string;
 }
 /**
- * The outer application frame: a full-height flex row with the sidebar on the
- * left and a flex-column main area (optional top banner + header, then the
- * scrollable content) on the right.
+ * The outer application frame: a full-height flex row with the sidebar on the left and a flex-column main area
+ * (optional top banner + header, then the scrollable content) on the right.
  *
- * The main region is `relative` on purpose so consumers can absolutely-position
- * overlays inside it (NEX Studio renders its PersistentTerminalsLayer there).
+ * On a narrow screen (below `WIDE_SCREEN_QUERY` — a phone, a tablet held upright) the content takes the whole
+ * width: the sidebar hides behind a menu button at the start of the header and slides over the content when
+ * opened. It closes on Escape, on a tap beside it and when a `<NavItem>` is chosen; while closed it is hidden and
+ * inert, so neither a finger nor the keyboard lands on it. On a wide screen nothing changes.
+ *
+ * The main region is `relative` on purpose so consumers can absolutely-position overlays inside it (NEX Studio
+ * renders its PersistentTerminalsLayer there).
  */
-declare function AppShell({ sidebar, header, topBanner, children }: AppShellProps): react.JSX.Element;
+declare function AppShell({ sidebar, header, topBanner, children, menuLabel, }: AppShellProps): react.JSX.Element;
+
+/**
+ * From this width up the sidebar stands beside the content (a computer, a tablet held landscape); below it the
+ * sidebar hides behind the menu button in the header and slides over the content (a phone, a tablet held upright).
+ */
+declare const WIDE_SCREEN_QUERY = "(min-width: 1024px)";
+interface ShellState {
+    /** The screen is narrower than {@link WIDE_SCREEN_QUERY}: the sidebar is a drawer, always shown expanded. */
+    narrow: boolean;
+    /** The drawer is open (only ever `true` while `narrow`). */
+    menuOpen: boolean;
+    /** Close the drawer — a no-op on a wide screen. */
+    closeMenu: () => void;
+}
+/** Provided by `<AppShell>`; outside of it the screen counts as wide and nothing is a drawer. */
+declare const ShellContext: react.Context<ShellState>;
+/**
+ * Read the shell's layout state — e.g. an app's own sidebar content shows its labels whenever `narrow`, because
+ * the drawer is never collapsed to icons.
+ */
+declare const useShell: () => ShellState;
+/**
+ * Whether {@link WIDE_SCREEN_QUERY} matches, following the window as it is resized or turned. Where the browser
+ * cannot answer (a test environment without `matchMedia`), the screen counts as wide — the layout it always had.
+ */
+declare function useWideScreen(): boolean;
 
 interface SidebarProps {
     /** Whether the rail is collapsed. State is OWNED BY THE APP. */
@@ -48,6 +80,8 @@ interface SidebarProps {
     collapseTitle?: string;
     /** Toggle tooltip when collapsed (click expands). NEX-Slovak default. */
     expandTitle?: string;
+    /** Tooltip of the button that closes the sidebar while it is a drawer (narrow screen). NEX-Slovak default. */
+    closeMenuTitle?: string;
 }
 /**
  * The collapsible sidebar container: a fixed-width rail (3.5rem collapsed /
@@ -55,8 +89,11 @@ interface SidebarProps {
  * (`children`), and a footer slot. Provides `CollapseContext` so nested
  * `<NavItem>` / `<SectionLabel>` read the collapsed state without prop-threading.
  * Router-agnostic and store-agnostic — all data comes via slots / children.
+ *
+ * Inside `<AppShell>` on a narrow screen the sidebar is a drawer: always expanded (a drawer of icons would hide
+ * the labels and save no room), and the collapse toggle becomes the button that closes the drawer.
  */
-declare function Sidebar({ collapsed, onToggleCollapse, logo, footer, children, collapseTitle, expandTitle, }: SidebarProps): react.JSX.Element;
+declare function Sidebar({ collapsed, onToggleCollapse, logo, footer, children, collapseTitle, expandTitle, closeMenuTitle, }: SidebarProps): react.JSX.Element;
 
 interface NavItemProps {
     /** Leading icon (decorative — the `label` is the accessible name). */
@@ -107,7 +144,7 @@ interface HeaderProps {
     className?: string;
 }
 /**
- * The top header bar chrome: a fixed-height dark row. Provide either `children`
+ * The top header bar chrome: a dark row at least 2.5rem high (taller on a touch screen, where its controls are). Provide either `children`
  * (full control) or the `left` / `right` slots. Store- and router-agnostic — the
  * consuming app supplies its own breadcrumb / status content.
  */
@@ -932,4 +969,4 @@ interface SessionsPanelProps {
 }
 declare function SessionsPanel({ sessions, resolveUsername, canRevoke, onRevoke, loading, loadError, filterUserId, onFilterChange, }: SessionsPanelProps): react.JSX.Element;
 
-export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, DataTable, type DataTableAlign, type DataTableColumn, type DataTableProps, FormActions, type FormActionsProps, FormField, type FormFieldProps, FormGrid, type FormGridProps, Header, type HeaderProps, type HttpMethod, IconButton, type IconButtonProps, Input, type InputProps, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, MyAccountPanel, type MyAccountPanelProps, type MyAccountUser, NavIcon, type NavIconProps, NavItem, type NavItemProps, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, SectionLabel, type SectionLabelProps, Select, type SelectProps, SessionsPanel, type SessionsPanelProps, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, Sidebar, type SidebarProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, createApiClient, createAuthStore, registerAuthCallback };
+export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, DataTable, type DataTableAlign, type DataTableColumn, type DataTableProps, FormActions, type FormActionsProps, FormField, type FormFieldProps, FormGrid, type FormGridProps, Header, type HeaderProps, type HttpMethod, IconButton, type IconButtonProps, Input, type InputProps, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, MyAccountPanel, type MyAccountPanelProps, type MyAccountUser, NavIcon, type NavIconProps, NavItem, type NavItemProps, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, SectionLabel, type SectionLabelProps, Select, type SelectProps, SessionsPanel, type SessionsPanelProps, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, ShellContext, type ShellState, Sidebar, type SidebarProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, WIDE_SCREEN_QUERY, createApiClient, createAuthStore, registerAuthCallback, useShell, useWideScreen };

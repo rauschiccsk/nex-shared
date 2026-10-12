@@ -108,7 +108,7 @@ export function SessionsPanel({
       )}
 
       {!loading && !loadError && (
-        <div className="rounded-xl border border-[var(--color-border-default)] overflow-hidden">
+        <div className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto" data-scroll-x>
           <table className="w-full text-sm">
             <thead className="bg-[var(--color-surface-hover)]">
               <tr className="text-[10px] uppercase tracking-widest text-[var(--color-text-muted)]">
@@ -126,8 +126,8 @@ export function SessionsPanel({
                   <td className="px-4 py-3 text-sm font-medium text-[var(--color-text-primary)]">{nameOf(s.user_id)}</td>
                   <td className="px-4 py-3 font-mono text-[10px] text-[var(--color-text-muted)]">{s.id}</td>
                   <td className="px-4 py-3 text-right font-mono text-xs text-[var(--color-text-secondary)]">{s.token_version}</td>
-                  <td className="px-4 py-3 text-xs text-[var(--color-text-muted)]">{fmt(s.last_seen_at)}</td>
-                  <td className="px-4 py-3 text-xs text-[var(--color-text-muted)]">{fmt(s.created_at)}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-xs text-[var(--color-text-muted)]">{fmt(s.last_seen_at)}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-xs text-[var(--color-text-muted)]">{fmt(s.created_at)}</td>
                   <td className="px-4 py-3 text-right">
                     {!canRevoke ? (
                       <span className="text-xs text-[var(--color-text-muted)]">—</span>

@@ -58,14 +58,21 @@ export function SettingsShell({
         {headerRight}
       </div>
 
-      {/* Tab bar */}
-      <div className="flex-shrink-0 flex gap-0 border-b border-[var(--color-border-default)] px-6">
+      {/* Tab bar — on a narrow screen it scrolls sideways in its own frame instead of widening the page. */}
+      <div
+        role="tablist"
+        aria-label={title}
+        data-scroll-x
+        className="flex-shrink-0 flex gap-0 overflow-x-auto border-b border-[var(--color-border-default)] px-6"
+      >
         {visibleTabs.map((t) => (
           <button
             key={t}
             type="button"
+            role="tab"
+            aria-selected={activeTab === t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+            className={`shrink-0 whitespace-nowrap px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
               activeTab === t
                 ? "border-primary-500 text-primary-400"
                 : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"

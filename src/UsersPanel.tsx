@@ -154,6 +154,7 @@ export function UsersPanel({
         {canManage && (
           <button
             type="button"
+            aria-expanded={showNewForm}
             onClick={() => { setShowNewForm((v) => !v); setEditingUser(null); setConfirmingDeleteId(null); }}
             className="flex items-center gap-1.5 bg-primary-600 hover:bg-primary-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
           >
@@ -166,7 +167,7 @@ export function UsersPanel({
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-3 mb-3">
+      <div className="flex flex-wrap items-center gap-3 mb-3">
         <select
           value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value)}
@@ -194,7 +195,7 @@ export function UsersPanel({
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-[var(--color-border-default)] overflow-hidden">
+      <div className="rounded-xl border border-[var(--color-border-default)] overflow-x-auto" data-scroll-x>
         <table className="w-full text-sm">
           <thead className="bg-[var(--color-surface-hover)]">
             <tr className="text-[10px] uppercase tracking-widest text-[var(--color-text-muted)]">

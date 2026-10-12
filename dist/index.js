@@ -32,25 +32,109 @@ function Button({
 }
 
 // src/AppShell.tsx
-import { jsx as jsx2, jsxs } from "react/jsx-runtime";
-function AppShell({ sidebar, header, topBanner, children }) {
-  return /* @__PURE__ */ jsxs("div", { className: "flex h-full w-full bg-[var(--color-canvas)]", children: [
-    sidebar,
+import { useCallback, useEffect as useEffect2, useMemo, useRef, useState as useState2 } from "react";
+
+// src/ShellContext.ts
+import { createContext, useContext, useEffect, useState } from "react";
+var WIDE_SCREEN_QUERY = "(min-width: 1024px)";
+var ShellContext = createContext({ narrow: false, menuOpen: false, closeMenu: () => {
+} });
+var useShell = () => useContext(ShellContext);
+function useWideScreen() {
+  const supported = typeof window !== "undefined" && typeof window.matchMedia === "function";
+  const [wide, setWide] = useState(() => !supported || window.matchMedia(WIDE_SCREEN_QUERY).matches);
+  useEffect(() => {
+    if (!supported) return;
+    const query = window.matchMedia(WIDE_SCREEN_QUERY);
+    const update = () => setWide(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, [supported]);
+  return wide;
+}
+
+// src/AppShell.tsx
+import { Fragment, jsx as jsx2, jsxs } from "react/jsx-runtime";
+var IconMenu = () => /* @__PURE__ */ jsx2("svg", { className: "w-5 h-5", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsx2("path", { d: "M4 6h16M4 12h16M4 18h16", strokeWidth: "1.8", strokeLinecap: "round" }) });
+function AppShell({
+  sidebar,
+  header,
+  topBanner,
+  children,
+  menuLabel = "Ponuka"
+}) {
+  const narrow = !useWideScreen();
+  const [menuOpen, setMenuOpen] = useState2(false);
+  const menuButton = useRef(null);
+  const drawer = useRef(null);
+  const wasOpen = useRef(false);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
+  useEffect2(() => {
+    if (!narrow) setMenuOpen(false);
+  }, [narrow]);
+  useEffect2(() => {
+    if (!menuOpen) return;
+    const onKey = (event) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
+  useEffect2(() => {
+    if (menuOpen) {
+      drawer.current?.querySelector("button, a[href]")?.focus();
+    } else if (wasOpen.current) {
+      menuButton.current?.focus();
+    }
+    wasOpen.current = menuOpen;
+  }, [menuOpen]);
+  const shell = useMemo(() => ({ narrow, menuOpen: narrow && menuOpen, closeMenu }), [narrow, menuOpen, closeMenu]);
+  return /* @__PURE__ */ jsx2(ShellContext.Provider, { value: shell, children: /* @__PURE__ */ jsxs("div", { className: "flex h-full w-full bg-[var(--color-canvas)]", children: [
+    narrow ? /* @__PURE__ */ jsxs(Fragment, { children: [
+      menuOpen && // A tap beside the drawer closes it; the keyboard and screen readers use Escape or its close button.
+      /* @__PURE__ */ jsx2("div", { className: "fixed inset-0 z-40 bg-black/50", "aria-hidden": "true", onClick: closeMenu }),
+      /* @__PURE__ */ jsx2(
+        "div",
+        {
+          ref: drawer,
+          className: `fixed inset-y-0 left-0 z-50 flex max-w-[85vw] shadow-[var(--shadow-lg)] transition-[transform,visibility] duration-200 ${menuOpen ? "translate-x-0" : "invisible -translate-x-full"}`,
+          inert: !menuOpen,
+          children: sidebar
+        }
+      )
+    ] }) : sidebar,
     /* @__PURE__ */ jsxs("div", { className: "flex min-w-0 flex-1 flex-col overflow-hidden", children: [
       topBanner,
-      header,
+      narrow ? /* @__PURE__ */ jsxs("div", { className: "flex flex-shrink-0 items-stretch", children: [
+        /* @__PURE__ */ jsx2(
+          "button",
+          {
+            ref: menuButton,
+            type: "button",
+            "aria-label": menuLabel,
+            "aria-expanded": menuOpen,
+            title: menuLabel,
+            onClick: () => setMenuOpen(true),
+            className: "flex w-11 flex-shrink-0 items-center justify-center border-b border-r border-[var(--color-border-default)] bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]",
+            children: /* @__PURE__ */ jsx2(IconMenu, {})
+          }
+        ),
+        /* @__PURE__ */ jsx2("div", { className: "min-w-0 flex-1", children: header })
+      ] }) : header,
       /* @__PURE__ */ jsx2("main", { className: "relative flex-1 overflow-y-auto", children })
     ] })
-  ] });
+  ] }) });
 }
 
 // src/CollapseContext.ts
-import { createContext, useContext } from "react";
-var CollapseContext = createContext(false);
-var useCollapsed = () => useContext(CollapseContext);
+import { createContext as createContext2, useContext as useContext2 } from "react";
+var CollapseContext = createContext2(false);
+var useCollapsed = () => useContext2(CollapseContext);
 
 // src/Sidebar.tsx
 import { jsx as jsx3, jsxs as jsxs2 } from "react/jsx-runtime";
+var IconClose = () => /* @__PURE__ */ jsx3("svg", { className: "w-4 h-4", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsx3("path", { d: "M6 6l12 12M18 6L6 18", strokeWidth: "1.8", strokeLinecap: "round" }) });
 var IconSidebarToggle = () => /* @__PURE__ */ jsxs2("svg", { className: "w-3.5 h-3.5", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: [
   /* @__PURE__ */ jsx3("rect", { x: "3", y: "3", width: "18", height: "18", rx: "2", strokeWidth: "1.8" }),
   /* @__PURE__ */ jsx3("path", { d: "M9 3v18", strokeWidth: "1.8" })
@@ -62,23 +146,36 @@ function Sidebar({
   footer,
   children,
   collapseTitle = "Z\xFA\u017Ei\u0165",
-  expandTitle = "Roz\u0161\xEDri\u0165"
+  expandTitle = "Roz\u0161\xEDri\u0165",
+  closeMenuTitle = "Zavrie\u0165 ponuku"
 }) {
-  return /* @__PURE__ */ jsx3(CollapseContext.Provider, { value: collapsed, children: /* @__PURE__ */ jsxs2(
+  const { narrow, closeMenu } = useShell();
+  const rail = collapsed && !narrow;
+  return /* @__PURE__ */ jsx3(CollapseContext.Provider, { value: rail, children: /* @__PURE__ */ jsxs2(
     "aside",
     {
       className: "flex-shrink-0 bg-[var(--color-surface)] border-r border-[var(--color-border-default)] flex flex-col select-none transition-all duration-200 overflow-x-hidden",
-      style: { width: collapsed ? "3.5rem" : "14rem" },
+      style: { width: rail ? "3.5rem" : "14rem" },
       children: [
         /* @__PURE__ */ jsxs2("div", { className: "px-3 py-3 border-b border-[var(--color-border-default)] flex items-center gap-3 min-h-[56px]", children: [
-          !collapsed && logo,
-          /* @__PURE__ */ jsx3(
+          !rail && logo,
+          narrow ? /* @__PURE__ */ jsx3(
+            "button",
+            {
+              type: "button",
+              onClick: closeMenu,
+              className: "ml-auto flex items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)] transition-colors shrink-0 w-8 h-8",
+              title: closeMenuTitle,
+              "aria-label": closeMenuTitle,
+              children: /* @__PURE__ */ jsx3(IconClose, {})
+            }
+          ) : /* @__PURE__ */ jsx3(
             "button",
             {
               type: "button",
               onClick: onToggleCollapse,
-              className: `flex items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)] transition-colors shrink-0 ${collapsed ? "w-8 h-8" : "w-6 h-6"}`,
-              title: collapsed ? expandTitle : collapseTitle,
+              className: `flex items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)] transition-colors shrink-0 ${rail ? "w-8 h-8" : "w-6 h-6"}`,
+              title: rail ? expandTitle : collapseTitle,
               children: /* @__PURE__ */ jsx3(IconSidebarToggle, {})
             }
           )
@@ -91,7 +188,7 @@ function Sidebar({
 }
 
 // src/NavItem.tsx
-import { Fragment, jsx as jsx4, jsxs as jsxs3 } from "react/jsx-runtime";
+import { Fragment as Fragment2, jsx as jsx4, jsxs as jsxs3 } from "react/jsx-runtime";
 function NavItem({
   icon,
   label,
@@ -104,12 +201,17 @@ function NavItem({
   href
 }) {
   const collapsed = useCollapsed();
+  const { closeMenu } = useShell();
+  const choose = () => {
+    onClick?.();
+    closeMenu();
+  };
   const base = "flex items-center gap-2.5 h-[35px] rounded-lg text-sm transition-colors w-full";
   const px = collapsed ? "px-0 justify-center" : "px-3";
   const color = disabled ? "text-[var(--color-text-muted)] opacity-40 cursor-not-allowed" : active ? "bg-primary-600/10 text-[var(--color-accent-primary)]" : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]";
   const tooltip = disabled ? disabledTitle ?? label : collapsed ? label : void 0;
   const className = `${base} ${px} ${color} relative`;
-  const inner = /* @__PURE__ */ jsxs3(Fragment, { children: [
+  const inner = /* @__PURE__ */ jsxs3(Fragment2, { children: [
     icon,
     !collapsed && /* @__PURE__ */ jsx4("span", { children: label }),
     badge && /* @__PURE__ */ jsx4(
@@ -121,11 +223,11 @@ function NavItem({
     )
   ] });
   if (href && !disabled) {
-    return /* @__PURE__ */ jsx4("a", { className, href, title: tooltip, onClick, children: inner });
+    return /* @__PURE__ */ jsx4("a", { className, href, title: tooltip, onClick: choose, children: inner });
   }
   const handleClick = () => {
     if (disabled) return;
-    onClick?.();
+    choose();
   };
   return /* @__PURE__ */ jsx4("button", { type: "button", className, onClick: handleClick, disabled, title: tooltip, children: inner });
 }
@@ -139,13 +241,13 @@ function SectionLabel({ label }) {
 }
 
 // src/Header.tsx
-import { Fragment as Fragment2, jsx as jsx6, jsxs as jsxs4 } from "react/jsx-runtime";
+import { Fragment as Fragment3, jsx as jsx6, jsxs as jsxs4 } from "react/jsx-runtime";
 function Header({ left, right, children, className = "" }) {
   return /* @__PURE__ */ jsx6(
     "header",
     {
-      className: `h-10 flex-shrink-0 bg-[var(--color-surface)] border-b border-[var(--color-border-default)] flex items-center px-3 gap-3 z-10 select-none ${className}`.trim(),
-      children: children ?? /* @__PURE__ */ jsxs4(Fragment2, { children: [
+      className: `min-h-10 flex-shrink-0 bg-[var(--color-surface)] border-b border-[var(--color-border-default)] flex items-center px-3 gap-3 z-10 select-none ${className}`.trim(),
+      children: children ?? /* @__PURE__ */ jsxs4(Fragment3, { children: [
         left,
         right != null && /* @__PURE__ */ jsx6("div", { className: "ml-auto flex items-center gap-3", children: right })
       ] })
@@ -154,9 +256,9 @@ function Header({ left, right, children, className = "" }) {
 }
 
 // src/Brand.tsx
-import { Fragment as Fragment3, jsx as jsx7, jsxs as jsxs5 } from "react/jsx-runtime";
+import { Fragment as Fragment4, jsx as jsx7, jsxs as jsxs5 } from "react/jsx-runtime";
 function Brand({ initials, name, version, squareClassName = "bg-primary-600" }) {
-  return /* @__PURE__ */ jsxs5(Fragment3, { children: [
+  return /* @__PURE__ */ jsxs5(Fragment4, { children: [
     /* @__PURE__ */ jsx7(
       "div",
       {
@@ -174,7 +276,7 @@ function Brand({ initials, name, version, squareClassName = "bg-primary-600" }) 
 }
 
 // src/UserCard.tsx
-import { Fragment as Fragment4, jsx as jsx8, jsxs as jsxs6 } from "react/jsx-runtime";
+import { Fragment as Fragment5, jsx as jsx8, jsxs as jsxs6 } from "react/jsx-runtime";
 function UserCard({
   initials,
   name,
@@ -185,7 +287,7 @@ function UserCard({
   const collapsed = useCollapsed();
   return /* @__PURE__ */ jsxs6("div", { className: `flex items-center gap-2.5 px-2 py-1.5 rounded-lg ${collapsed ? "justify-center" : ""}`, children: [
     /* @__PURE__ */ jsx8("div", { className: "w-7 h-7 rounded-full bg-primary-600 flex items-center justify-center text-xs font-bold text-white shrink-0", children: initials }),
-    !collapsed && /* @__PURE__ */ jsxs6(Fragment4, { children: [
+    !collapsed && /* @__PURE__ */ jsxs6(Fragment5, { children: [
       /* @__PURE__ */ jsxs6("div", { className: "min-w-0 flex-1", children: [
         /* @__PURE__ */ jsx8("div", { className: "text-xs font-medium text-[var(--color-text-primary)] truncate", children: name }),
         subtitle != null && subtitle !== "" && /* @__PURE__ */ jsx8("div", { className: "text-[10px] text-[var(--color-text-muted)]", children: subtitle })
@@ -435,7 +537,8 @@ function DataTable({
   return /* @__PURE__ */ jsx17(
     "div",
     {
-      className: `rounded-xl border border-[var(--color-border-default)] overflow-hidden ${className}`.trim(),
+      "data-scroll-x": true,
+      className: `rounded-xl border border-[var(--color-border-default)] overflow-x-auto ${className}`.trim(),
       children: /* @__PURE__ */ jsxs8("table", { className: "w-full text-sm", children: [
         /* @__PURE__ */ jsx17("thead", { className: "bg-[var(--color-surface-hover)]", children: /* @__PURE__ */ jsxs8("tr", { className: "text-[10px] uppercase tracking-widest text-[var(--color-text-muted)]", children: [
           columns.map((col) => /* @__PURE__ */ jsx17(
@@ -482,7 +585,7 @@ function DataTable({
 }
 
 // src/FormGrid.tsx
-import { Fragment as Fragment5, jsx as jsx18, jsxs as jsxs9 } from "react/jsx-runtime";
+import { Fragment as Fragment6, jsx as jsx18, jsxs as jsxs9 } from "react/jsx-runtime";
 var GRID_COLS = {
   1: "grid-cols-1",
   2: "grid-cols-1 md:grid-cols-2"
@@ -517,7 +620,7 @@ function FormActions({
   submitDisabled = false,
   className = ""
 }) {
-  return /* @__PURE__ */ jsx18("div", { className: `flex gap-2 justify-end ${className}`.trim(), children: children ?? /* @__PURE__ */ jsxs9(Fragment5, { children: [
+  return /* @__PURE__ */ jsx18("div", { className: `flex gap-2 justify-end ${className}`.trim(), children: children ?? /* @__PURE__ */ jsxs9(Fragment6, { children: [
     cancelLabel != null && /* @__PURE__ */ jsx18(Button, { variant: "secondary", size: "sm", onClick: onCancel, children: cancelLabel }),
     submitLabel != null && /* @__PURE__ */ jsx18(Button, { variant: "primary", size: "sm", onClick: onSubmit, disabled: submitDisabled, children: submitLabel })
   ] }) });
@@ -528,12 +631,12 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 // src/CodeBlock.tsx
-import { useCallback, useState } from "react";
-import { Fragment as Fragment6, jsx as jsx19, jsxs as jsxs10 } from "react/jsx-runtime";
+import { useCallback as useCallback2, useState as useState3 } from "react";
+import { Fragment as Fragment7, jsx as jsx19, jsxs as jsxs10 } from "react/jsx-runtime";
 var COPY_FEEDBACK_DURATION_MS = 2e3;
 function useCopyToClipboard(resetDelay = COPY_FEEDBACK_DURATION_MS) {
-  const [isCopied, setIsCopied] = useState(false);
-  const copy = useCallback(
+  const [isCopied, setIsCopied] = useState3(false);
+  const copy = useCallback2(
     async (text) => {
       try {
         await navigator.clipboard.writeText(text);
@@ -567,7 +670,7 @@ function CodeBlock({ children, language }) {
         {
           onClick: () => copy(code),
           className: "flex items-center gap-1 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors",
-          children: isCopied ? /* @__PURE__ */ jsxs10(Fragment6, { children: [
+          children: isCopied ? /* @__PURE__ */ jsxs10(Fragment7, { children: [
             /* @__PURE__ */ jsx19(
               "svg",
               {
@@ -587,7 +690,7 @@ function CodeBlock({ children, language }) {
               }
             ),
             /* @__PURE__ */ jsx19("span", { className: "text-[var(--color-status-success)]", children: "Skop\xEDrovan\xE9" })
-          ] }) : /* @__PURE__ */ jsxs10(Fragment6, { children: [
+          ] }) : /* @__PURE__ */ jsxs10(Fragment7, { children: [
             /* @__PURE__ */ jsx19(
               "svg",
               {
@@ -616,7 +719,7 @@ function CodeBlock({ children, language }) {
 }
 
 // src/ReleaseNotes.tsx
-import { Fragment as Fragment7, jsx as jsx20, jsxs as jsxs11 } from "react/jsx-runtime";
+import { Fragment as Fragment8, jsx as jsx20, jsxs as jsxs11 } from "react/jsx-runtime";
 function formatDate(iso) {
   if (!iso) return "";
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
@@ -658,7 +761,7 @@ function MarkdownBody({ children }) {
               );
             },
             pre({ children: children2 }) {
-              return /* @__PURE__ */ jsx20(Fragment7, { children: children2 });
+              return /* @__PURE__ */ jsx20(Fragment8, { children: children2 });
             }
           },
           children: body
@@ -938,7 +1041,7 @@ function createApiClient(config) {
 // src/auth-store.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { useEffect, useState as useState2 } from "react";
+import { useEffect as useEffect3, useState as useState4 } from "react";
 function createAuthStore(config) {
   if (config.mode === "login") {
     const useAuthStore2 = create()(
@@ -985,8 +1088,8 @@ function createAuthStore(config) {
     });
     const useLogin = () => {
       const login = useAuthStore2((s) => s.login);
-      const [loading, setLoading] = useState2(false);
-      const [error, setError] = useState2(null);
+      const [loading, setLoading] = useState4(false);
+      const [error, setError] = useState4(null);
       const wrapped = async (...args) => {
         setError(null);
         setLoading(true);
@@ -1025,7 +1128,7 @@ function createAuthStore(config) {
     const user = useAuthStore((s) => s.user);
     const ready = useAuthStore((s) => s.ready);
     const probe = useAuthStore((s) => s.probe);
-    useEffect(() => {
+    useEffect3(() => {
       void probe();
     }, [probe]);
     return { user, ready };
@@ -1034,11 +1137,11 @@ function createAuthStore(config) {
 }
 
 // src/ProtectedRoute.tsx
-import { useEffect as useEffect2, useState as useState3 } from "react";
-import { Fragment as Fragment8, jsx as jsx21 } from "react/jsx-runtime";
+import { useEffect as useEffect4, useState as useState5 } from "react";
+import { Fragment as Fragment9, jsx as jsx21 } from "react/jsx-runtime";
 function ProtectedRoute({ authed, validate, isAuthed, redirect, children }) {
-  const [ready, setReady] = useState3(false);
-  useEffect2(() => {
+  const [ready, setReady] = useState5(false);
+  useEffect4(() => {
     if (authed && validate) {
       validate().finally(() => setReady(true));
     } else {
@@ -1047,12 +1150,12 @@ function ProtectedRoute({ authed, validate, isAuthed, redirect, children }) {
   }, [authed]);
   if (!ready) return null;
   const ok = isAuthed ? isAuthed() : authed;
-  return ok ? /* @__PURE__ */ jsx21(Fragment8, { children }) : /* @__PURE__ */ jsx21(Fragment8, { children: redirect });
+  return ok ? /* @__PURE__ */ jsx21(Fragment9, { children }) : /* @__PURE__ */ jsx21(Fragment9, { children: redirect });
 }
 
 // src/LoginForm.tsx
-import { useState as useState4 } from "react";
-import { Fragment as Fragment9, jsx as jsx22, jsxs as jsxs12 } from "react/jsx-runtime";
+import { useState as useState6 } from "react";
+import { Fragment as Fragment10, jsx as jsx22, jsxs as jsxs12 } from "react/jsx-runtime";
 var LABEL_CLS = "block text-sm font-medium text-[var(--color-text-secondary)] mb-1";
 function LoginForm({
   fieldLabel = "username",
@@ -1069,9 +1172,9 @@ function LoginForm({
   identityPlaceholder,
   passwordPlaceholder = "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
 }) {
-  const [username, setUsername] = useState4("");
-  const [password, setPassword] = useState4("");
-  const [showPwd, setShowPwd] = useState4(false);
+  const [username, setUsername] = useState6("");
+  const [password, setPassword] = useState6("");
+  const [showPwd, setShowPwd] = useState6(false);
   const isEmail = fieldLabel === "email";
   const idLabel = identityLabel ?? (isEmail ? "Email" : "Pou\u017E\xEDvate\u013Esk\xE9 meno");
   const disabled = loading || !username.trim() || !password.trim();
@@ -1133,7 +1236,7 @@ function LoginForm({
       ] })
     ] }),
     error && /* @__PURE__ */ jsx22("div", { className: "rounded-lg bg-red-500/10 border border-red-500/30 p-3 text-sm text-red-400", children: error }),
-    /* @__PURE__ */ jsx22(Button, { type: "submit", variant: "primary", disabled, className: "w-full mt-2 gap-2", children: loading ? /* @__PURE__ */ jsxs12(Fragment9, { children: [
+    /* @__PURE__ */ jsx22(Button, { type: "submit", variant: "primary", disabled, className: "w-full mt-2 gap-2", children: loading ? /* @__PURE__ */ jsxs12(Fragment10, { children: [
       /* @__PURE__ */ jsxs12("svg", { className: "w-4 h-4 animate-spin", fill: "none", viewBox: "0 0 24 24", children: [
         /* @__PURE__ */ jsx22("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4" }),
         /* @__PURE__ */ jsx22("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" })
@@ -1144,7 +1247,7 @@ function LoginForm({
 }
 
 // src/SettingsShell.tsx
-import { useState as useState5 } from "react";
+import { useState as useState7 } from "react";
 import { jsx as jsx23, jsxs as jsxs13 } from "react/jsx-runtime";
 var DEFAULT_TAB_LABELS = {
   system: "Syst\xE9m",
@@ -1163,30 +1266,41 @@ function SettingsShell({
   const visibleTabs = config.tabs.filter(
     (t) => !config.tabVisibleForRole || config.tabVisibleForRole(t, currentUserRole)
   );
-  const [tab, setTab] = useState5(visibleTabs[0]);
+  const [tab, setTab] = useState7(visibleTabs[0]);
   const activeTab = tab && visibleTabs.includes(tab) ? tab : visibleTabs[0];
   return /* @__PURE__ */ jsxs13("div", { className: "flex flex-col h-full", children: [
     /* @__PURE__ */ jsxs13("div", { className: "flex-shrink-0 px-6 py-4 border-b border-[var(--color-border-default)] flex items-center justify-between", children: [
       /* @__PURE__ */ jsx23("h1", { className: "text-base font-bold text-[var(--color-text-primary)]", children: title }),
       headerRight
     ] }),
-    /* @__PURE__ */ jsx23("div", { className: "flex-shrink-0 flex gap-0 border-b border-[var(--color-border-default)] px-6", children: visibleTabs.map((t) => /* @__PURE__ */ jsx23(
-      "button",
+    /* @__PURE__ */ jsx23(
+      "div",
       {
-        type: "button",
-        onClick: () => setTab(t),
-        className: `px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${activeTab === t ? "border-primary-500 text-primary-400" : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"}`,
-        children: config.labels[t] ?? DEFAULT_TAB_LABELS[t]
-      },
-      t
-    )) }),
+        role: "tablist",
+        "aria-label": title,
+        "data-scroll-x": true,
+        className: "flex-shrink-0 flex gap-0 overflow-x-auto border-b border-[var(--color-border-default)] px-6",
+        children: visibleTabs.map((t) => /* @__PURE__ */ jsx23(
+          "button",
+          {
+            type: "button",
+            role: "tab",
+            "aria-selected": activeTab === t,
+            onClick: () => setTab(t),
+            className: `shrink-0 whitespace-nowrap px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${activeTab === t ? "border-primary-500 text-primary-400" : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"}`,
+            children: config.labels[t] ?? DEFAULT_TAB_LABELS[t]
+          },
+          t
+        ))
+      }
+    ),
     /* @__PURE__ */ jsx23("div", { className: "flex-1 overflow-y-auto", children: activeTab != null && panels[activeTab] })
   ] });
 }
 
 // src/SystemSettingsPanel.tsx
-import { useEffect as useEffect3, useMemo, useState as useState6 } from "react";
-import { Fragment as Fragment10, jsx as jsx24, jsxs as jsxs14 } from "react/jsx-runtime";
+import { useEffect as useEffect5, useMemo as useMemo2, useState as useState8 } from "react";
+import { Fragment as Fragment11, jsx as jsx24, jsxs as jsxs14 } from "react/jsx-runtime";
 function inputTypeFor(valueType) {
   if (valueType === "int" || valueType === "float") return "number";
   if (valueType === "bool") return "checkbox";
@@ -1206,11 +1320,11 @@ function SystemSettingsPanel({
   loading = false,
   loadError = ""
 }) {
-  const [drafts, setDrafts] = useState6({});
-  const [savingKey, setSavingKey] = useState6(null);
-  const [saveErrors, setSaveErrors] = useState6({});
-  const [flashKey, setFlashKey] = useState6(null);
-  useEffect3(() => {
+  const [drafts, setDrafts] = useState8({});
+  const [savingKey, setSavingKey] = useState8(null);
+  const [saveErrors, setSaveErrors] = useState8({});
+  const [flashKey, setFlashKey] = useState8(null);
+  useEffect5(() => {
     setDrafts((prev) => {
       const next = { ...prev };
       for (const s of settings) if (!(s.key in next)) next[s.key] = s.value;
@@ -1223,7 +1337,7 @@ function SystemSettingsPanel({
     }
     return OTHER_CATEGORY.id;
   }
-  const groupedSettings = useMemo(() => {
+  const groupedSettings = useMemo2(() => {
     const groups = {};
     for (const s of settings) {
       const catId = classifyKey(s.key);
@@ -1320,11 +1434,11 @@ function SystemSettingsPanel({
               /* @__PURE__ */ jsxs14("div", { className: "mt-2 text-[11px] flex items-center gap-2 flex-wrap", children: [
                 s.is_default ? /* @__PURE__ */ jsx24("span", { className: "text-[var(--color-text-muted)]", children: "Predvolen\xE1 hodnota." }) : /* @__PURE__ */ jsxs14("span", { className: "text-[var(--color-text-muted)]", children: [
                   "Ulo\u017Een\xFD override",
-                  s.updated_by_username && /* @__PURE__ */ jsxs14(Fragment10, { children: [
+                  s.updated_by_username && /* @__PURE__ */ jsxs14(Fragment11, { children: [
                     " \u2014 ",
                     /* @__PURE__ */ jsx24("span", { className: "text-[var(--color-text-secondary)] font-medium", children: s.updated_by_username })
                   ] }),
-                  s.updated_at && /* @__PURE__ */ jsxs14(Fragment10, { children: [
+                  s.updated_at && /* @__PURE__ */ jsxs14(Fragment11, { children: [
                     " \xB7 ",
                     new Date(s.updated_at).toLocaleString("sk-SK")
                   ] })
@@ -1342,7 +1456,7 @@ function SystemSettingsPanel({
 }
 
 // src/AgentsPanel.tsx
-import { useEffect as useEffect4, useState as useState7 } from "react";
+import { useEffect as useEffect6, useState as useState9 } from "react";
 import { jsx as jsx25, jsxs as jsxs15 } from "react/jsx-runtime";
 var EFFORT_LABELS = {
   low: "N\xEDzka",
@@ -1371,11 +1485,11 @@ function AgentsPanel({
   loadError = "",
   saveErrors = {}
 }) {
-  const [edit, setEdit] = useState7(() => seedState(roles, drafts));
-  const [savingRole, setSavingRole] = useState7(null);
-  const [flashRole, setFlashRole] = useState7(null);
+  const [edit, setEdit] = useState9(() => seedState(roles, drafts));
+  const [savingRole, setSavingRole] = useState9(null);
+  const [flashRole, setFlashRole] = useState9(null);
   const showHelperModel = (roleId) => Boolean(helperModels && helperModels.length > 0 && helperModelRoleIds.includes(roleId));
-  useEffect4(() => {
+  useEffect6(() => {
     setEdit(seedState(roles, drafts));
   }, [roles, drafts]);
   async function handleSave(roleId) {
@@ -1471,11 +1585,11 @@ function AgentsPanel({
 }
 
 // src/UsersPanel.tsx
-import { useMemo as useMemo2, useState as useState9 } from "react";
+import { useMemo as useMemo3, useState as useState11 } from "react";
 
 // src/UserForm.tsx
-import { useState as useState8 } from "react";
-import { Fragment as Fragment11, jsx as jsx26, jsxs as jsxs16 } from "react/jsx-runtime";
+import { useState as useState10 } from "react";
+import { Fragment as Fragment12, jsx as jsx26, jsxs as jsxs16 } from "react/jsx-runtime";
 function initialFromUser(user, roleOptions) {
   return {
     username: user?.username ?? "",
@@ -1500,7 +1614,7 @@ function UserForm({
 }) {
   const isEdit = mode === "edit";
   const minLen = fieldSchema.passwordMinLength;
-  const [data, setData] = useState8(
+  const [data, setData] = useState10(
     () => initialFromUser(initial, roleOptions)
   );
   const passwordTooShort = data.password.length > 0 && data.password.length < minLen;
@@ -1516,14 +1630,14 @@ function UserForm({
     void onSubmit(data);
   }
   return /* @__PURE__ */ jsxs16(Card, { className: "mt-4 p-4", children: [
-    /* @__PURE__ */ jsx26("h3", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-3", children: isEdit ? /* @__PURE__ */ jsxs16(Fragment11, { children: [
+    /* @__PURE__ */ jsx26("h3", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-3", children: isEdit ? /* @__PURE__ */ jsxs16(Fragment12, { children: [
       "Upravi\u0165 pou\u017E\xEDvate\u013Ea \xB7",
       " ",
       /* @__PURE__ */ jsx26("span", { className: "font-mono text-[var(--color-text-secondary)]", children: initial?.username })
     ] }) : "Vytvori\u0165 pou\u017E\xEDvate\u013Ea" }),
     error && /* @__PURE__ */ jsx26("div", { className: "mb-3 text-xs text-[var(--color-state-error-fg)] rounded bg-[var(--color-state-error-bg)] border border-[var(--color-state-error-bg)] px-3 py-2", children: error }),
     /* @__PURE__ */ jsxs16("div", { className: "grid grid-cols-2 gap-3 mb-3", children: [
-      fieldSchema.names && /* @__PURE__ */ jsxs16(Fragment11, { children: [
+      fieldSchema.names && /* @__PURE__ */ jsxs16(Fragment12, { children: [
         /* @__PURE__ */ jsxs16("div", { children: [
           /* @__PURE__ */ jsx26("label", { htmlFor: "uf-first-name", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: "Meno" }),
           /* @__PURE__ */ jsx26(
@@ -1584,7 +1698,7 @@ function UserForm({
         )
       ] }),
       /* @__PURE__ */ jsxs16("div", { children: [
-        /* @__PURE__ */ jsx26("label", { htmlFor: "uf-password", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: isEdit ? /* @__PURE__ */ jsxs16(Fragment11, { children: [
+        /* @__PURE__ */ jsx26("label", { htmlFor: "uf-password", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: isEdit ? /* @__PURE__ */ jsxs16(Fragment12, { children: [
           "Nov\xE9 heslo",
           " ",
           /* @__PURE__ */ jsx26("span", { className: "text-[var(--color-text-muted)]", children: "(nechaj pr\xE1zdne ak nemeni\u0165)" })
@@ -1688,18 +1802,18 @@ function UsersPanel({
   roleClass
 }) {
   const roleCls = roleClass ?? (() => "");
-  const [roleFilter, setRoleFilter] = useState9("");
-  const [activeFilter, setActiveFilter] = useState9("");
-  const [showNewForm, setShowNewForm] = useState9(false);
-  const [editingUser, setEditingUser] = useState9(null);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState9(null);
-  const [creating, setCreating] = useState9(false);
-  const [createError, setCreateError] = useState9("");
-  const [editing, setEditing] = useState9(false);
-  const [editError, setEditError] = useState9("");
-  const [deleting, setDeleting] = useState9(false);
-  const [deleteError, setDeleteError] = useState9("");
-  const filteredUsers = useMemo2(() => {
+  const [roleFilter, setRoleFilter] = useState11("");
+  const [activeFilter, setActiveFilter] = useState11("");
+  const [showNewForm, setShowNewForm] = useState11(false);
+  const [editingUser, setEditingUser] = useState11(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState11(null);
+  const [creating, setCreating] = useState11(false);
+  const [createError, setCreateError] = useState11("");
+  const [editing, setEditing] = useState11(false);
+  const [editError, setEditError] = useState11("");
+  const [deleting, setDeleting] = useState11(false);
+  const [deleteError, setDeleteError] = useState11("");
+  const filteredUsers = useMemo3(() => {
     return users.filter((u) => {
       if (roleFilter && u.role !== roleFilter) return false;
       if (activeFilter === "active" && !u.is_active) return false;
@@ -1765,6 +1879,7 @@ function UsersPanel({
         "button",
         {
           type: "button",
+          "aria-expanded": showNewForm,
           onClick: () => {
             setShowNewForm((v) => !v);
             setEditingUser(null);
@@ -1778,7 +1893,7 @@ function UsersPanel({
         }
       )
     ] }),
-    /* @__PURE__ */ jsxs17("div", { className: "flex items-center gap-3 mb-3", children: [
+    /* @__PURE__ */ jsxs17("div", { className: "flex flex-wrap items-center gap-3 mb-3", children: [
       /* @__PURE__ */ jsxs17(
         "select",
         {
@@ -1809,7 +1924,7 @@ function UsersPanel({
         " pou\u017E\xEDvate\u013Eov"
       ] })
     ] }),
-    /* @__PURE__ */ jsx27("div", { className: "rounded-xl border border-[var(--color-border-default)] overflow-hidden", children: /* @__PURE__ */ jsxs17("table", { className: "w-full text-sm", children: [
+    /* @__PURE__ */ jsx27("div", { className: "rounded-xl border border-[var(--color-border-default)] overflow-x-auto", "data-scroll-x": true, children: /* @__PURE__ */ jsxs17("table", { className: "w-full text-sm", children: [
       /* @__PURE__ */ jsx27("thead", { className: "bg-[var(--color-surface-hover)]", children: /* @__PURE__ */ jsxs17("tr", { className: "text-[10px] uppercase tracking-widest text-[var(--color-text-muted)]", children: [
         showNames && /* @__PURE__ */ jsx27("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Meno" }),
         showUsername && /* @__PURE__ */ jsx27("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Pou\u017E\xEDvate\u013Esk\xE9 meno" }),
@@ -1933,7 +2048,7 @@ function UsersPanel({
 }
 
 // src/MyAccountPanel.tsx
-import { useState as useState10 } from "react";
+import { useState as useState12 } from "react";
 import { jsx as jsx28, jsxs as jsxs18 } from "react/jsx-runtime";
 var LABEL = "block text-xs text-[var(--color-text-muted)] mb-1";
 var BTN = "px-3 py-1.5 text-xs font-medium text-white bg-primary-600 hover:bg-primary-500 disabled:opacity-40 rounded-lg transition-colors";
@@ -1951,15 +2066,15 @@ function MyAccountPanel({
   onTestTelegram,
   passwordMinLength = 5
 }) {
-  const [firstName, setFirstName] = useState10(user.first_name ?? "");
-  const [lastName, setLastName] = useState10(user.last_name ?? "");
-  const [email, setEmail] = useState10(user.email ?? "");
-  const [telegram, setTelegram] = useState10(user.telegram_chat_id ?? "");
-  const [savingProfile, setSavingProfile] = useState10(false);
-  const [profileError, setProfileError] = useState10("");
-  const [profileSaved, setProfileSaved] = useState10(false);
-  const [testBusy, setTestBusy] = useState10(false);
-  const [testResult, setTestResult] = useState10(null);
+  const [firstName, setFirstName] = useState12(user.first_name ?? "");
+  const [lastName, setLastName] = useState12(user.last_name ?? "");
+  const [email, setEmail] = useState12(user.email ?? "");
+  const [telegram, setTelegram] = useState12(user.telegram_chat_id ?? "");
+  const [savingProfile, setSavingProfile] = useState12(false);
+  const [profileError, setProfileError] = useState12("");
+  const [profileSaved, setProfileSaved] = useState12(false);
+  const [testBusy, setTestBusy] = useState12(false);
+  const [testResult, setTestResult] = useState12(null);
   async function testTelegram() {
     if (!onTestTelegram) return;
     setTestBusy(true);
@@ -1972,12 +2087,12 @@ function MyAccountPanel({
       setTestBusy(false);
     }
   }
-  const [currentPw, setCurrentPw] = useState10("");
-  const [newPw, setNewPw] = useState10("");
-  const [confirmPw, setConfirmPw] = useState10("");
-  const [savingPw, setSavingPw] = useState10(false);
-  const [pwError, setPwError] = useState10("");
-  const [pwDone, setPwDone] = useState10(false);
+  const [currentPw, setCurrentPw] = useState12("");
+  const [newPw, setNewPw] = useState12("");
+  const [confirmPw, setConfirmPw] = useState12("");
+  const [savingPw, setSavingPw] = useState12(false);
+  const [pwError, setPwError] = useState12("");
+  const [pwDone, setPwDone] = useState12(false);
   async function saveProfile() {
     setProfileError("");
     setProfileSaved(false);
@@ -2137,7 +2252,7 @@ function MyAccountPanel({
 }
 
 // src/SessionsPanel.tsx
-import { useMemo as useMemo3, useState as useState11 } from "react";
+import { useMemo as useMemo4, useState as useState13 } from "react";
 import { jsx as jsx29, jsxs as jsxs19 } from "react/jsx-runtime";
 function fmt(ts) {
   if (!ts) return "\u2014";
@@ -2154,11 +2269,11 @@ function SessionsPanel({
   filterUserId,
   onFilterChange
 }) {
-  const [confirmingId, setConfirmingId] = useState11(null);
-  const [revoking, setRevoking] = useState11(false);
-  const [revokeError, setRevokeError] = useState11("");
+  const [confirmingId, setConfirmingId] = useState13(null);
+  const [revoking, setRevoking] = useState13(false);
+  const [revokeError, setRevokeError] = useState13("");
   const nameOf = (uid) => resolveUsername?.(uid) ?? uid;
-  const rows = useMemo3(
+  const rows = useMemo4(
     () => filterUserId ? sessions.filter((s) => s.user_id === filterUserId) : sessions,
     [sessions, filterUserId]
   );
@@ -2197,7 +2312,7 @@ function SessionsPanel({
     ] }),
     loadError && /* @__PURE__ */ jsx29("div", { className: "rounded-lg border border-[var(--color-state-error-bg)] bg-[var(--color-state-error-bg)] px-3 py-2 text-xs text-[var(--color-state-error-fg)] mb-4", children: loadError }),
     loading && !loadError && /* @__PURE__ */ jsx29("div", { className: "text-xs text-[var(--color-text-muted)]", children: "Na\u010D\xEDtavam\u2026" }),
-    !loading && !loadError && /* @__PURE__ */ jsx29("div", { className: "rounded-xl border border-[var(--color-border-default)] overflow-hidden", children: /* @__PURE__ */ jsxs19("table", { className: "w-full text-sm", children: [
+    !loading && !loadError && /* @__PURE__ */ jsx29("div", { className: "rounded-xl border border-[var(--color-border-default)] overflow-x-auto", "data-scroll-x": true, children: /* @__PURE__ */ jsxs19("table", { className: "w-full text-sm", children: [
       /* @__PURE__ */ jsx29("thead", { className: "bg-[var(--color-surface-hover)]", children: /* @__PURE__ */ jsxs19("tr", { className: "text-[10px] uppercase tracking-widest text-[var(--color-text-muted)]", children: [
         /* @__PURE__ */ jsx29("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Pou\u017E\xEDvate\u013E" }),
         /* @__PURE__ */ jsx29("th", { className: "px-4 py-2.5 text-left font-semibold", children: "ID rel\xE1cie" }),
@@ -2211,8 +2326,8 @@ function SessionsPanel({
           /* @__PURE__ */ jsx29("td", { className: "px-4 py-3 text-sm font-medium text-[var(--color-text-primary)]", children: nameOf(s.user_id) }),
           /* @__PURE__ */ jsx29("td", { className: "px-4 py-3 font-mono text-[10px] text-[var(--color-text-muted)]", children: s.id }),
           /* @__PURE__ */ jsx29("td", { className: "px-4 py-3 text-right font-mono text-xs text-[var(--color-text-secondary)]", children: s.token_version }),
-          /* @__PURE__ */ jsx29("td", { className: "px-4 py-3 text-xs text-[var(--color-text-muted)]", children: fmt(s.last_seen_at) }),
-          /* @__PURE__ */ jsx29("td", { className: "px-4 py-3 text-xs text-[var(--color-text-muted)]", children: fmt(s.created_at) }),
+          /* @__PURE__ */ jsx29("td", { className: "px-4 py-3 whitespace-nowrap text-xs text-[var(--color-text-muted)]", children: fmt(s.last_seen_at) }),
+          /* @__PURE__ */ jsx29("td", { className: "px-4 py-3 whitespace-nowrap text-xs text-[var(--color-text-muted)]", children: fmt(s.created_at) }),
           /* @__PURE__ */ jsx29("td", { className: "px-4 py-3 text-right", children: !canRevoke ? /* @__PURE__ */ jsx29("span", { className: "text-xs text-[var(--color-text-muted)]", children: "\u2014" }) : confirmingId === s.id ? /* @__PURE__ */ jsxs19("div", { className: "flex items-center justify-end gap-2 text-xs", children: [
             /* @__PURE__ */ jsx29("span", { className: "text-[var(--color-text-secondary)]", children: "Zru\u0161i\u0165 rel\xE1ciu?" }),
             /* @__PURE__ */ jsx29(
@@ -2283,6 +2398,7 @@ export {
   Select,
   SessionsPanel,
   SettingsShell,
+  ShellContext,
   Sidebar,
   StatusBadge,
   SystemSettingsPanel,
@@ -2290,7 +2406,10 @@ export {
   UserCard,
   UserForm,
   UsersPanel,
+  WIDE_SCREEN_QUERY,
   createApiClient,
   createAuthStore,
-  registerAuthCallback
+  registerAuthCallback,
+  useShell,
+  useWideScreen
 };

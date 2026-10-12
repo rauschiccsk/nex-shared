@@ -18,6 +18,26 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.20.0
+- `[vzhľad]` **Aplikácia sa dá používať na mobile a tablete.** Pod šírkou 1024 px (mobil, tablet na výšku)
+  sa bočný panel schová za tlačidlo „Ponuka“ na začiatku hornej lišty a obsah dostane celú šírku. Panel sa
+  vysunie cez obsah. Zavrie sa klávesou Esc, ťuknutím vedľa neho alebo výberom položky v ponuke. Zatvorený je
+  skrytý aj pre klávesnicu a čítačku obrazovky. V zásuvke je panel vždy rozbalený s popismi a tlačidlo
+  „Zúžiť“ sa mení na „Zavrieť ponuku“. Na počítači sa nemení nič.
+- `[vzhľad]` **Na dotykovej obrazovke sa dá trafiť prstom.** Kde je hlavným ukazovateľom prst (`pointer: coarse`),
+  majú tlačidlá, polia, výbery, záložky a riadky so zaškrtávacím políčkom aspoň 44 px. S myšou sa nemení nič.
+  Pravidlo je vo vrstve `base`, takže ho výnimka v aplikácii (napr. `min-h-0`) prebije.
+- `[vzhľad]` Horná lišta (`Header`) má výšku najmenej 2,5 rem namiesto pevných 2,5 rem — na dotykovej obrazovke
+  narastie s tlačidlami v nej.
+- `[vzhľad]` Tabuľky `DataTable`, `UsersPanel` a `SessionsPanel` sa na úzkej obrazovke posúvajú do strany vo
+  vlastnom rámčeku namiesto odrezania. Dátumy relácií sa nezalamujú a riadok filtrov používateľov sa zalomí.
+- `[nové]` `useShell()` povie, či je obrazovka úzka (`narrow`), a ponúka `closeMenu()`. Aplikácia, ktorá v
+  bočnom paneli kreslí vlastný obsah podľa svojho stavu zúženia, má v zásuvke kresliť rozbalený obsah:
+  `const { narrow } = useShell(); const collapsed = myCollapsed && !narrow;` (vzor: NEX Studio
+  `components/layout/Sidebar.tsx`). Exportované sú aj `useWideScreen()` a `WIDE_SCREEN_QUERY`.
+- `[nové]` Záložky v `SettingsShell` sú označené ako záložky (`role="tablist"`/`"tab"`, `aria-selected`) a na
+  úzkej obrazovke sa posúvajú vo vlastnom rámčeku. Tlačidlo „Nový používateľ“ hlási `aria-expanded`.
+
 ## v0.19.0
 - `[oprava]` **Strojopisné písmo sa konečne aj dodáva.** `--font-mono` si pýtal JetBrains Mono a Fira
   Code od prvého vydania tokenov a **ani jedno sa nikdy nedodalo** — presne tá istá chyba, akú
