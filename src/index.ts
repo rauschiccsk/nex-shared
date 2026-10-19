@@ -127,3 +127,12 @@ export type {
   SettingsCategory,
   UserFieldSchema,
 } from "./settings-types";
+
+export {
+  rememberLaunchWindow,
+  fitToScreen,
+  LAUNCH_WINDOW_PREFIX,
+  LAUNCH_WINDOW_STORAGE_KEY,
+  LAUNCH_WINDOW_SAVE_DELAY_MS,
+} from "./launchWindow";
+export type { WindowPlacement, LaunchWindow, PlacementStorage } from "./launchWindow";

@@ -1035,4 +1035,62 @@ interface SessionsPanelProps {
 }
 declare function SessionsPanel({ sessions, resolveUsername, canRevoke, onRevoke, loading, loadError, filterUserId, onFilterChange, }: SessionsPanelProps): react.JSX.Element;
 
-export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, DataTable, type DataTableAlign, type DataTableColumn, type DataTableProps, DensityContext, FormActions, type FormActionsProps, FormField, type FormFieldProps, FormGrid, type FormGridProps, Header, type HeaderProps, type HttpMethod, IconButton, type IconButtonProps, Input, type InputProps, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, MyAccountPanel, type MyAccountPanelProps, type MyAccountUser, NavIcon, type NavIconProps, NavItem, type NavItemProps, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, ResizeHandle, type ResizeHandleProps, SIDEBAR_DEFAULT_WIDTH, SectionDivider, SectionLabel, type SectionLabelProps, Select, type SelectProps, SessionsPanel, type SessionsPanelProps, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, ShellContext, type ShellState, Sidebar, type SidebarProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, WIDE_SCREEN_QUERY, createApiClient, createAuthStore, registerAuthCallback, useDense, useShell, useWideScreen };
+/**
+ * A window NEX Manager launched opens where the user left it last time (DEV-142).
+ *
+ * NEX Manager opens every app in a window of its own, always 1400×900, and cannot see the window afterwards: it lives
+ * on the app's address and NEX Manager deliberately drops the link to it (`opener = null`). On 19.10.2026 the Director
+ * maximised NEX Inbox and found it small again on every launch. So the app remembers its own window — position and
+ * size, in its own browser storage — and puts the window back there when it starts.
+ *
+ * Only in a window NEX Manager opened: its name starts with `nexlaunch_` (NEX Manager names it so it can bring it to
+ * the front). A tab, or a window opened from NEX Genesis, is never moved. "Maximised" itself cannot be set by a web
+ * page; a window left maximised comes back filling the whole available screen.
+ */
+/** The name NEX Manager gives the windows it launches: `nexlaunch_<slug>`. */
+declare const LAUNCH_WINDOW_PREFIX = "nexlaunch_";
+/** Where the app keeps its window — one entry per app, since browser storage is per address. */
+declare const LAUNCH_WINDOW_STORAGE_KEY = "nex-shared:launch-window";
+/** How long the window must stay still before its new size is written down. */
+declare const LAUNCH_WINDOW_SAVE_DELAY_MS = 500;
+interface WindowPlacement {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+}
+/** What of the browser window this needs — a plain object in tests. */
+interface LaunchWindow {
+    name: string;
+    screenX: number;
+    screenY: number;
+    outerWidth: number;
+    outerHeight: number;
+    screen: {
+        availWidth: number;
+        availHeight: number;
+        availLeft?: number;
+        availTop?: number;
+    };
+    moveTo(x: number, y: number): void;
+    resizeTo(width: number, height: number): void;
+    addEventListener(type: "resize" | "pagehide", listener: () => void): void;
+    removeEventListener(type: "resize" | "pagehide", listener: () => void): void;
+    setTimeout(handler: () => void, timeout: number): number;
+    clearTimeout(id: number | undefined): void;
+}
+/** What of the browser storage this needs. */
+interface PlacementStorage {
+    getItem(key: string): string | null;
+    setItem(key: string, value: string): void;
+}
+/**
+ * Put a window NEX Manager launched where it was left, and from now on remember where it is left.
+ * Returns the function that stops remembering. Never throws: a browser that refuses to move the window, or storage
+ * that cannot be read (a private window), only means the window stays as NEX Manager opened it.
+ */
+declare function rememberLaunchWindow(win?: LaunchWindow, storage?: PlacementStorage | null): () => void;
+/** A placement that fits on the screen the window is on now — a screen may be smaller than the one it was left on. */
+declare function fitToScreen(placement: WindowPlacement, screen: LaunchWindow["screen"]): WindowPlacement;
+
+export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, DataTable, type DataTableAlign, type DataTableColumn, type DataTableProps, DensityContext, FormActions, type FormActionsProps, FormField, type FormFieldProps, FormGrid, type FormGridProps, Header, type HeaderProps, type HttpMethod, IconButton, type IconButtonProps, Input, type InputProps, LAUNCH_WINDOW_PREFIX, LAUNCH_WINDOW_SAVE_DELAY_MS, LAUNCH_WINDOW_STORAGE_KEY, type LaunchWindow, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, MyAccountPanel, type MyAccountPanelProps, type MyAccountUser, NavIcon, type NavIconProps, NavItem, type NavItemProps, type PlacementStorage, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, ResizeHandle, type ResizeHandleProps, SIDEBAR_DEFAULT_WIDTH, SectionDivider, SectionLabel, type SectionLabelProps, Select, type SelectProps, SessionsPanel, type SessionsPanelProps, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, ShellContext, type ShellState, Sidebar, type SidebarProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, WIDE_SCREEN_QUERY, type WindowPlacement, createApiClient, createAuthStore, fitToScreen, registerAuthCallback, rememberLaunchWindow, useDense, useShell, useWideScreen };

@@ -2519,6 +2519,77 @@ function SessionsPanel({
     ] })
   ] });
 }
+
+// src/launchWindow.ts
+var LAUNCH_WINDOW_PREFIX = "nexlaunch_";
+var LAUNCH_WINDOW_STORAGE_KEY = "nex-shared:launch-window";
+var LAUNCH_WINDOW_SAVE_DELAY_MS = 500;
+function rememberLaunchWindow(win = window, storage = browserStorage()) {
+  if (!win.name.startsWith(LAUNCH_WINDOW_PREFIX) || storage === null) return () => {
+  };
+  const stored = readPlacement(storage);
+  if (stored) {
+    const placement = fitToScreen(stored, win.screen);
+    try {
+      win.moveTo(placement.left, placement.top);
+      win.resizeTo(placement.width, placement.height);
+    } catch {
+    }
+  }
+  let pending;
+  const save = () => {
+    win.clearTimeout(pending);
+    pending = void 0;
+    try {
+      storage.setItem(
+        LAUNCH_WINDOW_STORAGE_KEY,
+        JSON.stringify({ left: win.screenX, top: win.screenY, width: win.outerWidth, height: win.outerHeight })
+      );
+    } catch {
+    }
+  };
+  const saveLater = () => {
+    win.clearTimeout(pending);
+    pending = win.setTimeout(save, LAUNCH_WINDOW_SAVE_DELAY_MS);
+  };
+  win.addEventListener("resize", saveLater);
+  win.addEventListener("pagehide", save);
+  return () => {
+    win.clearTimeout(pending);
+    win.removeEventListener("resize", saveLater);
+    win.removeEventListener("pagehide", save);
+  };
+}
+function fitToScreen(placement, screen) {
+  const minLeft = screen.availLeft ?? 0;
+  const minTop = screen.availTop ?? 0;
+  const width = Math.min(placement.width, screen.availWidth);
+  const height = Math.min(placement.height, screen.availHeight);
+  return {
+    width,
+    height,
+    left: Math.min(Math.max(placement.left, minLeft), minLeft + screen.availWidth - width),
+    top: Math.min(Math.max(placement.top, minTop), minTop + screen.availHeight - height)
+  };
+}
+function readPlacement(storage) {
+  try {
+    const value = JSON.parse(storage.getItem(LAUNCH_WINDOW_STORAGE_KEY) ?? "null");
+    if (!value) return null;
+    const { left, top, width, height } = value;
+    const numbers = [left, top, width, height].every((n) => typeof n === "number" && Number.isFinite(n));
+    return numbers && width > 0 && height > 0 ? { left, top, width, height } : null;
+  } catch {
+    return null;
+  }
+}
+function browserStorage() {
+  try {
+    return typeof window === "undefined" ? null : window.localStorage;
+  } catch {
+    return null;
+  }
+}
 export {
   AgentsPanel,
   ApiError,
@@ -2536,6 +2607,9 @@ export {
   Header,
   IconButton,
   Input,
+  LAUNCH_WINDOW_PREFIX,
+  LAUNCH_WINDOW_SAVE_DELAY_MS,
+  LAUNCH_WINDOW_STORAGE_KEY,
   LoginForm,
   MyAccountPanel,
   NavIcon,
@@ -2560,7 +2634,9 @@ export {
   WIDE_SCREEN_QUERY,
   createApiClient,
   createAuthStore,
+  fitToScreen,
   registerAuthCallback,
+  rememberLaunchWindow,
   useDense,
   useShell,
   useWideScreen

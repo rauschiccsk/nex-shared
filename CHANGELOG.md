@@ -18,6 +18,11 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.23.0
+- `[nové]` **Okno spustené z NEX Managera sa otvorí tam, kde ste ho nechali** (`rememberLaunchWindow()`) — to isté ako
+  v0.19.1 (opravná verzia z v0.19.0 pre aplikácie na v0.19.x), aby sa pri povýšení na novšiu verziu nestratilo.
+  Aplikácia ju zavolá raz pri štarte (DEV-142).
+
 ## v0.22.0
 - `[nové]` **Červená bodka pri záložke** (`<NavItem badge badgeTone="danger">`). Bodka pri záložke môže byť okrem
   oranžovej („niečo čaká na teba“) aj červená, keď je niečo pokazené — napríklad zlyhané kontroly. Bez `badgeTone`
