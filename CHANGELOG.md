@@ -18,6 +18,12 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.19.1
+- `[nové]` **Okno spustené z NEX Managera sa otvorí tam, kde ste ho nechali** (`rememberLaunchWindow()`). Aplikácia si
+  v okne, ktoré otvoril NEX Manager (meno `nexlaunch_…`), pamätá jeho polohu a veľkosť a pri ďalšom spustení ho na ne
+  nastaví; okno nechané na celej obrazovke sa otvorí na celej dostupnej ploche. V záložke ani v okne z NEX Genesis
+  nerobí nič. Aplikácia ju zavolá raz pri štarte (DEV-142). Opravná verzia z v0.19.0 — vzhľad sa nemení.
+
 ## v0.19.0
 - `[oprava]` **Strojopisné písmo sa konečne aj dodáva.** `--font-mono` si pýtal JetBrains Mono a Fira
   Code od prvého vydania tokenov a **ani jedno sa nikdy nedodalo** — presne tá istá chyba, akú
