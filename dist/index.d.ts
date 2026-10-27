@@ -97,6 +97,10 @@ interface SidebarProps {
     defaultWidth?: number;
     /** The handle's accessible name. NEX-Slovak default. */
     resizeLabel?: string;
+    /** v0.25.0 (DEV-243) — something that names the signed-in user (an id, an e-mail): the handle then works and the
+        width the user sets is remembered for them in this browser. An app that keeps the width itself
+        (`width` + `onWidthChange`, e.g. on its server like NEX Studio) is left as it is. */
+    rememberWidthFor?: string | null;
 }
 /**
  * The collapsible sidebar container: a fixed-width rail (3.5rem collapsed /
@@ -108,7 +112,27 @@ interface SidebarProps {
  * Inside `<AppShell>` on a narrow screen the sidebar is a drawer: always expanded (a drawer of icons would hide
  * the labels and save no room), and the collapse toggle becomes the button that closes the drawer.
  */
-declare function Sidebar({ collapsed, onToggleCollapse, logo, footer, children, collapseTitle, expandTitle, closeMenuTitle, dense, width, onWidthChange, minWidth, maxWidth, defaultWidth, resizeLabel, }: SidebarProps): react.JSX.Element;
+declare function Sidebar({ collapsed, onToggleCollapse, logo, footer, children, collapseTitle, expandTitle, closeMenuTitle, dense, width, onWidthChange, minWidth, maxWidth, defaultWidth, resizeLabel, rememberWidthFor, }: SidebarProps): react.JSX.Element;
+
+/** Where a remembered width is kept: this prefix + whatever names the signed-in user (an id, an e-mail). */
+declare const SIDEBAR_WIDTH_KEY_PREFIX = "nex-shared:sidebar-width:";
+/** The width remembered for `user`, kept within `min`–`max`; `undefined` when none (or it cannot be read). */
+declare function readRememberedWidth(user: string | null | undefined, min: number, max: number): number | undefined;
+/** Remember `width` for `user`; the default width is not kept — the entry goes, so a new default applies later. */
+declare function rememberWidth(user: string | null | undefined, width: number, defaultWidth: number): void;
+/**
+ * The sidebar width of the signed-in `user`, and the handler that changes and remembers it. Without a user nothing is
+ * remembered and `onWidthChange` is `undefined` (the sidebar then keeps its fixed width). When another user signs in,
+ * their own width is read.
+ */
+declare function useRememberedSidebarWidth(user: string | null | undefined, { min, max, defaultWidth }: {
+    min: number;
+    max: number;
+    defaultWidth: number;
+}): {
+    width: number | undefined;
+    onWidthChange: ((width: number) => void) | undefined;
+};
 
 interface ResizeHandleProps {
     /** The panel's width in px as it is now. */
@@ -1099,4 +1123,4 @@ declare function rememberLaunchWindow(win?: LaunchWindow, storage?: PlacementSto
 /** A placement that fits on the screen the window is on now — a screen may be smaller than the one it was left on. */
 declare function fitToScreen(placement: WindowPlacement, screen: LaunchWindow["screen"]): WindowPlacement;
 
-export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, DataTable, type DataTableAlign, type DataTableColumn, type DataTableProps, DensityContext, FormActions, type FormActionsProps, FormField, type FormFieldProps, FormGrid, type FormGridProps, Header, type HeaderProps, type HttpMethod, IconButton, type IconButtonProps, Input, type InputProps, LAUNCH_WINDOW_PREFIX, LAUNCH_WINDOW_SAVE_DELAY_MS, LAUNCH_WINDOW_STORAGE_KEY, type LaunchWindow, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, MyAccountPanel, type MyAccountPanelProps, type MyAccountUser, NavIcon, type NavIconProps, NavItem, type NavItemProps, type PlacementStorage, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, ResizeHandle, type ResizeHandleProps, SIDEBAR_DEFAULT_WIDTH, SectionDivider, SectionLabel, type SectionLabelProps, Select, type SelectProps, SessionsPanel, type SessionsPanelProps, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, ShellContext, type ShellState, Sidebar, type SidebarProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, WIDE_SCREEN_QUERY, type WindowPlacement, createApiClient, createAuthStore, fitToScreen, registerAuthCallback, rememberLaunchWindow, useDense, useShell, useWideScreen };
+export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, DataTable, type DataTableAlign, type DataTableColumn, type DataTableProps, DensityContext, FormActions, type FormActionsProps, FormField, type FormFieldProps, FormGrid, type FormGridProps, Header, type HeaderProps, type HttpMethod, IconButton, type IconButtonProps, Input, type InputProps, LAUNCH_WINDOW_PREFIX, LAUNCH_WINDOW_SAVE_DELAY_MS, LAUNCH_WINDOW_STORAGE_KEY, type LaunchWindow, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, MyAccountPanel, type MyAccountPanelProps, type MyAccountUser, NavIcon, type NavIconProps, NavItem, type NavItemProps, type PlacementStorage, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, ResizeHandle, type ResizeHandleProps, SIDEBAR_DEFAULT_WIDTH, SIDEBAR_WIDTH_KEY_PREFIX, SectionDivider, SectionLabel, type SectionLabelProps, Select, type SelectProps, SessionsPanel, type SessionsPanelProps, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, ShellContext, type ShellState, Sidebar, type SidebarProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, WIDE_SCREEN_QUERY, type WindowPlacement, createApiClient, createAuthStore, fitToScreen, readRememberedWidth, registerAuthCallback, rememberLaunchWindow, rememberWidth, useDense, useRememberedSidebarWidth, useShell, useWideScreen };

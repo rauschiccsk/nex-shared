@@ -26,6 +26,10 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 - `[vzhľad]` `[nové]` **Položka menu je vždy v jednom riadku** (`<NavItem>`). Dlhý názov skončí tromi bodkami a celý
   ho ukáže bublina. Nová vlastnosť `count` ukáže počet „(3)“ vedľa názvu tak, že ostane viditeľný aj pri skrátenom
   názve — počet už nepatrí do textu názvu (DEV-242).
+- `[nové]` **Šírku bočného panela si pamätá každý používateľ** (`<Sidebar rememberWidthFor={…}>`). Aplikácia pošle,
+  čím sa prihlásený používateľ líši (id, e-mail); ťahadlo potom funguje a šírku, ktorú si nastaví, si panel zapamätá
+  pre neho v tomto prehliadači. Na inom počítači začne s predvolenou šírkou. Aplikácia, ktorá si šírku drží sama
+  (`width` + `onWidthChange`, napríklad na serveri ako NEX Studio), sa nemení (DEV-243).
 
 ## v0.24.0
 - `[vzhľad]` **Karta má vlastný vnútorný odstup** (`<Card>`). Text v karte sa už nelepí na jej okraj: karta bez

@@ -9,6 +9,12 @@ export type { ShellState } from "./ShellContext";
 
 export { Sidebar, SIDEBAR_DEFAULT_WIDTH } from "./Sidebar";
 export type { SidebarProps } from "./Sidebar";
+export {
+  SIDEBAR_WIDTH_KEY_PREFIX,
+  readRememberedWidth,
+  rememberWidth,
+  useRememberedSidebarWidth,
+} from "./rememberedWidth";
 
 export { ResizeHandle } from "./ResizeHandle";
 export type { ResizeHandleProps } from "./ResizeHandle";

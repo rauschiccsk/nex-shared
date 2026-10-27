@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import { CollapseContext } from "./CollapseContext";
 import { DensityContext } from "./DensityContext";
 import { ResizeHandle } from "./ResizeHandle";
+import { useRememberedSidebarWidth } from "./rememberedWidth";
 import { useShell } from "./ShellContext";
 
 /** The expanded width when the app sets none — the sidebar's width before v0.21.0 (14rem). */
@@ -37,6 +38,10 @@ export interface SidebarProps {
   defaultWidth?: number;
   /** The handle's accessible name. NEX-Slovak default. */
   resizeLabel?: string;
+  /** v0.25.0 (DEV-243) — something that names the signed-in user (an id, an e-mail): the handle then works and the
+      width the user sets is remembered for them in this browser. An app that keeps the width itself
+      (`width` + `onWidthChange`, e.g. on its server like NEX Studio) is left as it is. */
+  rememberWidthFor?: string | null;
 }
 
 const IconClose = () => (
@@ -79,15 +84,24 @@ export function Sidebar({
   maxWidth = 360,
   defaultWidth = SIDEBAR_DEFAULT_WIDTH,
   resizeLabel = "Šírka bočného panela",
+  rememberWidthFor,
 }: SidebarProps) {
   const { narrow, closeMenu } = useShell();
   const rail = collapsed && !narrow;
   // While the edge is dragged the width follows the pointer here; the app hears it once, at the end.
   const [dragged, setDragged] = useState<number | null>(null);
-  const expanded = dragged ?? width ?? defaultWidth;
-  const resizable = onWidthChange != null && !narrow && !rail;
+  // DEV-243: the app keeps the width itself (onWidthChange), or the sidebar remembers it for the signed-in user.
+  const remembered = useRememberedSidebarWidth(onWidthChange == null ? rememberWidthFor : null, {
+    min: minWidth,
+    max: maxWidth,
+    defaultWidth,
+  });
+  const ownWidth = onWidthChange != null ? width : remembered.width;
+  const changeWidth = onWidthChange ?? remembered.onWidthChange;
+  const expanded = dragged ?? ownWidth ?? defaultWidth;
+  const resizable = changeWidth != null && !narrow && !rail;
   // An app that sets no width keeps the width it always had, in rem (it follows the app's root font size).
-  const shown = rail ? "3.5rem" : dragged != null || width != null ? `${expanded}px` : "14rem";
+  const shown = rail ? "3.5rem" : dragged != null || ownWidth != null ? `${expanded}px` : "14rem";
   return (
     <CollapseContext.Provider value={rail}>
       <DensityContext.Provider value={dense}>
@@ -144,7 +158,7 @@ export function Sidebar({
               onResize={setDragged}
               onResizeEnd={(w) => {
                 setDragged(null);
-                if (w !== (width ?? defaultWidth)) onWidthChange(w);
+                if (w !== (ownWidth ?? defaultWidth)) changeWidth?.(w);
               }}
               label={resizeLabel}
               className="absolute inset-y-0 right-0"

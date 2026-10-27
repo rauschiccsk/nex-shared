@@ -128,7 +128,7 @@ function AppShell({
 }
 
 // src/Sidebar.tsx
-import { useState as useState3 } from "react";
+import { useState as useState4 } from "react";
 
 // src/CollapseContext.ts
 import { createContext as createContext2, useContext as useContext2 } from "react";
@@ -216,6 +216,47 @@ function ResizeHandle({
   );
 }
 
+// src/rememberedWidth.ts
+import { useCallback as useCallback2, useEffect as useEffect3, useState as useState3 } from "react";
+var SIDEBAR_WIDTH_KEY_PREFIX = "nex-shared:sidebar-width:";
+function storage() {
+  return typeof window === "undefined" ? null : window.localStorage;
+}
+function readRememberedWidth(user, min, max) {
+  if (!user) return void 0;
+  try {
+    const raw = storage()?.getItem(SIDEBAR_WIDTH_KEY_PREFIX + user);
+    if (raw == null) return void 0;
+    const width = Number(raw);
+    return Number.isFinite(width) ? Math.min(max, Math.max(min, Math.round(width))) : void 0;
+  } catch {
+    return void 0;
+  }
+}
+function rememberWidth(user, width, defaultWidth) {
+  if (!user) return;
+  try {
+    const store = storage();
+    if (width === defaultWidth) store?.removeItem(SIDEBAR_WIDTH_KEY_PREFIX + user);
+    else store?.setItem(SIDEBAR_WIDTH_KEY_PREFIX + user, String(width));
+  } catch {
+  }
+}
+function useRememberedSidebarWidth(user, { min, max, defaultWidth }) {
+  const [width, setWidth] = useState3(() => readRememberedWidth(user, min, max));
+  useEffect3(() => {
+    setWidth(readRememberedWidth(user, min, max));
+  }, [user, min, max]);
+  const onWidthChange = useCallback2(
+    (next) => {
+      rememberWidth(user, next, defaultWidth);
+      setWidth(next === defaultWidth ? void 0 : next);
+    },
+    [user, defaultWidth]
+  );
+  return { width, onWidthChange: user ? onWidthChange : void 0 };
+}
+
 // src/Sidebar.tsx
 import { jsx as jsx4, jsxs as jsxs2 } from "react/jsx-runtime";
 var SIDEBAR_DEFAULT_WIDTH = 224;
@@ -239,14 +280,22 @@ function Sidebar({
   minWidth = 180,
   maxWidth = 360,
   defaultWidth = SIDEBAR_DEFAULT_WIDTH,
-  resizeLabel = "\u0160\xEDrka bo\u010Dn\xE9ho panela"
+  resizeLabel = "\u0160\xEDrka bo\u010Dn\xE9ho panela",
+  rememberWidthFor
 }) {
   const { narrow, closeMenu } = useShell();
   const rail = collapsed && !narrow;
-  const [dragged, setDragged] = useState3(null);
-  const expanded = dragged ?? width ?? defaultWidth;
-  const resizable = onWidthChange != null && !narrow && !rail;
-  const shown = rail ? "3.5rem" : dragged != null || width != null ? `${expanded}px` : "14rem";
+  const [dragged, setDragged] = useState4(null);
+  const remembered = useRememberedSidebarWidth(onWidthChange == null ? rememberWidthFor : null, {
+    min: minWidth,
+    max: maxWidth,
+    defaultWidth
+  });
+  const ownWidth = onWidthChange != null ? width : remembered.width;
+  const changeWidth = onWidthChange ?? remembered.onWidthChange;
+  const expanded = dragged ?? ownWidth ?? defaultWidth;
+  const resizable = changeWidth != null && !narrow && !rail;
+  const shown = rail ? "3.5rem" : dragged != null || ownWidth != null ? `${expanded}px` : "14rem";
   return /* @__PURE__ */ jsx4(CollapseContext.Provider, { value: rail, children: /* @__PURE__ */ jsx4(DensityContext.Provider, { value: dense, children: /* @__PURE__ */ jsxs2(
     "aside",
     {
@@ -295,7 +344,7 @@ function Sidebar({
             onResize: setDragged,
             onResizeEnd: (w) => {
               setDragged(null);
-              if (w !== (width ?? defaultWidth)) onWidthChange(w);
+              if (w !== (ownWidth ?? defaultWidth)) changeWidth?.(w);
             },
             label: resizeLabel,
             className: "absolute inset-y-0 right-0"
@@ -787,12 +836,12 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 // src/CodeBlock.tsx
-import { useCallback as useCallback2, useState as useState4 } from "react";
+import { useCallback as useCallback3, useState as useState5 } from "react";
 import { Fragment as Fragment7, jsx as jsx21, jsxs as jsxs10 } from "react/jsx-runtime";
 var COPY_FEEDBACK_DURATION_MS = 2e3;
 function useCopyToClipboard(resetDelay = COPY_FEEDBACK_DURATION_MS) {
-  const [isCopied, setIsCopied] = useState4(false);
-  const copy = useCallback2(
+  const [isCopied, setIsCopied] = useState5(false);
+  const copy = useCallback3(
     async (text) => {
       try {
         await navigator.clipboard.writeText(text);
@@ -1197,7 +1246,7 @@ function createApiClient(config) {
 // src/auth-store.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { useEffect as useEffect3, useState as useState5 } from "react";
+import { useEffect as useEffect4, useState as useState6 } from "react";
 function createAuthStore(config) {
   if (config.mode === "login") {
     const useAuthStore2 = create()(
@@ -1244,8 +1293,8 @@ function createAuthStore(config) {
     });
     const useLogin = () => {
       const login = useAuthStore2((s) => s.login);
-      const [loading, setLoading] = useState5(false);
-      const [error, setError] = useState5(null);
+      const [loading, setLoading] = useState6(false);
+      const [error, setError] = useState6(null);
       const wrapped = async (...args) => {
         setError(null);
         setLoading(true);
@@ -1284,7 +1333,7 @@ function createAuthStore(config) {
     const user = useAuthStore((s) => s.user);
     const ready = useAuthStore((s) => s.ready);
     const probe = useAuthStore((s) => s.probe);
-    useEffect3(() => {
+    useEffect4(() => {
       void probe();
     }, [probe]);
     return { user, ready };
@@ -1293,11 +1342,11 @@ function createAuthStore(config) {
 }
 
 // src/ProtectedRoute.tsx
-import { useEffect as useEffect4, useState as useState6 } from "react";
+import { useEffect as useEffect5, useState as useState7 } from "react";
 import { Fragment as Fragment9, jsx as jsx23 } from "react/jsx-runtime";
 function ProtectedRoute({ authed, validate, isAuthed, redirect, children }) {
-  const [ready, setReady] = useState6(false);
-  useEffect4(() => {
+  const [ready, setReady] = useState7(false);
+  useEffect5(() => {
     if (authed && validate) {
       validate().finally(() => setReady(true));
     } else {
@@ -1310,7 +1359,7 @@ function ProtectedRoute({ authed, validate, isAuthed, redirect, children }) {
 }
 
 // src/LoginForm.tsx
-import { useState as useState7 } from "react";
+import { useState as useState8 } from "react";
 import { Fragment as Fragment10, jsx as jsx24, jsxs as jsxs12 } from "react/jsx-runtime";
 var LABEL_CLS = "block text-sm font-medium text-[var(--color-text-secondary)] mb-1";
 function LoginForm({
@@ -1328,9 +1377,9 @@ function LoginForm({
   identityPlaceholder,
   passwordPlaceholder = "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
 }) {
-  const [username, setUsername] = useState7("");
-  const [password, setPassword] = useState7("");
-  const [showPwd, setShowPwd] = useState7(false);
+  const [username, setUsername] = useState8("");
+  const [password, setPassword] = useState8("");
+  const [showPwd, setShowPwd] = useState8(false);
   const isEmail = fieldLabel === "email";
   const idLabel = identityLabel ?? (isEmail ? "Email" : "Pou\u017E\xEDvate\u013Esk\xE9 meno");
   const disabled = loading || !username.trim() || !password.trim();
@@ -1403,7 +1452,7 @@ function LoginForm({
 }
 
 // src/SettingsShell.tsx
-import { useState as useState8 } from "react";
+import { useState as useState9 } from "react";
 import { jsx as jsx25, jsxs as jsxs13 } from "react/jsx-runtime";
 var DEFAULT_TAB_LABELS = {
   system: "Syst\xE9m",
@@ -1422,7 +1471,7 @@ function SettingsShell({
   const visibleTabs = config.tabs.filter(
     (t) => !config.tabVisibleForRole || config.tabVisibleForRole(t, currentUserRole)
   );
-  const [tab, setTab] = useState8(visibleTabs[0]);
+  const [tab, setTab] = useState9(visibleTabs[0]);
   const activeTab = tab && visibleTabs.includes(tab) ? tab : visibleTabs[0];
   return /* @__PURE__ */ jsxs13("div", { className: "flex flex-col h-full", children: [
     /* @__PURE__ */ jsxs13("div", { className: "flex-shrink-0 px-6 py-4 border-b border-[var(--color-border-default)] flex items-center justify-between", children: [
@@ -1455,7 +1504,7 @@ function SettingsShell({
 }
 
 // src/SystemSettingsPanel.tsx
-import { useEffect as useEffect5, useMemo as useMemo2, useState as useState9 } from "react";
+import { useEffect as useEffect6, useMemo as useMemo2, useState as useState10 } from "react";
 import { Fragment as Fragment11, jsx as jsx26, jsxs as jsxs14 } from "react/jsx-runtime";
 function inputTypeFor(valueType) {
   if (valueType === "int" || valueType === "float") return "number";
@@ -1476,11 +1525,11 @@ function SystemSettingsPanel({
   loading = false,
   loadError = ""
 }) {
-  const [drafts, setDrafts] = useState9({});
-  const [savingKey, setSavingKey] = useState9(null);
-  const [saveErrors, setSaveErrors] = useState9({});
-  const [flashKey, setFlashKey] = useState9(null);
-  useEffect5(() => {
+  const [drafts, setDrafts] = useState10({});
+  const [savingKey, setSavingKey] = useState10(null);
+  const [saveErrors, setSaveErrors] = useState10({});
+  const [flashKey, setFlashKey] = useState10(null);
+  useEffect6(() => {
     setDrafts((prev) => {
       const next = { ...prev };
       for (const s of settings) if (!(s.key in next)) next[s.key] = s.value;
@@ -1612,7 +1661,7 @@ function SystemSettingsPanel({
 }
 
 // src/AgentsPanel.tsx
-import { useEffect as useEffect6, useState as useState10 } from "react";
+import { useEffect as useEffect7, useState as useState11 } from "react";
 import { jsx as jsx27, jsxs as jsxs15 } from "react/jsx-runtime";
 var EFFORT_LABELS = {
   low: "N\xEDzka",
@@ -1641,11 +1690,11 @@ function AgentsPanel({
   loadError = "",
   saveErrors = {}
 }) {
-  const [edit, setEdit] = useState10(() => seedState(roles, drafts));
-  const [savingRole, setSavingRole] = useState10(null);
-  const [flashRole, setFlashRole] = useState10(null);
+  const [edit, setEdit] = useState11(() => seedState(roles, drafts));
+  const [savingRole, setSavingRole] = useState11(null);
+  const [flashRole, setFlashRole] = useState11(null);
   const showHelperModel = (roleId) => Boolean(helperModels && helperModels.length > 0 && helperModelRoleIds.includes(roleId));
-  useEffect6(() => {
+  useEffect7(() => {
     setEdit(seedState(roles, drafts));
   }, [roles, drafts]);
   async function handleSave(roleId) {
@@ -1741,10 +1790,10 @@ function AgentsPanel({
 }
 
 // src/UsersPanel.tsx
-import { useMemo as useMemo3, useState as useState12 } from "react";
+import { useMemo as useMemo3, useState as useState13 } from "react";
 
 // src/UserForm.tsx
-import { useState as useState11 } from "react";
+import { useState as useState12 } from "react";
 import { Fragment as Fragment12, jsx as jsx28, jsxs as jsxs16 } from "react/jsx-runtime";
 function initialFromUser(user, roleOptions) {
   return {
@@ -1770,7 +1819,7 @@ function UserForm({
 }) {
   const isEdit = mode === "edit";
   const minLen = fieldSchema.passwordMinLength;
-  const [data, setData] = useState11(
+  const [data, setData] = useState12(
     () => initialFromUser(initial, roleOptions)
   );
   const passwordTooShort = data.password.length > 0 && data.password.length < minLen;
@@ -1958,17 +2007,17 @@ function UsersPanel({
   roleClass
 }) {
   const roleCls = roleClass ?? (() => "");
-  const [roleFilter, setRoleFilter] = useState12("");
-  const [activeFilter, setActiveFilter] = useState12("");
-  const [showNewForm, setShowNewForm] = useState12(false);
-  const [editingUser, setEditingUser] = useState12(null);
-  const [confirmingDeleteId, setConfirmingDeleteId] = useState12(null);
-  const [creating, setCreating] = useState12(false);
-  const [createError, setCreateError] = useState12("");
-  const [editing, setEditing] = useState12(false);
-  const [editError, setEditError] = useState12("");
-  const [deleting, setDeleting] = useState12(false);
-  const [deleteError, setDeleteError] = useState12("");
+  const [roleFilter, setRoleFilter] = useState13("");
+  const [activeFilter, setActiveFilter] = useState13("");
+  const [showNewForm, setShowNewForm] = useState13(false);
+  const [editingUser, setEditingUser] = useState13(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState13(null);
+  const [creating, setCreating] = useState13(false);
+  const [createError, setCreateError] = useState13("");
+  const [editing, setEditing] = useState13(false);
+  const [editError, setEditError] = useState13("");
+  const [deleting, setDeleting] = useState13(false);
+  const [deleteError, setDeleteError] = useState13("");
   const filteredUsers = useMemo3(() => {
     return users.filter((u) => {
       if (roleFilter && u.role !== roleFilter) return false;
@@ -2204,7 +2253,7 @@ function UsersPanel({
 }
 
 // src/MyAccountPanel.tsx
-import { useState as useState13 } from "react";
+import { useState as useState14 } from "react";
 import { jsx as jsx30, jsxs as jsxs18 } from "react/jsx-runtime";
 var LABEL = "block text-xs text-[var(--color-text-muted)] mb-1";
 var BTN = "px-3 py-1.5 text-xs font-medium text-white bg-primary-600 hover:bg-primary-500 disabled:opacity-40 rounded-lg transition-colors";
@@ -2222,15 +2271,15 @@ function MyAccountPanel({
   onTestTelegram,
   passwordMinLength = 5
 }) {
-  const [firstName, setFirstName] = useState13(user.first_name ?? "");
-  const [lastName, setLastName] = useState13(user.last_name ?? "");
-  const [email, setEmail] = useState13(user.email ?? "");
-  const [telegram, setTelegram] = useState13(user.telegram_chat_id ?? "");
-  const [savingProfile, setSavingProfile] = useState13(false);
-  const [profileError, setProfileError] = useState13("");
-  const [profileSaved, setProfileSaved] = useState13(false);
-  const [testBusy, setTestBusy] = useState13(false);
-  const [testResult, setTestResult] = useState13(null);
+  const [firstName, setFirstName] = useState14(user.first_name ?? "");
+  const [lastName, setLastName] = useState14(user.last_name ?? "");
+  const [email, setEmail] = useState14(user.email ?? "");
+  const [telegram, setTelegram] = useState14(user.telegram_chat_id ?? "");
+  const [savingProfile, setSavingProfile] = useState14(false);
+  const [profileError, setProfileError] = useState14("");
+  const [profileSaved, setProfileSaved] = useState14(false);
+  const [testBusy, setTestBusy] = useState14(false);
+  const [testResult, setTestResult] = useState14(null);
   async function testTelegram() {
     if (!onTestTelegram) return;
     setTestBusy(true);
@@ -2243,12 +2292,12 @@ function MyAccountPanel({
       setTestBusy(false);
     }
   }
-  const [currentPw, setCurrentPw] = useState13("");
-  const [newPw, setNewPw] = useState13("");
-  const [confirmPw, setConfirmPw] = useState13("");
-  const [savingPw, setSavingPw] = useState13(false);
-  const [pwError, setPwError] = useState13("");
-  const [pwDone, setPwDone] = useState13(false);
+  const [currentPw, setCurrentPw] = useState14("");
+  const [newPw, setNewPw] = useState14("");
+  const [confirmPw, setConfirmPw] = useState14("");
+  const [savingPw, setSavingPw] = useState14(false);
+  const [pwError, setPwError] = useState14("");
+  const [pwDone, setPwDone] = useState14(false);
   async function saveProfile() {
     setProfileError("");
     setProfileSaved(false);
@@ -2408,7 +2457,7 @@ function MyAccountPanel({
 }
 
 // src/SessionsPanel.tsx
-import { useMemo as useMemo4, useState as useState14 } from "react";
+import { useMemo as useMemo4, useState as useState15 } from "react";
 import { jsx as jsx31, jsxs as jsxs19 } from "react/jsx-runtime";
 function fmt(ts) {
   if (!ts) return "\u2014";
@@ -2425,9 +2474,9 @@ function SessionsPanel({
   filterUserId,
   onFilterChange
 }) {
-  const [confirmingId, setConfirmingId] = useState14(null);
-  const [revoking, setRevoking] = useState14(false);
-  const [revokeError, setRevokeError] = useState14("");
+  const [confirmingId, setConfirmingId] = useState15(null);
+  const [revoking, setRevoking] = useState15(false);
+  const [revokeError, setRevokeError] = useState15("");
   const nameOf = (uid) => resolveUsername?.(uid) ?? uid;
   const rows = useMemo4(
     () => filterUserId ? sessions.filter((s) => s.user_id === filterUserId) : sessions,
@@ -2533,10 +2582,10 @@ function SessionsPanel({
 var LAUNCH_WINDOW_PREFIX = "nexlaunch_";
 var LAUNCH_WINDOW_STORAGE_KEY = "nex-shared:launch-window";
 var LAUNCH_WINDOW_SAVE_DELAY_MS = 500;
-function rememberLaunchWindow(win = window, storage = browserStorage()) {
-  if (!win.name.startsWith(LAUNCH_WINDOW_PREFIX) || storage === null) return () => {
+function rememberLaunchWindow(win = window, storage2 = browserStorage()) {
+  if (!win.name.startsWith(LAUNCH_WINDOW_PREFIX) || storage2 === null) return () => {
   };
-  const stored = readPlacement(storage);
+  const stored = readPlacement(storage2);
   if (stored) {
     const placement = fitToScreen(stored, win.screen);
     try {
@@ -2550,7 +2599,7 @@ function rememberLaunchWindow(win = window, storage = browserStorage()) {
     win.clearTimeout(pending);
     pending = void 0;
     try {
-      storage.setItem(
+      storage2.setItem(
         LAUNCH_WINDOW_STORAGE_KEY,
         JSON.stringify({ left: win.screenX, top: win.screenY, width: win.outerWidth, height: win.outerHeight })
       );
@@ -2581,9 +2630,9 @@ function fitToScreen(placement, screen) {
     top: Math.min(Math.max(placement.top, minTop), minTop + screen.availHeight - height)
   };
 }
-function readPlacement(storage) {
+function readPlacement(storage2) {
   try {
-    const value = JSON.parse(storage.getItem(LAUNCH_WINDOW_STORAGE_KEY) ?? "null");
+    const value = JSON.parse(storage2.getItem(LAUNCH_WINDOW_STORAGE_KEY) ?? "null");
     if (!value) return null;
     const { left, top, width, height } = value;
     const numbers = [left, top, width, height].every((n) => typeof n === "number" && Number.isFinite(n));
@@ -2627,6 +2676,7 @@ export {
   ReleaseNotes,
   ResizeHandle,
   SIDEBAR_DEFAULT_WIDTH,
+  SIDEBAR_WIDTH_KEY_PREFIX,
   SectionDivider,
   SectionLabel,
   Select,
@@ -2644,9 +2694,12 @@ export {
   createApiClient,
   createAuthStore,
   fitToScreen,
+  readRememberedWidth,
   registerAuthCallback,
   rememberLaunchWindow,
+  rememberWidth,
   useDense,
+  useRememberedSidebarWidth,
   useShell,
   useWideScreen
 };
