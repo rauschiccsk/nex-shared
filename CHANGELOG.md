@@ -30,6 +30,10 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
   čím sa prihlásený používateľ líši (id, e-mail); ťahadlo potom funguje a šírku, ktorú si nastaví, si panel zapamätá
   pre neho v tomto prehliadači. Na inom počítači začne s predvolenou šírkou. Aplikácia, ktorá si šírku drží sama
   (`width` + `onWidthChange`, napríklad na serveri ako NEX Studio), sa nemení (DEV-243).
+- `[nové]` **Rám stránky na celú šírku obrazovky** (`<Page title subtitle actions width>`). Stránka so zoznamom,
+  tabuľkou či prehľadom využije celú šírku (predvolené); úzka (`width="narrow"`) je len stránka s formulárom alebo textom
+  na čítanie. Nesie aj riadok s nadpisom, podnadpisom a tlačidlami — vlastný strop šírky (`mx-auto max-w-6xl`) ani
+  vlastnú hlavičku stránky si aplikácia už nerobí (DEV-244).
 
 ## v0.24.0
 - `[vzhľad]` **Karta má vlastný vnútorný odstup** (`<Card>`). Text v karte sa už nelepí na jej okraj: karta bez

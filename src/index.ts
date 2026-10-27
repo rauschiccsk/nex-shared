@@ -8,6 +8,8 @@ export { ShellContext, useShell, useWideScreen, WIDE_SCREEN_QUERY } from "./Shel
 export type { ShellState } from "./ShellContext";
 
 export { Sidebar, SIDEBAR_DEFAULT_WIDTH } from "./Sidebar";
+export { Page } from "./Page";
+export type { PageProps, PageWidth } from "./Page";
 export type { SidebarProps } from "./Sidebar";
 export {
   SIDEBAR_WIDTH_KEY_PREFIX,
