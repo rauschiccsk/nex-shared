@@ -15,7 +15,8 @@ export interface StatusBadgeProps extends HTMLAttributes<HTMLSpanElement> {
 // semantic --color-state-<x>-bg/-fg token pair (light + dark both resolved in tokens.css),
 // so no colors are hardcoded here. Sibling of <Badge> (the generic 2-variant label); this
 // one is the semantic-status specialisation.
-const BASE = "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium";
+// whitespace-nowrap (DEV-242): a state is one phrase — „Čaká na prípravu“ broken over two lines inside its pill read badly.
+const BASE = "inline-flex items-center whitespace-nowrap rounded-full border px-2 py-0.5 text-[10px] font-medium";
 
 const STATUS: Record<StatusBadgeStatus, string> = {
   success:

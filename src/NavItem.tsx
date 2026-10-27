@@ -14,6 +14,9 @@ export interface NavItemProps {
   disabled?: boolean;
   /** Tooltip shown when disabled — explain why + how to enable. */
   disabledTitle?: string;
+  /** DEV-242: how many wait behind the entry — shown as „(3)“ beside the label and kept visible when a long label is
+   *  cut to one line. Nothing for 0 or none. */
+  count?: number;
   /** Show a dot beside the label (e.g. a queue awaiting the user). */
   badge?: boolean;
   /** Accessible name for the badge dot (only used when `badge`). */
@@ -44,6 +47,7 @@ export function NavItem({
   badge,
   badgeLabel,
   badgeTone = "attention",
+  count,
   onClick,
   href,
 }: NavItemProps) {
@@ -75,7 +79,14 @@ export function NavItem({
   const inner = (
     <>
       {icon}
-      {!collapsed && <span>{label}</span>}
+      {/* DEV-242: one line in a fixed-height row — a long label is cut with an ellipsis and named in full on hover;
+          wrapped, it overflowed the row and centred itself („Uchovávanie a odstraňovanie (3)“, NEX Knowledge). */}
+      {!collapsed && (
+        <span className="min-w-0 truncate" title={disabled ? undefined : label}>
+          {label}
+        </span>
+      )}
+      {!collapsed && count != null && count > 0 && <span className="shrink-0 tabular-nums">({count})</span>}
       {badge && (
         <span
           aria-label={badgeLabel}

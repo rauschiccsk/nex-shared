@@ -164,6 +164,9 @@ interface NavItemProps {
     disabled?: boolean;
     /** Tooltip shown when disabled — explain why + how to enable. */
     disabledTitle?: string;
+    /** DEV-242: how many wait behind the entry — shown as „(3)“ beside the label and kept visible when a long label is
+     *  cut to one line. Nothing for 0 or none. */
+    count?: number;
     /** Show a dot beside the label (e.g. a queue awaiting the user). */
     badge?: boolean;
     /** Accessible name for the badge dot (only used when `badge`). */
@@ -184,7 +187,7 @@ interface NavItemProps {
  * and no `href` it renders a `<button>` (NEX Studio's navigate-on-click model);
  * with an `href` it renders an `<a>`. Reads the collapsed state from context.
  */
-declare function NavItem({ icon, label, active, disabled, disabledTitle, badge, badgeLabel, badgeTone, onClick, href, }: NavItemProps): react.JSX.Element;
+declare function NavItem({ icon, label, active, disabled, disabledTitle, badge, badgeLabel, badgeTone, count, onClick, href, }: NavItemProps): react.JSX.Element;
 
 interface SectionLabelProps {
     /** Section heading text (rendered uppercase). */
@@ -360,6 +363,9 @@ interface DataTableColumn<Row> {
     align?: DataTableAlign;
     /** Extra classes appended to each body cell in this column. */
     className?: string;
+    /** DEV-242: this column holds long text (a title with its description, a note) and may wrap. Every other value —
+     *  a number, a date, an amount, a state, a person — stays on one line; that is the default. */
+    wrap?: boolean;
 }
 interface DataTableProps<Row> {
     /** Column config (in display order). Generic over the row type. */

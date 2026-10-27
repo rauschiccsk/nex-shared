@@ -323,6 +323,7 @@ function NavItem({
   badge,
   badgeLabel,
   badgeTone = "attention",
+  count,
   onClick,
   href
 }) {
@@ -340,7 +341,12 @@ function NavItem({
   const className = `${base} ${px} ${color} relative`;
   const inner = /* @__PURE__ */ jsxs3(Fragment2, { children: [
     icon,
-    !collapsed && /* @__PURE__ */ jsx6("span", { children: label }),
+    !collapsed && /* @__PURE__ */ jsx6("span", { className: "min-w-0 truncate", title: disabled ? void 0 : label, children: label }),
+    !collapsed && count != null && count > 0 && /* @__PURE__ */ jsxs3("span", { className: "shrink-0 tabular-nums", children: [
+      "(",
+      count,
+      ")"
+    ] }),
     badge && /* @__PURE__ */ jsx6(
       "span",
       {
@@ -585,7 +591,7 @@ function Card({ className = "", children, ...rest }) {
 
 // src/Badge.tsx
 import { jsx as jsx16 } from "react/jsx-runtime";
-var BASE5 = "inline-flex items-center rounded px-1.5 py-0.5 text-xs";
+var BASE5 = "inline-flex items-center whitespace-nowrap rounded px-1.5 py-0.5 text-xs";
 var VARIANT2 = {
   neutral: "bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)]",
   muted: "bg-[var(--color-state-muted-bg)] text-[var(--color-state-muted-fg)]"
@@ -603,7 +609,7 @@ function Badge({ variant = "neutral", pulse = false, className = "", children, .
 
 // src/StatusBadge.tsx
 import { jsx as jsx17 } from "react/jsx-runtime";
-var BASE6 = "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium";
+var BASE6 = "inline-flex items-center whitespace-nowrap rounded-full border px-2 py-0.5 text-[10px] font-medium";
 var STATUS = {
   success: "bg-[var(--color-state-success-bg)] border-[var(--color-state-success-bg)] text-[var(--color-state-success-fg)]",
   warning: "bg-[var(--color-state-warning-bg)] border-[var(--color-state-warning-bg)] text-[var(--color-state-warning-fg)]",
@@ -694,12 +700,12 @@ function DataTable({
           columns.map((col) => /* @__PURE__ */ jsx19(
             "th",
             {
-              className: `px-4 py-2.5 font-semibold ${ALIGN[col.align ?? "left"]}`,
+              className: `whitespace-nowrap px-4 py-2.5 font-semibold ${ALIGN[col.align ?? "left"]}`,
               children: col.header
             },
             col.key
           )),
-          rowActions && /* @__PURE__ */ jsx19("th", { className: "px-4 py-2.5 font-semibold text-right", children: rowActionsHeader })
+          rowActions && /* @__PURE__ */ jsx19("th", { className: "whitespace-nowrap px-4 py-2.5 font-semibold text-right", children: rowActionsHeader })
         ] }) }),
         /* @__PURE__ */ jsxs8("tbody", { className: "divide-y divide-[var(--color-border-default)]", children: [
           rows.map((row) => /* @__PURE__ */ jsxs8(
@@ -710,12 +716,12 @@ function DataTable({
                 columns.map((col) => /* @__PURE__ */ jsx19(
                   "td",
                   {
-                    className: `px-4 py-3 text-[var(--color-text-secondary)] ${ALIGN[col.align ?? "left"]} ${col.className ?? ""}`.trim(),
+                    className: `${col.wrap ? "" : "whitespace-nowrap "}px-4 py-3 text-[var(--color-text-secondary)] ${ALIGN[col.align ?? "left"]} ${col.className ?? ""}`.trim(),
                     children: col.render ? col.render(row) : defaultCell(row, col.key)
                   },
                   col.key
                 )),
-                rowActions && /* @__PURE__ */ jsx19("td", { className: "px-4 py-3 text-right", children: /* @__PURE__ */ jsx19("div", { className: "flex items-center justify-end gap-2", children: rowActions(row) }) })
+                rowActions && /* @__PURE__ */ jsx19("td", { className: "whitespace-nowrap px-4 py-3 text-right", children: /* @__PURE__ */ jsx19("div", { className: "flex items-center justify-end gap-2", children: rowActions(row) }) })
               ]
             },
             getRowKey(row)

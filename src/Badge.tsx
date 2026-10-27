@@ -12,7 +12,8 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 
 // Small inline label, Tailwind-composed. Kept deliberately simple (2 variants +
 // pulse) — dynamic per-case colors are supplied app-side via `className`.
-const BASE = "inline-flex items-center rounded px-1.5 py-0.5 text-xs";
+// whitespace-nowrap (DEV-242): a badge is one phrase and never breaks.
+const BASE = "inline-flex items-center whitespace-nowrap rounded px-1.5 py-0.5 text-xs";
 
 const VARIANT: Record<BadgeVariant, string> = {
   neutral: "bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)]",

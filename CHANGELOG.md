@@ -18,6 +18,15 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.25.0
+- `[vzhľad]` **Čísla, dátumy a stavy sa nelámu do dvoch riadkov** (`<DataTable>`, `<StatusBadge>`, `<Badge>`). Hlavičky
+  aj hodnoty tabuľky ostávajú v jednom riadku; zalomiť sa smie len stĺpec s dlhým textom, ktorý aplikácia označí
+  `wrap: true` (napríklad názov s popisom). Odznak stavu a odznak sa nelámu nikdy. Po povýšení pozri vo Vizuáli
+  tabuľky: stĺpec s dlhým textom bez `wrap` by tabuľku rozšíril (DEV-242).
+- `[vzhľad]` `[nové]` **Položka menu je vždy v jednom riadku** (`<NavItem>`). Dlhý názov skončí tromi bodkami a celý
+  ho ukáže bublina. Nová vlastnosť `count` ukáže počet „(3)“ vedľa názvu tak, že ostane viditeľný aj pri skrátenom
+  názve — počet už nepatrí do textu názvu (DEV-242).
+
 ## v0.24.0
 - `[vzhľad]` **Karta má vlastný vnútorný odstup** (`<Card>`). Text v karte sa už nelepí na jej okraj: karta bez
   triedy odstupu dostane predvolený odstup `p-5` (ako schválený vzhľad Author Asistenta). Vlastný odstup pri použití

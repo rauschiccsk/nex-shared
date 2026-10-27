@@ -14,6 +14,9 @@ export interface DataTableColumn<Row> {
   align?: DataTableAlign;
   /** Extra classes appended to each body cell in this column. */
   className?: string;
+  /** DEV-242: this column holds long text (a title with its description, a note) and may wrap. Every other value —
+   *  a number, a date, an amount, a state, a person — stays on one line; that is the default. */
+  wrap?: boolean;
 }
 
 export interface DataTableProps<Row> {
@@ -51,7 +54,8 @@ function defaultCell<Row>(row: Row, key: string): ReactNode {
 // Generic, typed data table matching the reference NEX Studio admin look: rounded bordered
 // surface, uppercase muted header row on a hover-surface background, divided rows with a hover
 // tint, per-column alignment, and an optional right-aligned actions column. App owns the data
-// + the action nodes; the table owns only the consistent chrome.
+// + the action nodes; the table owns only the consistent chrome. DEV-242: headers and values stay on one line (a
+// number broken at its hyphen, a date at its spaces read badly); only a column marked `wrap` — long text — wraps.
 export function DataTable<Row>({
   columns,
   rows,
@@ -73,13 +77,13 @@ export function DataTable<Row>({
             {columns.map((col) => (
               <th
                 key={col.key}
-                className={`px-4 py-2.5 font-semibold ${ALIGN[col.align ?? "left"]}`}
+                className={`whitespace-nowrap px-4 py-2.5 font-semibold ${ALIGN[col.align ?? "left"]}`}
               >
                 {col.header}
               </th>
             ))}
             {rowActions && (
-              <th className="px-4 py-2.5 font-semibold text-right">{rowActionsHeader}</th>
+              <th className="whitespace-nowrap px-4 py-2.5 font-semibold text-right">{rowActionsHeader}</th>
             )}
           </tr>
         </thead>
@@ -92,13 +96,13 @@ export function DataTable<Row>({
               {columns.map((col) => (
                 <td
                   key={col.key}
-                  className={`px-4 py-3 text-[var(--color-text-secondary)] ${ALIGN[col.align ?? "left"]} ${col.className ?? ""}`.trim()}
+                  className={`${col.wrap ? "" : "whitespace-nowrap "}px-4 py-3 text-[var(--color-text-secondary)] ${ALIGN[col.align ?? "left"]} ${col.className ?? ""}`.trim()}
                 >
                   {col.render ? col.render(row) : defaultCell(row, col.key)}
                 </td>
               ))}
               {rowActions && (
-                <td className="px-4 py-3 text-right">
+                <td className="whitespace-nowrap px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-2">{rowActions(row)}</div>
                 </td>
               )}
