@@ -1,6 +1,6 @@
 {
   "name": "nex-shared",
-  "version": "0.23.0",
+  "version": "0.24.0",
   "private": true,
   "type": "module",
   "description": "NEX shared frontend library \u2014 canonical design tokens + UI primitives (E1 unification; NEX Studio is the vzor).",
@@ -18,7 +18,7 @@
     "build": "tsup",
     "lint": "tsc --noEmit",
     "prepare": "npm run build",
-    "test": "tsc src/launchWindow.ts --outDir .test-build --module nodenext --moduleResolution nodenext --target es2022 --lib es2022,dom --strict --skipLibCheck && node --test test/"
+    "test": "tsc src/launchWindow.ts src/Card.tsx --outDir .test-build --module nodenext --moduleResolution nodenext --target es2022 --lib es2022,dom --jsx react-jsx --strict --skipLibCheck && node --test test/"
   },
   "peerDependencies": {
     "react": "^19",

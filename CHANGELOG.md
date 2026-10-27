@@ -18,6 +18,12 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.24.0
+- `[vzhľad]` **Karta má vlastný vnútorný odstup** (`<Card>`). Text v karte sa už nelepí na jej okraj: karta bez
+  triedy odstupu dostane predvolený odstup `p-5` (ako schválený vzhľad Author Asistenta). Vlastný odstup pri použití
+  (`p-4`, `p-[18px]`) predvolený nahradí; karta okolo tabuľky od okraja po okraj dá `p-0`. Po povýšení treba vo
+  Vizuáli pozrieť karty, ktoré si odstup doteraz dávali vnútri samy — mohli by mať odstup dvakrát (DEV-240).
+
 ## v0.23.0
 - `[nové]` **Okno spustené z NEX Managera sa otvorí tam, kde ste ho nechali** (`rememberLaunchWindow()`) — to isté ako
   v0.19.1 (opravná verzia z v0.19.0 pre aplikácie na v0.19.x), aby sa pri povýšení na novšiu verziu nestratilo.

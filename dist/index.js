@@ -576,8 +576,11 @@ function Select({ invalid, className = "", children, ...rest }) {
 // src/Card.tsx
 import { jsx as jsx15 } from "react/jsx-runtime";
 var BASE4 = "rounded-xl border border-[var(--color-border-default)] bg-[var(--color-surface-elevated)] shadow-[var(--shadow-sm)]";
+var DEFAULT_PADDING = "p-5";
+var HAS_PADDING = /(^|\s)p-\S+/;
 function Card({ className = "", children, ...rest }) {
-  return /* @__PURE__ */ jsx15("div", { className: `${BASE4} ${className}`.trim(), ...rest, children });
+  const padding = HAS_PADDING.test(className) ? "" : DEFAULT_PADDING;
+  return /* @__PURE__ */ jsx15("div", { className: [BASE4, padding, className].filter(Boolean).join(" "), ...rest, children });
 }
 
 // src/Badge.tsx
