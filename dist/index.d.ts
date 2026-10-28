@@ -798,7 +798,9 @@ interface UserRead {
 interface UserSessionRead {
     id: string;
     user_id: string;
-    token_version: number;
+    /** v0.27.0 (DEV-252) — optional: apps on the template keep sessions in the database and have no token version;
+     *  the panel then leaves the column „tv“ out. */
+    token_version?: number;
     /** ISO-8601 timestamp. */
     last_seen_at: string;
     /** ISO-8601 timestamp. */

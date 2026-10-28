@@ -18,6 +18,11 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.27.0
+- `[nové]` **Relácie bez stĺpca „tv“** (`<SessionsPanel>`, `UserSessionRead.token_version` voliteľné). Aplikácie na
+  šablóne nex-app-kit držia relácie v databáze a číslo verzie tokenu nemajú; stĺpec sa ukáže, len keď ho relácie
+  nesú. Kokpit ho má ďalej (DEV-252).
+
 ## v0.26.1
 - `[oprava]` **Zoznam používateľov ukazuje rolu menom** (`<UsersPanel>`) — „Správca“ podľa `roleOptions`, nie kód „admin“
   strojovým písmom. Rola, ktorú aplikácia nepomenovala, ostáva, ako je (DEV-251).

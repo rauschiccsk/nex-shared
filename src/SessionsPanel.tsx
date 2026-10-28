@@ -52,6 +52,8 @@ export function SessionsPanel({
 
   const nameOf = (uid: string) => resolveUsername?.(uid) ?? uid;
 
+  // DEV-252: the token version is the cockpit's — a column only when the sessions carry one.
+  const showTv = sessions.some((s) => s.token_version != null);
   const rows = useMemo(
     () => (filterUserId ? sessions.filter((s) => s.user_id === filterUserId) : sessions),
     [sessions, filterUserId],
@@ -114,7 +116,7 @@ export function SessionsPanel({
               <tr className="text-[10px] uppercase tracking-widest text-[var(--color-text-muted)]">
                 <th className="px-4 py-2.5 text-left font-semibold">Používateľ</th>
                 <th className="px-4 py-2.5 text-left font-semibold">ID relácie</th>
-                <th className="px-4 py-2.5 text-right font-semibold">tv</th>
+                {showTv && <th className="px-4 py-2.5 text-right font-semibold">tv</th>}
                 <th className="px-4 py-2.5 text-left font-semibold">Naposledy videný</th>
                 <th className="px-4 py-2.5 text-left font-semibold">Vytvorené</th>
                 <th className="px-4 py-2.5 text-right font-semibold">Akcie</th>
@@ -125,7 +127,9 @@ export function SessionsPanel({
                 <tr key={s.id} className="hover:bg-[var(--color-surface-hover)] transition-colors">
                   <td className="px-4 py-3 text-sm font-medium text-[var(--color-text-primary)]">{nameOf(s.user_id)}</td>
                   <td className="px-4 py-3 font-mono text-[10px] text-[var(--color-text-muted)]">{s.id}</td>
-                  <td className="px-4 py-3 text-right font-mono text-xs text-[var(--color-text-secondary)]">{s.token_version}</td>
+                  {showTv && (
+                    <td className="px-4 py-3 text-right font-mono text-xs text-[var(--color-text-secondary)]">{s.token_version}</td>
+                  )}
                   <td className="px-4 py-3 whitespace-nowrap text-xs text-[var(--color-text-muted)]">{fmt(s.last_seen_at)}</td>
                   <td className="px-4 py-3 whitespace-nowrap text-xs text-[var(--color-text-muted)]">{fmt(s.created_at)}</td>
                   <td className="px-4 py-3 text-right">

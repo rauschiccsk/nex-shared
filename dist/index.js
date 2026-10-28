@@ -2502,6 +2502,7 @@ function SessionsPanel({
   const [revoking, setRevoking] = useState15(false);
   const [revokeError, setRevokeError] = useState15("");
   const nameOf = (uid) => resolveUsername?.(uid) ?? uid;
+  const showTv = sessions.some((s) => s.token_version != null);
   const rows = useMemo4(
     () => filterUserId ? sessions.filter((s) => s.user_id === filterUserId) : sessions,
     [sessions, filterUserId]
@@ -2545,7 +2546,7 @@ function SessionsPanel({
       /* @__PURE__ */ jsx32("thead", { className: "bg-[var(--color-surface-hover)]", children: /* @__PURE__ */ jsxs20("tr", { className: "text-[10px] uppercase tracking-widest text-[var(--color-text-muted)]", children: [
         /* @__PURE__ */ jsx32("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Pou\u017E\xEDvate\u013E" }),
         /* @__PURE__ */ jsx32("th", { className: "px-4 py-2.5 text-left font-semibold", children: "ID rel\xE1cie" }),
-        /* @__PURE__ */ jsx32("th", { className: "px-4 py-2.5 text-right font-semibold", children: "tv" }),
+        showTv && /* @__PURE__ */ jsx32("th", { className: "px-4 py-2.5 text-right font-semibold", children: "tv" }),
         /* @__PURE__ */ jsx32("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Naposledy viden\xFD" }),
         /* @__PURE__ */ jsx32("th", { className: "px-4 py-2.5 text-left font-semibold", children: "Vytvoren\xE9" }),
         /* @__PURE__ */ jsx32("th", { className: "px-4 py-2.5 text-right font-semibold", children: "Akcie" })
@@ -2554,7 +2555,7 @@ function SessionsPanel({
         rows.map((s) => /* @__PURE__ */ jsxs20("tr", { className: "hover:bg-[var(--color-surface-hover)] transition-colors", children: [
           /* @__PURE__ */ jsx32("td", { className: "px-4 py-3 text-sm font-medium text-[var(--color-text-primary)]", children: nameOf(s.user_id) }),
           /* @__PURE__ */ jsx32("td", { className: "px-4 py-3 font-mono text-[10px] text-[var(--color-text-muted)]", children: s.id }),
-          /* @__PURE__ */ jsx32("td", { className: "px-4 py-3 text-right font-mono text-xs text-[var(--color-text-secondary)]", children: s.token_version }),
+          showTv && /* @__PURE__ */ jsx32("td", { className: "px-4 py-3 text-right font-mono text-xs text-[var(--color-text-secondary)]", children: s.token_version }),
           /* @__PURE__ */ jsx32("td", { className: "px-4 py-3 whitespace-nowrap text-xs text-[var(--color-text-muted)]", children: fmt(s.last_seen_at) }),
           /* @__PURE__ */ jsx32("td", { className: "px-4 py-3 whitespace-nowrap text-xs text-[var(--color-text-muted)]", children: fmt(s.created_at) }),
           /* @__PURE__ */ jsx32("td", { className: "px-4 py-3 text-right", children: !canRevoke ? /* @__PURE__ */ jsx32("span", { className: "text-xs text-[var(--color-text-muted)]", children: "\u2014" }) : confirmingId === s.id ? /* @__PURE__ */ jsxs20("div", { className: "flex items-center justify-end gap-2 text-xs", children: [
