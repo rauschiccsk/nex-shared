@@ -144,7 +144,8 @@ export function ReleaseNotes({
   appName,
 }: ReleaseNotesProps) {
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    // DEV-251: at the left like every other page (DEV-244), narrow — text to read.
+    <div className="p-6 max-w-3xl">
       <div className="mb-5">
         <h1 className="flex items-center gap-2 text-lg font-semibold text-[var(--color-text-primary)]">
           <span aria-hidden="true" className="text-primary-500 leading-none">

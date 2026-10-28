@@ -106,7 +106,7 @@ export function SystemSettingsPanel({
     <div className="p-6 max-w-3xl">
       <h2 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-1">Systémové nastavenia</h2>
       <p className="text-xs text-[var(--color-text-muted)] mb-4">
-        Runtime-mutable nastavenia. {canEdit ? "Zmeny sa prejavia do 30 s (interná cache TTL)." : "Read-only — chýba oprávnenie na úpravu."}
+        Nastavenia, ktoré sa menia za behu aplikácie. {canEdit ? "Zmena platí najneskôr do 30 sekúnd." : "Len na čítanie — meniť ich môže správca."}
       </p>
 
       {loadError && (

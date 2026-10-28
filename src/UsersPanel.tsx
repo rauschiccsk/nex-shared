@@ -49,6 +49,8 @@ export function UsersPanel({
   roleClass,
 }: UsersPanelProps) {
   const roleCls = roleClass ?? (() => "");
+  // DEV-251: the role by its name („Správca“), not its code; a role the app did not name stays as it is.
+  const roleName = (role: string) => roleOptions.find((o) => o.value === role)?.label ?? role;
 
   // Filters (client-side over the supplied users).
   const [roleFilter, setRoleFilter] = useState("");
@@ -222,7 +224,7 @@ export function UsersPanel({
                   )}
                   <td className="px-4 py-3 text-xs text-[var(--color-text-secondary)]">{u.email}</td>
                   <td className="px-4 py-3">
-                    <span className={`text-[11px] font-mono font-medium ${roleCls(u.role)}`}>{u.role}</span>
+                    <span className={`text-xs font-medium ${roleCls(u.role)}`}>{roleName(u.role)}</span>
                   </td>
                   <td className="px-4 py-3">
                     {u.is_active ? (

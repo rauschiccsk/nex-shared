@@ -1034,70 +1034,73 @@ function ReleaseNotes({
   onDismissError,
   appName
 }) {
-  return /* @__PURE__ */ jsxs12("div", { className: "p-6 max-w-5xl mx-auto", children: [
-    /* @__PURE__ */ jsxs12("div", { className: "mb-5", children: [
-      /* @__PURE__ */ jsxs12("h1", { className: "flex items-center gap-2 text-lg font-semibold text-[var(--color-text-primary)]", children: [
-        /* @__PURE__ */ jsx23("span", { "aria-hidden": "true", className: "text-primary-500 leading-none", children: "\u2728" }),
-        "Aktualiz\xE1cie"
+  return (
+    // DEV-251: at the left like every other page (DEV-244), narrow — text to read.
+    /* @__PURE__ */ jsxs12("div", { className: "p-6 max-w-3xl", children: [
+      /* @__PURE__ */ jsxs12("div", { className: "mb-5", children: [
+        /* @__PURE__ */ jsxs12("h1", { className: "flex items-center gap-2 text-lg font-semibold text-[var(--color-text-primary)]", children: [
+          /* @__PURE__ */ jsx23("span", { "aria-hidden": "true", className: "text-primary-500 leading-none", children: "\u2728" }),
+          "Aktualiz\xE1cie"
+        ] }),
+        /* @__PURE__ */ jsxs12("p", { className: "mt-1 text-sm text-[var(--color-text-secondary)]", children: [
+          "\u010Co je nov\xE9 v jednotliv\xFDch verzi\xE1ch",
+          appName ? ` ${appName}` : "",
+          "."
+        ] })
       ] }),
-      /* @__PURE__ */ jsxs12("p", { className: "mt-1 text-sm text-[var(--color-text-secondary)]", children: [
-        "\u010Co je nov\xE9 v jednotliv\xFDch verzi\xE1ch",
-        appName ? ` ${appName}` : "",
-        "."
-      ] })
-    ] }),
-    error && /* @__PURE__ */ jsxs12("div", { className: "mb-4 px-3 py-2 rounded-lg bg-[var(--color-state-error-bg)] text-[var(--color-state-error-fg)] text-sm flex items-center justify-between", children: [
-      /* @__PURE__ */ jsx23("span", { className: "truncate", children: error }),
-      /* @__PURE__ */ jsx23(
-        "button",
-        {
-          onClick: onDismissError,
-          className: "ml-2 hover:opacity-80",
-          "aria-label": "Zavrie\u0165",
-          children: /* @__PURE__ */ jsx23(
-            "svg",
-            {
-              className: "w-3.5 h-3.5",
-              fill: "none",
-              stroke: "currentColor",
-              viewBox: "0 0 24 24",
-              children: /* @__PURE__ */ jsx23(
-                "path",
-                {
-                  strokeLinecap: "round",
-                  strokeLinejoin: "round",
-                  strokeWidth: 2,
-                  d: "M6 18L18 6M6 6l12 12"
-                }
-              )
-            }
-          )
-        }
-      )
-    ] }),
-    loading ? /* @__PURE__ */ jsxs12("div", { className: "flex items-center gap-2 py-10 justify-center text-[var(--color-text-secondary)] text-sm", children: [
-      /* @__PURE__ */ jsx23(
-        "svg",
-        {
-          className: "w-4 h-4 animate-spin",
-          fill: "none",
-          stroke: "currentColor",
-          viewBox: "0 0 24 24",
-          children: /* @__PURE__ */ jsx23(
-            "path",
-            {
-              strokeLinecap: "round",
-              strokeLinejoin: "round",
-              strokeWidth: 2,
-              d: "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            }
-          )
-        }
-      ),
-      " ",
-      "Na\u010D\xEDtavam\u2026"
-    ] }) : notes.length === 0 ? /* @__PURE__ */ jsx23("div", { className: "rounded-xl border border-dashed border-[var(--color-border-default)] p-10 text-center text-sm text-[var(--color-text-muted)]", children: "Zatia\u013E \u017Eiadne aktualiz\xE1cie." }) : /* @__PURE__ */ jsx23("div", { className: "flex flex-col gap-3", children: notes.map((note, i) => /* @__PURE__ */ jsx23(VersionCard, { note, defaultOpen: i === 0 }, note.version)) })
-  ] });
+      error && /* @__PURE__ */ jsxs12("div", { className: "mb-4 px-3 py-2 rounded-lg bg-[var(--color-state-error-bg)] text-[var(--color-state-error-fg)] text-sm flex items-center justify-between", children: [
+        /* @__PURE__ */ jsx23("span", { className: "truncate", children: error }),
+        /* @__PURE__ */ jsx23(
+          "button",
+          {
+            onClick: onDismissError,
+            className: "ml-2 hover:opacity-80",
+            "aria-label": "Zavrie\u0165",
+            children: /* @__PURE__ */ jsx23(
+              "svg",
+              {
+                className: "w-3.5 h-3.5",
+                fill: "none",
+                stroke: "currentColor",
+                viewBox: "0 0 24 24",
+                children: /* @__PURE__ */ jsx23(
+                  "path",
+                  {
+                    strokeLinecap: "round",
+                    strokeLinejoin: "round",
+                    strokeWidth: 2,
+                    d: "M6 18L18 6M6 6l12 12"
+                  }
+                )
+              }
+            )
+          }
+        )
+      ] }),
+      loading ? /* @__PURE__ */ jsxs12("div", { className: "flex items-center gap-2 py-10 justify-center text-[var(--color-text-secondary)] text-sm", children: [
+        /* @__PURE__ */ jsx23(
+          "svg",
+          {
+            className: "w-4 h-4 animate-spin",
+            fill: "none",
+            stroke: "currentColor",
+            viewBox: "0 0 24 24",
+            children: /* @__PURE__ */ jsx23(
+              "path",
+              {
+                strokeLinecap: "round",
+                strokeLinejoin: "round",
+                strokeWidth: 2,
+                d: "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              }
+            )
+          }
+        ),
+        " ",
+        "Na\u010D\xEDtavam\u2026"
+      ] }) : notes.length === 0 ? /* @__PURE__ */ jsx23("div", { className: "rounded-xl border border-dashed border-[var(--color-border-default)] p-10 text-center text-sm text-[var(--color-text-muted)]", children: "Zatia\u013E \u017Eiadne aktualiz\xE1cie." }) : /* @__PURE__ */ jsx23("div", { className: "flex flex-col gap-3", children: notes.map((note, i) => /* @__PURE__ */ jsx23(VersionCard, { note, defaultOpen: i === 0 }, note.version)) })
+    ] })
+  );
 }
 
 // src/api-client.ts
@@ -1592,8 +1595,8 @@ function SystemSettingsPanel({
   return /* @__PURE__ */ jsxs15("div", { className: "p-6 max-w-3xl", children: [
     /* @__PURE__ */ jsx27("h2", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-1", children: "Syst\xE9mov\xE9 nastavenia" }),
     /* @__PURE__ */ jsxs15("p", { className: "text-xs text-[var(--color-text-muted)] mb-4", children: [
-      "Runtime-mutable nastavenia. ",
-      canEdit ? "Zmeny sa prejavia do 30 s (intern\xE1 cache TTL)." : "Read-only \u2014 ch\xFDba opr\xE1vnenie na \xFApravu."
+      "Nastavenia, ktor\xE9 sa menia za behu aplik\xE1cie. ",
+      canEdit ? "Zmena plat\xED najnesk\xF4r do 30 sek\xFAnd." : "Len na \u010D\xEDtanie \u2014 meni\u0165 ich m\xF4\u017Ee spr\xE1vca."
     ] }),
     loadError && /* @__PURE__ */ jsx27("div", { className: "rounded-lg border border-[var(--color-state-error-bg)] bg-[var(--color-state-error-bg)] px-3 py-2 text-xs text-[var(--color-state-error-fg)] mb-4", children: loadError }),
     loading && !loadError && /* @__PURE__ */ jsx27("div", { className: "text-xs text-[var(--color-text-muted)]", children: "Na\u010D\xEDtavam\u2026" }),
@@ -2026,6 +2029,7 @@ function UsersPanel({
   roleClass
 }) {
   const roleCls = roleClass ?? (() => "");
+  const roleName = (role) => roleOptions.find((o) => o.value === role)?.label ?? role;
   const [roleFilter, setRoleFilter] = useState13("");
   const [activeFilter, setActiveFilter] = useState13("");
   const [showNewForm, setShowNewForm] = useState13(false);
@@ -2164,7 +2168,7 @@ function UsersPanel({
             showNames && /* @__PURE__ */ jsx30("td", { className: "px-4 py-3 text-sm text-[var(--color-text-secondary)]", children: fullName || /* @__PURE__ */ jsx30("span", { className: "text-[var(--color-text-muted)]", children: "\u2014" }) }),
             showUsername && /* @__PURE__ */ jsx30("td", { className: "px-4 py-3 text-sm font-medium text-[var(--color-text-primary)] font-mono", children: u.username }),
             /* @__PURE__ */ jsx30("td", { className: "px-4 py-3 text-xs text-[var(--color-text-secondary)]", children: u.email }),
-            /* @__PURE__ */ jsx30("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsx30("span", { className: `text-[11px] font-mono font-medium ${roleCls(u.role)}`, children: u.role }) }),
+            /* @__PURE__ */ jsx30("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsx30("span", { className: `text-xs font-medium ${roleCls(u.role)}`, children: roleName(u.role) }) }),
             /* @__PURE__ */ jsx30("td", { className: "px-4 py-3", children: u.is_active ? /* @__PURE__ */ jsx30("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-state-success-bg)] border border-[var(--color-state-success-bg)] text-[var(--color-state-success-fg)]", children: "akt\xEDvny" }) : /* @__PURE__ */ jsx30("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-state-warning-bg)] border border-[var(--color-state-warning-bg)] text-[var(--color-state-warning-fg)]", children: "neakt\xEDvny" }) }),
             /* @__PURE__ */ jsx30("td", { className: "px-4 py-3 text-right", children: !canManage ? /* @__PURE__ */ jsx30("span", { className: "text-xs text-[var(--color-text-muted)]", children: "\u2014" }) : confirmingDeleteId === u.id ? /* @__PURE__ */ jsxs18("div", { className: "flex items-center justify-end gap-2 text-xs", children: [
               /* @__PURE__ */ jsx30("span", { className: "text-[var(--color-text-secondary)]", children: "Naozaj vymaza\u0165?" }),

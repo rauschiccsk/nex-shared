@@ -18,6 +18,15 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.26.1
+- `[oprava]` **Zoznam používateľov ukazuje rolu menom** (`<UsersPanel>`) — „Správca“ podľa `roleOptions`, nie kód „admin“
+  strojovým písmom. Rola, ktorú aplikácia nepomenovala, ostáva, ako je (DEV-251).
+- `[oprava]` **Systémové nastavenia začínajú vetou pre človeka** (`<SystemSettingsPanel>`): „Nastavenia, ktoré sa menia
+  za behu aplikácie. Zmena platí najneskôr do 30 sekúnd.“ namiesto „Runtime-mutable … (interná cache TTL)“; bez práva
+  na úpravu „Len na čítanie — meniť ich môže správca.“ (DEV-251).
+- `[vzhľad]` **Aktualizácie stoja vľavo** ako každá iná stránka (DEV-244), v šírke na čítanie (`<ReleaseNotes>`). Po
+  povýšení pozri stránku Aktualizácie (DEV-251).
+
 ## v0.26.0
 - `[nové]` **„Moje konto“ bez poľa Telegram** (`<MyAccountPanel telegram={false}>`). Pre aplikáciu, ktorá na Telegram
   nič neposiela: pole aj tlačidlo testu sa nezobrazia a uloženie profilu vráti uložené chat_id nezmenené. Predvolene
