@@ -18,6 +18,12 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.26.0
+- `[nové]` **„Moje konto“ bez poľa Telegram** (`<MyAccountPanel telegram={false}>`). Pre aplikáciu, ktorá na Telegram
+  nič neposiela: pole aj tlačidlo testu sa nezobrazia a uloženie profilu vráti uložené chat_id nezmenené. Predvolene
+  ostáva pole tak, ako ho má kokpit; doterajšie aplikácie sa nemenia. Používa ho šablóna aplikácií nex-app-kit
+  (DEV-251).
+
 ## v0.25.0
 - `[vzhľad]` **Čísla, dátumy a stavy sa nelámu do dvoch riadkov** (`<DataTable>`, `<StatusBadge>`, `<Badge>`). Hlavičky
   aj hodnoty tabuľky ostávajú v jednom riadku; zalomiť sa smie len stĺpec s dlhým textom, ktorý aplikácia označí

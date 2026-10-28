@@ -2288,7 +2288,8 @@ function MyAccountPanel({
   onSaveProfile,
   onChangePassword,
   onTestTelegram,
-  passwordMinLength = 5
+  passwordMinLength = 5,
+  telegram: showTelegram = true
 }) {
   const [firstName, setFirstName] = useState14(user.first_name ?? "");
   const [lastName, setLastName] = useState14(user.last_name ?? "");
@@ -2377,7 +2378,7 @@ function MyAccountPanel({
           /* @__PURE__ */ jsx31("label", { htmlFor: "ma-email", className: LABEL, children: "Email *" }),
           /* @__PURE__ */ jsx31(Input, { id: "ma-email", type: "email", value: email, onChange: (e) => setEmail(e.target.value) })
         ] }),
-        /* @__PURE__ */ jsxs19("div", { children: [
+        showTelegram && /* @__PURE__ */ jsxs19("div", { children: [
           /* @__PURE__ */ jsx31("label", { htmlFor: "ma-tg", className: LABEL, children: "Telegram chat_id" }),
           /* @__PURE__ */ jsx31(
             Input,
@@ -2392,7 +2393,7 @@ function MyAccountPanel({
         /* @__PURE__ */ jsx31(ReadOnly, { label: "Pou\u017E\xEDvate\u013Esk\xE9 meno", value: user.username }),
         /* @__PURE__ */ jsx31(ReadOnly, { label: "Rola", value: roleLabel })
       ] }),
-      onTestTelegram && /* @__PURE__ */ jsxs19("div", { className: "mb-3 rounded-lg bg-[var(--color-surface-hover)] px-3 py-2 text-xs", children: [
+      showTelegram && onTestTelegram && /* @__PURE__ */ jsxs19("div", { className: "mb-3 rounded-lg bg-[var(--color-surface-hover)] px-3 py-2 text-xs", children: [
         /* @__PURE__ */ jsxs19("p", { className: "text-[var(--color-text-muted)] mb-2", children: [
           "Ako za\u010Da\u0165 dost\xE1va\u0165 upozornenia na Telegram: nap\xED\u0161 n\xE1\u0161mu botovi",
           " ",

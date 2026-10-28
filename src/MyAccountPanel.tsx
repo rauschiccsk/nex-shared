@@ -44,6 +44,9 @@ export interface MyAccountPanelProps {
   onTestTelegram?: () => Promise<{ ok: boolean; detail: string }>;
   /** Minimum new-password length (mirrors the app's backend constraint). Default 5. */
   passwordMinLength?: number;
+  /** v0.26.0 (DEV-251) — `false` for an app that sends nothing to Telegram: the field and its test are left out and
+   *  `onSaveProfile` passes the stored chat_id back unchanged. Default `true`, as the cockpit has it. */
+  telegram?: boolean;
 }
 
 const LABEL = "block text-xs text-[var(--color-text-muted)] mb-1";
@@ -66,6 +69,7 @@ export function MyAccountPanel({
   onChangePassword,
   onTestTelegram,
   passwordMinLength = 5,
+  telegram: showTelegram = true,
 }: MyAccountPanelProps) {
   // Profile fields (editable).
   const [firstName, setFirstName] = useState(user.first_name ?? "");
@@ -180,22 +184,24 @@ export function MyAccountPanel({
             </label>
             <Input id="ma-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
-          <div>
-            <label htmlFor="ma-tg" className={LABEL}>
-              Telegram chat_id
-            </label>
-            <Input
-              id="ma-tg"
-              value={telegram}
-              onChange={(e) => setTelegram(e.target.value)}
-              placeholder="napr. 123456789 (notifikácie)"
-            />
-          </div>
+          {showTelegram && (
+            <div>
+              <label htmlFor="ma-tg" className={LABEL}>
+                Telegram chat_id
+              </label>
+              <Input
+                id="ma-tg"
+                value={telegram}
+                onChange={(e) => setTelegram(e.target.value)}
+                placeholder="napr. 123456789 (notifikácie)"
+              />
+            </div>
+          )}
           {/* Login + access rights are NOT self-editable — shown for reference only. */}
           <ReadOnly label="Používateľské meno" value={user.username} />
           <ReadOnly label="Rola" value={roleLabel} />
         </div>
-        {onTestTelegram && (
+        {showTelegram && onTestTelegram && (
           <div className="mb-3 rounded-lg bg-[var(--color-surface-hover)] px-3 py-2 text-xs">
             <p className="text-[var(--color-text-muted)] mb-2">
               Ako začať dostávať upozornenia na Telegram: napíš nášmu botovi{" "}

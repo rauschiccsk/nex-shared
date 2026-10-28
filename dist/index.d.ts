@@ -1058,8 +1058,11 @@ interface MyAccountPanelProps {
     }>;
     /** Minimum new-password length (mirrors the app's backend constraint). Default 5. */
     passwordMinLength?: number;
+    /** v0.26.0 (DEV-251) — `false` for an app that sends nothing to Telegram: the field and its test are left out and
+     *  `onSaveProfile` passes the stored chat_id back unchanged. Default `true`, as the cockpit has it. */
+    telegram?: boolean;
 }
-declare function MyAccountPanel({ user, roleLabel, onSaveProfile, onChangePassword, onTestTelegram, passwordMinLength, }: MyAccountPanelProps): react.JSX.Element;
+declare function MyAccountPanel({ user, roleLabel, onSaveProfile, onChangePassword, onTestTelegram, passwordMinLength, telegram: showTelegram, }: MyAccountPanelProps): react.JSX.Element;
 
 interface SessionsPanelProps {
     sessions: UserSessionRead[];
