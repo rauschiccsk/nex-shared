@@ -194,7 +194,7 @@ export function SystemSettingsPanel({
                             <span className="text-[var(--color-text-muted)]">Predvolená hodnota.</span>
                           ) : (
                             <span className="text-[var(--color-text-muted)]">
-                              Uložený override
+                              Zmenené
                               {s.updated_by_username && (
                                 <> — <span className="text-[var(--color-text-secondary)] font-medium">{s.updated_by_username}</span></>
                               )}

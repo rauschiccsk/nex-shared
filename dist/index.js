@@ -1660,7 +1660,7 @@ function SystemSettingsPanel({
               ] }),
               /* @__PURE__ */ jsxs15("div", { className: "mt-2 text-[11px] flex items-center gap-2 flex-wrap", children: [
                 s.is_default ? /* @__PURE__ */ jsx27("span", { className: "text-[var(--color-text-muted)]", children: "Predvolen\xE1 hodnota." }) : /* @__PURE__ */ jsxs15("span", { className: "text-[var(--color-text-muted)]", children: [
-                  "Ulo\u017Een\xFD override",
+                  "Zmenen\xE9",
                   s.updated_by_username && /* @__PURE__ */ jsxs15(Fragment11, { children: [
                     " \u2014 ",
                     /* @__PURE__ */ jsx27("span", { className: "text-[var(--color-text-secondary)] font-medium", children: s.updated_by_username })
@@ -2496,7 +2496,8 @@ function SessionsPanel({
   loading = false,
   loadError = "",
   filterUserId,
-  onFilterChange
+  onFilterChange,
+  description = "Kto je prihl\xE1sen\xFD a odkedy."
 }) {
   const [confirmingId, setConfirmingId] = useState15(null);
   const [revoking, setRevoking] = useState15(false);
@@ -2523,7 +2524,7 @@ function SessionsPanel({
   }
   return /* @__PURE__ */ jsxs20("div", { className: "p-6", children: [
     /* @__PURE__ */ jsx32("h2", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-1", children: "Rel\xE1cie pou\u017E\xEDvate\u013Ea" }),
-    /* @__PURE__ */ jsx32("p", { className: "text-xs text-[var(--color-text-muted)] mb-4", children: "Kotvy \u017Eivotn\xE9ho cyklu JWT. Zru\u0161enie rel\xE1cie zneplatn\xED v\u0161etky jej zost\xE1vaj\xFAce tokeny." }),
+    /* @__PURE__ */ jsx32("p", { className: "text-xs text-[var(--color-text-muted)] mb-4", children: description }),
     filterUserId && onFilterChange && /* @__PURE__ */ jsxs20("div", { className: "mb-3 flex items-center gap-2 text-xs", children: [
       /* @__PURE__ */ jsxs20("span", { className: "text-[var(--color-text-muted)]", children: [
         "Filtrovan\xE9 pod\u013Ea pou\u017E\xEDvate\u013Ea:",

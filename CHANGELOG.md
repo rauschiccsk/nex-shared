@@ -18,6 +18,13 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.28.0
+- `[nové]` **Relácie povedia, čo znamená zrušenie** (`<SessionsPanel description="…">`). Predvolená veta je „Kto je
+  prihlásený a odkedy.“ namiesto „Kotvy životného cyklu JWT…“ — žargón, ktorý navyše nesedel pre aplikácie s reláciou
+  v databáze. Aplikácia dopíše, čo zrušenie relácie u nej robí (DEV-252).
+- `[oprava]` **Zmenené systémové nastavenie** povie „Zmenené — meno · čas“ namiesto „Uložený override“
+  (`<SystemSettingsPanel>`) (DEV-252).
+
 ## v0.27.0
 - `[nové]` **Relácie bez stĺpca „tv“** (`<SessionsPanel>`, `UserSessionRead.token_version` voliteľné). Aplikácie na
   šablóne nex-app-kit držia relácie v databáze a číslo verzie tokenu nemajú; stĺpec sa ukáže, len keď ho relácie

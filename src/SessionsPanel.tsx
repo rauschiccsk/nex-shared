@@ -1,7 +1,7 @@
 /**
  * SessionsPanel — user-session table (user, id, token_version, last_seen_at,
  * created_at) + revoke, with an optional user filter (CR-NS-078). A session is a
- * per-user JWT lifecycle anchor; revoking invalidates its outstanding tokens.
+ * per-user session; what revoking does depends on the app, so the app says it in `description`.
  *
  * The app owns data + IO: it supplies `sessions`, resolves user ids to names via
  * `resolveUsername`, gates revoke via `canRevoke`, and persists through
@@ -28,6 +28,8 @@ export interface SessionsPanelProps {
   filterUserId?: string;
   /** Clear/change the user filter. */
   onFilterChange?: (userId: string) => void;
+  /** v0.28.0 (DEV-252) — the sentence under the heading; the app says what ending a session does there. */
+  description?: string;
 }
 
 function fmt(ts: string | null | undefined): string {
@@ -45,6 +47,7 @@ export function SessionsPanel({
   loadError = "",
   filterUserId,
   onFilterChange,
+  description = "Kto je prihlásený a odkedy.",
 }: SessionsPanelProps) {
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [revoking, setRevoking] = useState(false);
@@ -80,9 +83,7 @@ export function SessionsPanel({
   return (
     <div className="p-6">
       <h2 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-1">Relácie používateľa</h2>
-      <p className="text-xs text-[var(--color-text-muted)] mb-4">
-        Kotvy životného cyklu JWT. Zrušenie relácie zneplatní všetky jej zostávajúce tokeny.
-      </p>
+      <p className="text-xs text-[var(--color-text-muted)] mb-4">{description}</p>
 
       {filterUserId && onFilterChange && (
         <div className="mb-3 flex items-center gap-2 text-xs">

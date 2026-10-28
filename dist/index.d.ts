@@ -1082,8 +1082,10 @@ interface SessionsPanelProps {
     filterUserId?: string;
     /** Clear/change the user filter. */
     onFilterChange?: (userId: string) => void;
+    /** v0.28.0 (DEV-252) — the sentence under the heading; the app says what ending a session does there. */
+    description?: string;
 }
-declare function SessionsPanel({ sessions, resolveUsername, canRevoke, onRevoke, loading, loadError, filterUserId, onFilterChange, }: SessionsPanelProps): react.JSX.Element;
+declare function SessionsPanel({ sessions, resolveUsername, canRevoke, onRevoke, loading, loadError, filterUserId, onFilterChange, description, }: SessionsPanelProps): react.JSX.Element;
 
 /**
  * A window NEX Manager launched opens where the user left it last time (DEV-142).

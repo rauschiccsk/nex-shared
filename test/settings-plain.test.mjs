@@ -8,7 +8,7 @@ import { test } from "node:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { ReleaseNotes, SystemSettingsPanel, UsersPanel } from "../dist/index.js";
+import { ReleaseNotes, SessionsPanel, SystemSettingsPanel, UsersPanel } from "../dist/index.js";
 
 const user = (role) => ({
   id: role,
@@ -74,4 +74,47 @@ test("Aktualizácie start at the left like every other page", () => {
 
   assert.ok(!outer.includes("mx-auto"), outer.join(" "));
   assert.ok(outer.includes("p-6"), outer.join(" "));
+});
+
+// DEV-252 — two more sentences the template's demo showed: Relácie opened with „Kotvy životného cyklu JWT…“ (wrong for
+// an app with sessions in its database, and jargon anywhere), a changed setting said „Uložený override“.
+function sessionsIntro(extra) {
+  const html = renderToStaticMarkup(
+    createElement(SessionsPanel, { sessions: [], canRevoke: false, onRevoke: async () => {}, ...extra }),
+  );
+  return html.match(/Relácie používateľa<\/h2><p[^>]*>([^<]*)<\/p>/)[1];
+}
+
+test("Relácie open with a sentence for a person, and the app may say more", () => {
+  assert.equal(sessionsIntro({}), "Kto je prihlásený a odkedy.");
+  assert.equal(
+    sessionsIntro({ description: "Kto je prihlásený a odkedy. Zrušená relácia prestane platiť hneď." }),
+    "Kto je prihlásený a odkedy. Zrušená relácia prestane platiť hneď.",
+  );
+});
+
+test("a changed setting says it was changed, by whom", () => {
+  const html = renderToStaticMarkup(
+    createElement(SystemSettingsPanel, {
+      settings: [
+        {
+          key: "a_b",
+          value: "2",
+          value_type: "int",
+          description: null,
+          label: "A",
+          updated_at: null,
+          updated_by: "u1",
+          updated_by_username: "jan",
+          is_default: false,
+        },
+      ],
+      categories: [],
+      canEdit: false,
+      onSave: async () => ({}),
+    }),
+  );
+
+  assert.match(html, /Zmenené — <span[^>]*>jan<\/span>/);
+  assert.doesNotMatch(html, /override/);
 });
