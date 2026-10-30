@@ -18,6 +18,12 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.29.0
+- `[nové]` **Systémové nastavenie s výberom z ponuky aplikácie** (`SystemSettingRead.choices`, `<SystemSettingsPanel>`).
+  Keď aplikácia pri nastavení pošle ponuku (napríklad skupiny z NEX Managera), editor je výber z nej; uložená hodnota,
+  ktorá v ponuke už nie je, ostane viditeľná ako „(nie je v ponuke)“. Prázdna ponuka = aplikácia ju teraz nevie
+  načítať — panel to povie a nastavenie sa zatiaľ nedá zmeniť (DEV-257).
+
 ## v0.28.0
 - `[nové]` **Relácie povedia, čo znamená zrušenie** (`<SessionsPanel description="…">`). Predvolená veta je „Kto je
   prihlásený a odkedy.“ namiesto „Kotvy životného cyklu JWT…“ — žargón, ktorý navyše nesedel pre aplikácie s reláciou

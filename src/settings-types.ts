@@ -58,6 +58,12 @@ export interface UserSessionRead {
 /** Runtime type of a system-setting `value` — drives the input widget. */
 export type SystemSettingValueType = "string" | "int" | "float" | "bool";
 
+/** One value a setting may take, as the app offers it (DEV-257) — the stored `value` and what a person reads. */
+export interface SettingChoice {
+  value: string;
+  label: string;
+}
+
 /** Serialised system-setting row. A stored override sets `is_default` to false. */
 export interface SystemSettingRead {
   key: string;
@@ -77,6 +83,10 @@ export interface SystemSettingRead {
   updated_by_username: string | null;
   /** `true` when the value comes from the service-layer default. */
   is_default: boolean;
+  /** DEV-257: the values the app offers (e.g. the groups of NEX Manager) — the editor is then a choice among them.
+   *  An empty list = the app could not read its offer now; the setting cannot be changed until it can. Absent → the
+   *  editor of its `value_type`. */
+  choices?: SettingChoice[] | null;
 }
 
 /**

@@ -152,7 +152,7 @@ export function SystemSettingsPanel({
                             <button
                               type="button"
                               onClick={() => handleSaveSetting(s.key)}
-                              disabled={saving || !dirty}
+                              disabled={saving || !dirty || s.choices?.length === 0}
                               className="shrink-0 px-3 py-1.5 text-xs font-medium text-white bg-primary-600 hover:bg-primary-500 disabled:opacity-40 disabled:cursor-not-allowed rounded transition-colors"
                             >
                               {saving ? "Ukladám…" : dirty ? "Uložiť" : "Uložené"}
@@ -162,7 +162,33 @@ export function SystemSettingsPanel({
                         {s.description && (
                           <p className="text-xs text-[var(--color-text-muted)] mb-2 leading-relaxed">{s.description}</p>
                         )}
-                        {inputType === "checkbox" ? (
+                        {s.choices && s.choices.length === 0 && (
+                          <p className="text-xs text-[var(--color-status-warning)] mb-2">
+                            Ponuka sa teraz nedá načítať — nastavenie sa zatiaľ nedá zmeniť.
+                          </p>
+                        )}
+                        {s.choices ? (
+                          // DEV-257: a value chosen from the app's own offer. A stored value the offer no longer
+                          // holds is still shown — as itself, never silently swapped for the first choice.
+                          <div className="flex items-center gap-2">
+                            <select
+                              value={draft}
+                              onChange={(e) => setDrafts((prev) => ({ ...prev, [s.key]: e.target.value }))}
+                              disabled={!canEdit || s.choices.length === 0}
+                              className="w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded px-3 py-1.5 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-primary-500 disabled:opacity-50"
+                            >
+                              {!s.choices.some((c) => c.value === draft) && (
+                                <option value={draft}>{draft ? `${draft} (nie je v ponuke)` : "— nevybraté —"}</option>
+                              )}
+                              {s.choices.map((c) => (
+                                <option key={c.value} value={c.value}>
+                                  {c.label}
+                                </option>
+                              ))}
+                            </select>
+                            {s.unit && <span className="shrink-0 text-xs text-[var(--color-text-muted)]">{s.unit}</span>}
+                          </div>
+                        ) : inputType === "checkbox" ? (
                           <label className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)]">
                             <input
                               type="checkbox"

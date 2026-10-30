@@ -1625,14 +1625,34 @@ function SystemSettingsPanel({
                   {
                     type: "button",
                     onClick: () => handleSaveSetting(s.key),
-                    disabled: saving || !dirty,
+                    disabled: saving || !dirty || s.choices?.length === 0,
                     className: "shrink-0 px-3 py-1.5 text-xs font-medium text-white bg-primary-600 hover:bg-primary-500 disabled:opacity-40 disabled:cursor-not-allowed rounded transition-colors",
                     children: saving ? "Uklad\xE1m\u2026" : dirty ? "Ulo\u017Ei\u0165" : "Ulo\u017Een\xE9"
                   }
                 )
               ] }),
               s.description && /* @__PURE__ */ jsx27("p", { className: "text-xs text-[var(--color-text-muted)] mb-2 leading-relaxed", children: s.description }),
-              inputType === "checkbox" ? /* @__PURE__ */ jsxs15("label", { className: "flex items-center gap-2 text-xs text-[var(--color-text-secondary)]", children: [
+              s.choices && s.choices.length === 0 && /* @__PURE__ */ jsx27("p", { className: "text-xs text-[var(--color-status-warning)] mb-2", children: "Ponuka sa teraz ned\xE1 na\u010D\xEDta\u0165 \u2014 nastavenie sa zatia\u013E ned\xE1 zmeni\u0165." }),
+              s.choices ? (
+                // DEV-257: a value chosen from the app's own offer. A stored value the offer no longer
+                // holds is still shown — as itself, never silently swapped for the first choice.
+                /* @__PURE__ */ jsxs15("div", { className: "flex items-center gap-2", children: [
+                  /* @__PURE__ */ jsxs15(
+                    "select",
+                    {
+                      value: draft,
+                      onChange: (e) => setDrafts((prev) => ({ ...prev, [s.key]: e.target.value })),
+                      disabled: !canEdit || s.choices.length === 0,
+                      className: "w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded px-3 py-1.5 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-primary-500 disabled:opacity-50",
+                      children: [
+                        !s.choices.some((c) => c.value === draft) && /* @__PURE__ */ jsx27("option", { value: draft, children: draft ? `${draft} (nie je v ponuke)` : "\u2014 nevybrat\xE9 \u2014" }),
+                        s.choices.map((c) => /* @__PURE__ */ jsx27("option", { value: c.value, children: c.label }, c.value))
+                      ]
+                    }
+                  ),
+                  s.unit && /* @__PURE__ */ jsx27("span", { className: "shrink-0 text-xs text-[var(--color-text-muted)]", children: s.unit })
+                ] })
+              ) : inputType === "checkbox" ? /* @__PURE__ */ jsxs15("label", { className: "flex items-center gap-2 text-xs text-[var(--color-text-secondary)]", children: [
                 /* @__PURE__ */ jsx27(
                   "input",
                   {

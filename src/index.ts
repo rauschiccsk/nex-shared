@@ -128,6 +128,7 @@ export type { UserFormProps, UserFormData } from "./UserForm";
 export type {
   UserRead,
   UserSessionRead,
+  SettingChoice,
   SystemSettingRead,
   SystemSettingValueType,
   SettingsKitConfig,
