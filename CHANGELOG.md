@@ -18,6 +18,11 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.31.0
+- `[oprava]` **Heslo bez vymyslenej najmenšej dĺžky** (`<MyAccountPanel>`, `<UserForm>`). Keď aplikácia žiada len
+  neprázdne heslo (`passwordMinLength` 1), formulár nepíše „min. 1 znakov“; aplikácia s vlastnou najmenšou dĺžkou ju
+  ukazuje ako doteraz. Pravidlo Directora: dĺžku hesla nástroj neobmedzuje, odmietne nanajvýš prázdne heslo (DEV-296).
+
 ## v0.30.0
 - `[nové]` **Tlačidlo aplikácie v riadku človeka** (`<UsersPanel rowActions={(user) => …}>`). Aplikácia pridá k človeku
   vlastné tlačidlo — prvé v stĺpci Akcie, aj pre toho, kto ľudí spravovať nesmie (čo mu ukáže, rozhodne aplikácia).

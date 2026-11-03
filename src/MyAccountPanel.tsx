@@ -266,7 +266,8 @@ export function MyAccountPanel({
               type="password"
               value={newPw}
               onChange={(e) => setNewPw(e.target.value)}
-              placeholder={`min. ${passwordMinLength} znakov`}
+              // DEV-296: an app that asks only for a non-empty password names no minimum.
+              placeholder={passwordMinLength > 1 ? `min. ${passwordMinLength} znakov` : undefined}
               invalid={pwTooShort}
             />
           </div>

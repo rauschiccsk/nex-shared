@@ -221,7 +221,8 @@ export function UserForm({
             type="password"
             value={data.password}
             onChange={(e) => update("password", e.target.value)}
-            placeholder={`min. ${minLen} znakov`}
+            // DEV-296: an app that asks only for a non-empty password names no minimum.
+            placeholder={minLen > 1 ? `min. ${minLen} znakov` : undefined}
             invalid={passwordTooShort}
           />
           {passwordTooShort && (

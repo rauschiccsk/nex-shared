@@ -1957,7 +1957,7 @@ function UserForm({
             type: "password",
             value: data.password,
             onChange: (e) => update("password", e.target.value),
-            placeholder: `min. ${minLen} znakov`,
+            placeholder: minLen > 1 ? `min. ${minLen} znakov` : void 0,
             invalid: passwordTooShort
           }
         ),
@@ -2473,7 +2473,7 @@ function MyAccountPanel({
               type: "password",
               value: newPw,
               onChange: (e) => setNewPw(e.target.value),
-              placeholder: `min. ${passwordMinLength} znakov`,
+              placeholder: passwordMinLength > 1 ? `min. ${passwordMinLength} znakov` : void 0,
               invalid: pwTooShort
             }
           )
