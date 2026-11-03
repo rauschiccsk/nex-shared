@@ -18,7 +18,12 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
-## v0.29.0
+## v0.30.0
+- `[nové]` **Tlačidlo aplikácie v riadku človeka** (`<UsersPanel rowActions={(user) => …}>`). Aplikácia pridá k človeku
+  vlastné tlačidlo — prvé v stĺpci Akcie, aj pre toho, kto ľudí spravovať nesmie (čo mu ukáže, rozhodne aplikácia).
+  NEX Manager tak otvorí okno „Prístupy“ (skupiny, aplikácie a história človeka) priamo v Nastaveniach → Používatelia
+  a ľudia nemusia mať druhú obrazovku (DEV-293). Bez `rowActions` ostáva panel, ako bol.
+
 - `[nové]` **Systémové nastavenie s výberom z ponuky aplikácie** (`SystemSettingRead.choices`, `<SystemSettingsPanel>`).
   Keď aplikácia pri nastavení pošle ponuku (napríklad skupiny z NEX Managera), editor je výber z nej; uložená hodnota,
   ktorá v ponuke už nie je, ostane viditeľná ako „(nie je v ponuke)“. Prázdna ponuka = aplikácia ju teraz nevie

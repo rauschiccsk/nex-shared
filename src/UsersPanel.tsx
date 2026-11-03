@@ -10,7 +10,7 @@
  * error state). Filtering is client-side over the supplied `users`.
  */
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { UserForm, type UserFormData } from "./UserForm";
 import type { UserFieldSchema, UserRead } from "./settings-types";
 
@@ -34,6 +34,9 @@ export interface UsersPanelProps {
   onToggleActive: (user: UserRead) => Promise<void>;
   /** Optional role→className for the role cell (app supplies the palette). */
   roleClass?: (role: string) => string;
+  /** The app's own actions for one person (NEX Manager: „Prístupy“), first in the Akcie cell — also for a viewer who
+   *  may not manage people: the app decides what it shows to whom (DEV-293). */
+  rowActions?: (user: UserRead) => ReactNode;
 }
 
 export function UsersPanel({
@@ -47,6 +50,7 @@ export function UsersPanel({
   onChangePassword,
   onToggleActive,
   roleClass,
+  rowActions,
 }: UsersPanelProps) {
   const roleCls = roleClass ?? (() => "");
   // DEV-251: the role by its name („Správca“), not its code; a role the app did not name stays as it is.
@@ -212,6 +216,7 @@ export function UsersPanel({
           <tbody className="divide-y divide-[var(--color-border-default)]">
             {filteredUsers.map((u) => {
               const fullName = [u.first_name, u.last_name].filter(Boolean).join(" ");
+              const ownActions = rowActions?.(u) ?? null;
               return (
                 <tr key={u.id} className="hover:bg-[var(--color-surface-hover)] transition-colors">
                   {showNames && (
@@ -235,7 +240,11 @@ export function UsersPanel({
                   </td>
                   <td className="px-4 py-3 text-right">
                     {!canManage ? (
-                      <span className="text-xs text-[var(--color-text-muted)]">—</span>
+                      ownActions !== null ? (
+                        <div className="flex items-center justify-end gap-3">{ownActions}</div>
+                      ) : (
+                        <span className="text-xs text-[var(--color-text-muted)]">—</span>
+                      )
                     ) : confirmingDeleteId === u.id ? (
                       <div className="flex items-center justify-end gap-2 text-xs">
                         <span className="text-[var(--color-text-secondary)]">Naozaj vymazať?</span>
@@ -258,6 +267,7 @@ export function UsersPanel({
                       </div>
                     ) : (
                       <div className="flex items-center justify-end gap-3">
+                        {ownActions}
                         {/* Edit (pencil) */}
                         <button
                           type="button"

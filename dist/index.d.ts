@@ -1023,8 +1023,11 @@ interface UsersPanelProps {
     onToggleActive: (user: UserRead) => Promise<void>;
     /** Optional role→className for the role cell (app supplies the palette). */
     roleClass?: (role: string) => string;
+    /** The app's own actions for one person (NEX Manager: „Prístupy“), first in the Akcie cell — also for a viewer who
+     *  may not manage people: the app decides what it shows to whom (DEV-293). */
+    rowActions?: (user: UserRead) => ReactNode;
 }
-declare function UsersPanel({ users, roleOptions, canManage, fieldSchema, onCreate, onUpdate, onDelete, onChangePassword, onToggleActive, roleClass, }: UsersPanelProps): react.JSX.Element;
+declare function UsersPanel({ users, roleOptions, canManage, fieldSchema, onCreate, onUpdate, onDelete, onChangePassword, onToggleActive, roleClass, rowActions, }: UsersPanelProps): react.JSX.Element;
 
 /**
  * MyAccountPanel — the shared "Moje konto" self-service account panel for the Settings → `konto` tab

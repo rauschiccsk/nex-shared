@@ -2046,7 +2046,8 @@ function UsersPanel({
   onDelete,
   onChangePassword,
   onToggleActive,
-  roleClass
+  roleClass,
+  rowActions
 }) {
   const roleCls = roleClass ?? (() => "");
   const roleName = (role) => roleOptions.find((o) => o.value === role)?.label ?? role;
@@ -2184,13 +2185,14 @@ function UsersPanel({
       /* @__PURE__ */ jsxs18("tbody", { className: "divide-y divide-[var(--color-border-default)]", children: [
         filteredUsers.map((u) => {
           const fullName = [u.first_name, u.last_name].filter(Boolean).join(" ");
+          const ownActions = rowActions?.(u) ?? null;
           return /* @__PURE__ */ jsxs18("tr", { className: "hover:bg-[var(--color-surface-hover)] transition-colors", children: [
             showNames && /* @__PURE__ */ jsx30("td", { className: "px-4 py-3 text-sm text-[var(--color-text-secondary)]", children: fullName || /* @__PURE__ */ jsx30("span", { className: "text-[var(--color-text-muted)]", children: "\u2014" }) }),
             showUsername && /* @__PURE__ */ jsx30("td", { className: "px-4 py-3 text-sm font-medium text-[var(--color-text-primary)] font-mono", children: u.username }),
             /* @__PURE__ */ jsx30("td", { className: "px-4 py-3 text-xs text-[var(--color-text-secondary)]", children: u.email }),
             /* @__PURE__ */ jsx30("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsx30("span", { className: `text-xs font-medium ${roleCls(u.role)}`, children: roleName(u.role) }) }),
             /* @__PURE__ */ jsx30("td", { className: "px-4 py-3", children: u.is_active ? /* @__PURE__ */ jsx30("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-state-success-bg)] border border-[var(--color-state-success-bg)] text-[var(--color-state-success-fg)]", children: "akt\xEDvny" }) : /* @__PURE__ */ jsx30("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-state-warning-bg)] border border-[var(--color-state-warning-bg)] text-[var(--color-state-warning-fg)]", children: "neakt\xEDvny" }) }),
-            /* @__PURE__ */ jsx30("td", { className: "px-4 py-3 text-right", children: !canManage ? /* @__PURE__ */ jsx30("span", { className: "text-xs text-[var(--color-text-muted)]", children: "\u2014" }) : confirmingDeleteId === u.id ? /* @__PURE__ */ jsxs18("div", { className: "flex items-center justify-end gap-2 text-xs", children: [
+            /* @__PURE__ */ jsx30("td", { className: "px-4 py-3 text-right", children: !canManage ? ownActions !== null ? /* @__PURE__ */ jsx30("div", { className: "flex items-center justify-end gap-3", children: ownActions }) : /* @__PURE__ */ jsx30("span", { className: "text-xs text-[var(--color-text-muted)]", children: "\u2014" }) : confirmingDeleteId === u.id ? /* @__PURE__ */ jsxs18("div", { className: "flex items-center justify-end gap-2 text-xs", children: [
               /* @__PURE__ */ jsx30("span", { className: "text-[var(--color-text-secondary)]", children: "Naozaj vymaza\u0165?" }),
               /* @__PURE__ */ jsx30(
                 "button",
@@ -2213,6 +2215,7 @@ function UsersPanel({
                 }
               )
             ] }) : /* @__PURE__ */ jsxs18("div", { className: "flex items-center justify-end gap-3", children: [
+              ownActions,
               /* @__PURE__ */ jsx30(
                 "button",
                 {
