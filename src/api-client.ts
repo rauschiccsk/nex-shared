@@ -54,6 +54,31 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * The sentence a server gave for refusing a request (v0.32.0, DEV-309) — the FastAPI `{detail: "…"}` of the ICC app
+ * template and the cockpit, or the sentence inside an object detail (`{detail: {detail: "…"}}`). `""` when the refusal
+ * carries none — a network failure, a 500 page, a validation list — and the caller says its own general sentence.
+ * 05.11.2026 NEX Manager: the server said „Tento e-mail už používa iný používateľ.“ and the person read „Uloženie
+ * zlyhalo. Skús to znova.“
+ */
+export function refusalSentence(err: unknown): string {
+  if (!(err instanceof ApiError)) {
+    return "";
+  }
+  const data = err.data;
+  const detail = data && typeof data === "object" ? (data as { detail?: unknown }).detail : undefined;
+  if (typeof detail === "string") {
+    return detail.trim();
+  }
+  if (detail && typeof detail === "object") {
+    const inner = (detail as { detail?: unknown }).detail;
+    if (typeof inner === "string") {
+      return inner.trim();
+    }
+  }
+  return "";
+}
+
 /** Configuration for {@link createApiClient}. */
 export interface ApiClientConfig {
   /** Absolute origin or "" for same-origin (the app resolves this). */

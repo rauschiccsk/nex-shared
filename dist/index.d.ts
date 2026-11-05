@@ -566,6 +566,14 @@ declare class ApiError extends Error {
     readonly resolution?: string;
     constructor(status: number, message: string, data?: unknown, extra?: ApiErrorEnvelope);
 }
+/**
+ * The sentence a server gave for refusing a request (v0.32.0, DEV-309) — the FastAPI `{detail: "…"}` of the ICC app
+ * template and the cockpit, or the sentence inside an object detail (`{detail: {detail: "…"}}`). `""` when the refusal
+ * carries none — a network failure, a 500 page, a validation list — and the caller says its own general sentence.
+ * 05.11.2026 NEX Manager: the server said „Tento e-mail už používa iný používateľ.“ and the person read „Uloženie
+ * zlyhalo. Skús to znova.“
+ */
+declare function refusalSentence(err: unknown): string;
 /** Configuration for {@link createApiClient}. */
 interface ApiClientConfig {
     /** Absolute origin or "" for same-origin (the app resolves this). */
@@ -1040,6 +1048,11 @@ declare function UsersPanel({ users, roleOptions, canManage, fieldSchema, onCrea
  * (no fetch here — the app maps them to PATCH /me + its change-password API with current-password
  * verification).
  */
+/** What the panel says when saving the profile was refused — the server's own sentence, or its general one (DEV-309). */
+declare function accountRefusal(err: unknown): string;
+/** What the panel says when changing the password was refused — the server's own sentence („Súčasné heslo je
+ *  nesprávne.“, „Nové heslo musí byť iné ako súčasné.“), or a general one that guesses no reason (DEV-309). */
+declare function passwordRefusal(err: unknown): string;
 interface MyAccountUser {
     username: string;
     /** Opaque per-app role id (the kit never compares against literals — the app passes `roleLabel`). */
@@ -1054,14 +1067,16 @@ interface MyAccountPanelProps {
     user: MyAccountUser;
     /** Slovak display label for `user.role` (role-agnostic kit — the app owns role naming). */
     roleLabel: string;
-    /** Persist the safe profile fields. The app maps this to PATCH /me. A rejection surfaces as the error. */
+    /** Persist the safe profile fields. The app maps this to PATCH /me. A rejection surfaces as the error — the
+     *  server's own sentence when the rejection is an `ApiError` carrying one (v0.32.0), else a general one. */
     onSaveProfile: (data: {
         email: string;
         first_name: string;
         last_name: string;
         telegram_chat_id: string;
     }) => Promise<void>;
-    /** Change own password (current-password verification is the app's concern). Rejection → error. */
+    /** Change own password (current-password verification is the app's concern). Rejection → error, with the
+     *  server's own sentence when it carries one (v0.32.0). */
     onChangePassword: (currentPassword: string, newPassword: string) => Promise<void>;
     /** Optional (v0.15.2) — send a TEST Telegram to the saved chat_id + report the outcome, so the user can
      *  confirm notifications actually reach them (a silent fail is otherwise invisible). When supplied, a
@@ -1157,4 +1172,4 @@ declare function rememberLaunchWindow(win?: LaunchWindow, storage?: PlacementSto
 /** A placement that fits on the screen the window is on now — a screen may be smaller than the one it was left on. */
 declare function fitToScreen(placement: WindowPlacement, screen: LaunchWindow["screen"]): WindowPlacement;
 
-export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, DataTable, type DataTableAlign, type DataTableColumn, type DataTableProps, DensityContext, FormActions, type FormActionsProps, FormField, type FormFieldProps, FormGrid, type FormGridProps, Header, type HeaderProps, type HttpMethod, IconButton, type IconButtonProps, Input, type InputProps, LAUNCH_WINDOW_PREFIX, LAUNCH_WINDOW_SAVE_DELAY_MS, LAUNCH_WINDOW_STORAGE_KEY, type LaunchWindow, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, MyAccountPanel, type MyAccountPanelProps, type MyAccountUser, NavIcon, type NavIconProps, NavItem, type NavItemProps, Page, type PageProps, type PageWidth, type PlacementStorage, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, ResizeHandle, type ResizeHandleProps, SIDEBAR_DEFAULT_WIDTH, SIDEBAR_WIDTH_KEY_PREFIX, SectionDivider, SectionLabel, type SectionLabelProps, Select, type SelectProps, SessionsPanel, type SessionsPanelProps, type SettingChoice, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, ShellContext, type ShellState, Sidebar, type SidebarProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, WIDE_SCREEN_QUERY, type WindowPlacement, createApiClient, createAuthStore, fitToScreen, readRememberedWidth, registerAuthCallback, rememberLaunchWindow, rememberWidth, useDense, useRememberedSidebarWidth, useShell, useWideScreen };
+export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, DataTable, type DataTableAlign, type DataTableColumn, type DataTableProps, DensityContext, FormActions, type FormActionsProps, FormField, type FormFieldProps, FormGrid, type FormGridProps, Header, type HeaderProps, type HttpMethod, IconButton, type IconButtonProps, Input, type InputProps, LAUNCH_WINDOW_PREFIX, LAUNCH_WINDOW_SAVE_DELAY_MS, LAUNCH_WINDOW_STORAGE_KEY, type LaunchWindow, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, MyAccountPanel, type MyAccountPanelProps, type MyAccountUser, NavIcon, type NavIconProps, NavItem, type NavItemProps, Page, type PageProps, type PageWidth, type PlacementStorage, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, ResizeHandle, type ResizeHandleProps, SIDEBAR_DEFAULT_WIDTH, SIDEBAR_WIDTH_KEY_PREFIX, SectionDivider, SectionLabel, type SectionLabelProps, Select, type SelectProps, SessionsPanel, type SessionsPanelProps, type SettingChoice, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, ShellContext, type ShellState, Sidebar, type SidebarProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, WIDE_SCREEN_QUERY, type WindowPlacement, accountRefusal, createApiClient, createAuthStore, fitToScreen, passwordRefusal, readRememberedWidth, refusalSentence, registerAuthCallback, rememberLaunchWindow, rememberWidth, useDense, useRememberedSidebarWidth, useShell, useWideScreen };

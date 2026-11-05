@@ -18,6 +18,15 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.32.0
+
+- `[oprava]` **„Moje konto“ povie, prečo server odmietol** (`<MyAccountPanel>`). Keď server uloženie údajov alebo zmenu
+  hesla odmietne vlastnou vetou („Tento e-mail už používa iný používateľ.“, „Súčasné heslo je nesprávne.“), panel ju
+  ukáže namiesto všeobecnej „Uloženie zlyhalo. Skús to znova.“ Bez vety servera (výpadok spojenia, chyba 500) ostáva
+  všeobecná veta; pri hesle už nenavádza „skontroluj súčasné heslo“, keď dôvod nepozná. Rovnako skúška Telegramu.
+- `[nové]` `refusalSentence(err)` — veta, ktorou server odmietol požiadavku (`ApiError` s `{detail: "…"}` alebo
+  vetou vnútri objektu), inak `""`. `accountRefusal(err)` a `passwordRefusal(err)` — čo z nej povie panel.
+
 ## v0.31.0
 - `[oprava]` **Heslo bez vymyslenej najmenšej dĺžky** (`<MyAccountPanel>`, `<UserForm>`). Keď aplikácia žiada len
   neprázdne heslo (`passwordMinLength` 1), formulár nepíše „min. 1 znakov“; aplikácia s vlastnou najmenšou dĺžkou ju

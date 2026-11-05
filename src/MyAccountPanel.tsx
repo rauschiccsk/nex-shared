@@ -13,6 +13,18 @@
 import { useState } from "react";
 import { Input } from "./Input";
 import { Card } from "./Card";
+import { refusalSentence } from "./api-client";
+
+/** What the panel says when saving the profile was refused — the server's own sentence, or its general one (DEV-309). */
+export function accountRefusal(err: unknown): string {
+  return refusalSentence(err) || "Uloženie zlyhalo. Skús to znova.";
+}
+
+/** What the panel says when changing the password was refused — the server's own sentence („Súčasné heslo je
+ *  nesprávne.“, „Nové heslo musí byť iné ako súčasné.“), or a general one that guesses no reason (DEV-309). */
+export function passwordRefusal(err: unknown): string {
+  return refusalSentence(err) || "Zmena hesla zlyhala. Skús to znova.";
+}
 
 export interface MyAccountUser {
   username: string;
@@ -29,14 +41,16 @@ export interface MyAccountPanelProps {
   user: MyAccountUser;
   /** Slovak display label for `user.role` (role-agnostic kit — the app owns role naming). */
   roleLabel: string;
-  /** Persist the safe profile fields. The app maps this to PATCH /me. A rejection surfaces as the error. */
+  /** Persist the safe profile fields. The app maps this to PATCH /me. A rejection surfaces as the error — the
+   *  server's own sentence when the rejection is an `ApiError` carrying one (v0.32.0), else a general one. */
   onSaveProfile: (data: {
     email: string;
     first_name: string;
     last_name: string;
     telegram_chat_id: string;
   }) => Promise<void>;
-  /** Change own password (current-password verification is the app's concern). Rejection → error. */
+  /** Change own password (current-password verification is the app's concern). Rejection → error, with the
+   *  server's own sentence when it carries one (v0.32.0). */
   onChangePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   /** Optional (v0.15.2) — send a TEST Telegram to the saved chat_id + report the outcome, so the user can
    *  confirm notifications actually reach them (a silent fail is otherwise invisible). When supplied, a
@@ -89,8 +103,8 @@ export function MyAccountPanel({
     setTestResult(null);
     try {
       setTestResult(await onTestTelegram());
-    } catch {
-      setTestResult({ ok: false, detail: "Test zlyhal (chyba spojenia)." });
+    } catch (err) {
+      setTestResult({ ok: false, detail: refusalSentence(err) || "Test zlyhal (chyba spojenia)." });
     } finally {
       setTestBusy(false);
     }
@@ -120,8 +134,8 @@ export function MyAccountPanel({
         telegram_chat_id: telegram,
       });
       setProfileSaved(true);
-    } catch {
-      setProfileError("Uloženie zlyhalo. Skús to znova.");
+    } catch (err) {
+      setProfileError(accountRefusal(err));
     } finally {
       setSavingProfile(false);
     }
@@ -143,8 +157,8 @@ export function MyAccountPanel({
       setCurrentPw("");
       setNewPw("");
       setConfirmPw("");
-    } catch {
-      setPwError("Zmena hesla zlyhala — skontroluj súčasné heslo.");
+    } catch (err) {
+      setPwError(passwordRefusal(err));
     } finally {
       setSavingPw(false);
     }

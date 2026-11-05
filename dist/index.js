@@ -1120,6 +1120,23 @@ var ApiError = class extends Error {
     this.resolution = extra?.resolution;
   }
 };
+function refusalSentence(err) {
+  if (!(err instanceof ApiError)) {
+    return "";
+  }
+  const data = err.data;
+  const detail = data && typeof data === "object" ? data.detail : void 0;
+  if (typeof detail === "string") {
+    return detail.trim();
+  }
+  if (detail && typeof detail === "object") {
+    const inner = detail.detail;
+    if (typeof inner === "string") {
+      return inner.trim();
+    }
+  }
+  return "";
+}
 var _authCb = null;
 function registerAuthCallback(cb) {
   _authCb = cb;
@@ -2301,6 +2318,12 @@ function UsersPanel({
 // src/MyAccountPanel.tsx
 import { useState as useState14 } from "react";
 import { jsx as jsx31, jsxs as jsxs19 } from "react/jsx-runtime";
+function accountRefusal(err) {
+  return refusalSentence(err) || "Ulo\u017Eenie zlyhalo. Sk\xFAs to znova.";
+}
+function passwordRefusal(err) {
+  return refusalSentence(err) || "Zmena hesla zlyhala. Sk\xFAs to znova.";
+}
 var LABEL = "block text-xs text-[var(--color-text-muted)] mb-1";
 var BTN = "px-3 py-1.5 text-xs font-medium text-white bg-primary-600 hover:bg-primary-500 disabled:opacity-40 rounded-lg transition-colors";
 function ReadOnly({ label, value }) {
@@ -2333,8 +2356,8 @@ function MyAccountPanel({
     setTestResult(null);
     try {
       setTestResult(await onTestTelegram());
-    } catch {
-      setTestResult({ ok: false, detail: "Test zlyhal (chyba spojenia)." });
+    } catch (err) {
+      setTestResult({ ok: false, detail: refusalSentence(err) || "Test zlyhal (chyba spojenia)." });
     } finally {
       setTestBusy(false);
     }
@@ -2361,8 +2384,8 @@ function MyAccountPanel({
         telegram_chat_id: telegram
       });
       setProfileSaved(true);
-    } catch {
-      setProfileError("Ulo\u017Eenie zlyhalo. Sk\xFAs to znova.");
+    } catch (err) {
+      setProfileError(accountRefusal(err));
     } finally {
       setSavingProfile(false);
     }
@@ -2381,8 +2404,8 @@ function MyAccountPanel({
       setCurrentPw("");
       setNewPw("");
       setConfirmPw("");
-    } catch {
-      setPwError("Zmena hesla zlyhala \u2014 skontroluj s\xFA\u010Dasn\xE9 heslo.");
+    } catch (err) {
+      setPwError(passwordRefusal(err));
     } finally {
       setSavingPw(false);
     }
@@ -2741,10 +2764,13 @@ export {
   UserForm,
   UsersPanel,
   WIDE_SCREEN_QUERY,
+  accountRefusal,
   createApiClient,
   createAuthStore,
   fitToScreen,
+  passwordRefusal,
   readRememberedWidth,
+  refusalSentence,
   registerAuthCallback,
   rememberLaunchWindow,
   rememberWidth,

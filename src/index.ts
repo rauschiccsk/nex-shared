@@ -77,7 +77,7 @@ export type { ReleaseNotesProps, ReleaseNote } from "./ReleaseNotes";
 export { CodeBlock } from "./CodeBlock";
 export type { CodeBlockProps } from "./CodeBlock";
 
-export { createApiClient, ApiError, registerAuthCallback } from "./api-client";
+export { createApiClient, ApiError, registerAuthCallback, refusalSentence } from "./api-client";
 export type {
   ApiClient,
   ApiClientConfig,
@@ -116,7 +116,7 @@ export type { AgentsPanelProps, AgentDraft } from "./AgentsPanel";
 export { UsersPanel } from "./UsersPanel";
 export type { UsersPanelProps } from "./UsersPanel";
 
-export { MyAccountPanel } from "./MyAccountPanel";
+export { MyAccountPanel, accountRefusal, passwordRefusal } from "./MyAccountPanel";
 export type { MyAccountPanelProps, MyAccountUser } from "./MyAccountPanel";
 
 export { SessionsPanel } from "./SessionsPanel";
