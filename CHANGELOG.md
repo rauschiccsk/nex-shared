@@ -18,6 +18,16 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.33.0
+
+- `[nové]` **Zmena na jednej obrazovke sa ukáže na všetkých** (`onServerChange(listener)`). Klient po každej úspešnej
+  zmene na serveri (POST, PUT, PATCH, DELETE) oznámi jej cestu a metódu; spoločná kópia údajov zo servera (prihlásený
+  človek, vybraný projekt, zoznam, ktorý načíta jedna obrazovka a mení iná) sa k tomu prihlási a obnoví sa sama — aj pre
+  obrazovky, ktoré pribudnú neskôr. 05.11.2026 NEX Manager: správca si zmenil e-mail v Používateľoch a Moje konto
+  ukazovalo starý, kým sa stránka neobnovila. (DEV-311)
+- `[oprava]` **„Moje konto“ sleduje aktuálne údaje** (`<MyAccountPanel>`): keď sa človek zmení inde, polia ukážu nové
+  údaje, nie tie, s ktorými sa panel prvý raz zobrazil.
+
 ## v0.32.0
 
 - `[oprava]` **„Moje konto“ povie, prečo server odmietol** (`<MyAccountPanel>`). Keď server uloženie údajov alebo zmenu

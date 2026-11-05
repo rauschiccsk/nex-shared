@@ -1141,6 +1141,21 @@ var _authCb = null;
 function registerAuthCallback(cb) {
   _authCb = cb;
 }
+var _changeListeners = /* @__PURE__ */ new Set();
+function onServerChange(listener) {
+  _changeListeners.add(listener);
+  return () => {
+    _changeListeners.delete(listener);
+  };
+}
+function announceChange(change) {
+  for (const listener of [..._changeListeners]) {
+    try {
+      listener(change);
+    } catch {
+    }
+  }
+}
 function defaultErrorParser(_status, body) {
   if (body && typeof body === "object" && "detail" in body) {
     const detail = body.detail;
@@ -1254,6 +1269,10 @@ function createApiClient(config) {
       if (!response.ok) {
         const message = errorParser(response.status, parsed) || response.statusText || "Request failed";
         throw new ApiError(response.status, message, parsed);
+      }
+      if (method !== "GET") {
+        const bare = path.startsWith("/") ? path : `/${path}`;
+        announceChange({ method, path: bare.startsWith(apiPrefix) ? bare.slice(apiPrefix.length) || "/" : bare });
       }
       return parsed;
     } finally {
@@ -2316,7 +2335,7 @@ function UsersPanel({
 }
 
 // src/MyAccountPanel.tsx
-import { useState as useState14 } from "react";
+import { useEffect as useEffect8, useState as useState14 } from "react";
 import { jsx as jsx31, jsxs as jsxs19 } from "react/jsx-runtime";
 function accountRefusal(err) {
   return refusalSentence(err) || "Ulo\u017Eenie zlyhalo. Sk\xFAs to znova.";
@@ -2345,6 +2364,12 @@ function MyAccountPanel({
   const [lastName, setLastName] = useState14(user.last_name ?? "");
   const [email, setEmail] = useState14(user.email ?? "");
   const [telegram, setTelegram] = useState14(user.telegram_chat_id ?? "");
+  useEffect8(() => {
+    setFirstName(user.first_name ?? "");
+    setLastName(user.last_name ?? "");
+    setEmail(user.email ?? "");
+    setTelegram(user.telegram_chat_id ?? "");
+  }, [user.first_name, user.last_name, user.email, user.telegram_chat_id]);
   const [savingProfile, setSavingProfile] = useState14(false);
   const [profileError, setProfileError] = useState14("");
   const [profileSaved, setProfileSaved] = useState14(false);
@@ -2768,6 +2793,7 @@ export {
   createApiClient,
   createAuthStore,
   fitToScreen,
+  onServerChange,
   passwordRefusal,
   readRememberedWidth,
   refusalSentence,

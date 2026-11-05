@@ -126,6 +126,42 @@ export function registerAuthCallback(cb: () => void): void {
   _authCb = cb;
 }
 
+// ---------------------------------------------------------------------------
+// Server changes (v0.33.0, DEV-311) — a shared copy of server data refreshes itself.
+// ---------------------------------------------------------------------------
+
+/** A change the client made on the server: its method and the path without the API prefix (no query). */
+export interface ServerChange {
+  method: Exclude<HttpMethod, "GET">;
+  path: string;
+}
+
+const _changeListeners = new Set<(change: ServerChange) => void>();
+
+/**
+ * Listen to every change the client makes on the server (a POST, PUT, PATCH or DELETE that succeeded). A shared copy
+ * of server data — the signed-in person, a chosen project, a list one screen loads and another changes — listens and
+ * refreshes itself, so a change made on one screen shows on every other one without reloading the page. 05.11.2026
+ * NEX Manager: the admin changed his own e-mail in Používatelia and Moje konto kept the old one. Returns the function
+ * that stops listening. A listener that throws breaks neither the request nor the other listeners.
+ */
+export function onServerChange(listener: (change: ServerChange) => void): () => void {
+  _changeListeners.add(listener);
+  return () => {
+    _changeListeners.delete(listener);
+  };
+}
+
+function announceChange(change: ServerChange): void {
+  for (const listener of [..._changeListeners]) {
+    try {
+      listener(change);
+    } catch {
+      // Best-effort — a listener's failure is its own; the change went through.
+    }
+  }
+}
+
 /** Default FastAPI error parser: `{detail: string | [{msg}]}` → message ("" if none). */
 function defaultErrorParser(_status: number, body: unknown): string {
   if (body && typeof body === "object" && "detail" in body) {
@@ -273,6 +309,11 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
       if (!response.ok) {
         const message = errorParser(response.status, parsed) || response.statusText || "Request failed";
         throw new ApiError(response.status, message, parsed);
+      }
+
+      if (method !== "GET") {
+        const bare = path.startsWith("/") ? path : `/${path}`;
+        announceChange({ method, path: bare.startsWith(apiPrefix) ? bare.slice(apiPrefix.length) || "/" : bare });
       }
 
       return parsed as T;

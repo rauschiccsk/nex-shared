@@ -77,13 +77,14 @@ export type { ReleaseNotesProps, ReleaseNote } from "./ReleaseNotes";
 export { CodeBlock } from "./CodeBlock";
 export type { CodeBlockProps } from "./CodeBlock";
 
-export { createApiClient, ApiError, registerAuthCallback, refusalSentence } from "./api-client";
+export { createApiClient, ApiError, registerAuthCallback, refusalSentence, onServerChange } from "./api-client";
 export type {
   ApiClient,
   ApiClientConfig,
   ApiErrorEnvelope,
   RequestOptions,
   HttpMethod,
+  ServerChange,
 } from "./api-client";
 
 export { createAuthStore } from "./auth-store";

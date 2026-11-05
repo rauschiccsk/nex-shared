@@ -10,7 +10,7 @@
  * verification).
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "./Input";
 import { Card } from "./Card";
 import { refusalSentence } from "./api-client";
@@ -90,6 +90,15 @@ export function MyAccountPanel({
   const [lastName, setLastName] = useState(user.last_name ?? "");
   const [email, setEmail] = useState(user.email ?? "");
   const [telegram, setTelegram] = useState(user.telegram_chat_id ?? "");
+  // v0.33.0 (DEV-311): the fields follow the person — changed elsewhere (Používatelia, another screen), the panel shows
+  // the new data, not the copy it took when it first appeared. 05.11.2026 NEX Manager: the e-mail changed in
+  // Používatelia, Moje konto kept the old one until the page was reloaded.
+  useEffect(() => {
+    setFirstName(user.first_name ?? "");
+    setLastName(user.last_name ?? "");
+    setEmail(user.email ?? "");
+    setTelegram(user.telegram_chat_id ?? "");
+  }, [user.first_name, user.last_name, user.email, user.telegram_chat_id]);
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileError, setProfileError] = useState("");
   const [profileSaved, setProfileSaved] = useState(false);
