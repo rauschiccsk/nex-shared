@@ -86,6 +86,8 @@ interface SidebarProps {
     closeMenuTitle?: string;
     /** v0.21.0 — 28 px rows, a lower brand block and footer (see `DensityContext`). Off by default. */
     dense?: boolean;
+    /** v0.34.0 — in a dense sidebar, 26 px rows (see `CompactRowsContext`). Off by default. */
+    compactRows?: boolean;
     /** v0.21.0 — the expanded width in px; omitted = {@link SIDEBAR_DEFAULT_WIDTH}. */
     width?: number;
     /** v0.21.0 — with it the right edge becomes a handle that changes the width on a wide screen (not in the drawer,
@@ -112,7 +114,7 @@ interface SidebarProps {
  * Inside `<AppShell>` on a narrow screen the sidebar is a drawer: always expanded (a drawer of icons would hide
  * the labels and save no room), and the collapse toggle becomes the button that closes the drawer.
  */
-declare function Sidebar({ collapsed, onToggleCollapse, logo, footer, children, collapseTitle, expandTitle, closeMenuTitle, dense, width, onWidthChange, minWidth, maxWidth, defaultWidth, resizeLabel, rememberWidthFor, }: SidebarProps): react.JSX.Element;
+declare function Sidebar({ collapsed, onToggleCollapse, logo, footer, children, collapseTitle, expandTitle, closeMenuTitle, dense, compactRows, width, onWidthChange, minWidth, maxWidth, defaultWidth, resizeLabel, rememberWidthFor, }: SidebarProps): react.JSX.Element;
 
 /** `full` — a list, a table, an overview: the whole width. `narrow` — a form or text to read. */
 type PageWidth = "full" | "narrow";
@@ -185,6 +187,15 @@ declare function ResizeHandle({ value, min, max, defaultValue, panel, onResize, 
 declare const DensityContext: react.Context<boolean>;
 /** Read whether the nearest `<Sidebar>` is dense. */
 declare const useDense: () => boolean;
+/**
+ * v0.34.0 — in a dense sidebar, 26 px rows instead of 28 (DEV-318: NEX Studio Visual holds 22 entries at 1280×800
+ * without scrolling; the Director 06.11.2026 on lowering its rows by 2 px: „Súhlasím“). Provided by `<Sidebar dense
+ * compactRows>`; read by `<NavItem>`. Off by default — an app on the template keeps its 28 px rows; it tightens only a
+ * dense sidebar, and on a touch screen a row stays at least 44 px regardless.
+ */
+declare const CompactRowsContext: react.Context<boolean>;
+/** Read whether the nearest `<Sidebar>` has compact rows. */
+declare const useCompactRows: () => boolean;
 
 /**
  * A thin line between groups of sidebar entries (v0.21.0) — where a group needs no heading of its own (NEX Studio
@@ -1185,4 +1196,4 @@ declare function rememberLaunchWindow(win?: LaunchWindow, storage?: PlacementSto
 /** A placement that fits on the screen the window is on now — a screen may be smaller than the one it was left on. */
 declare function fitToScreen(placement: WindowPlacement, screen: LaunchWindow["screen"]): WindowPlacement;
 
-export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, DataTable, type DataTableAlign, type DataTableColumn, type DataTableProps, DensityContext, FormActions, type FormActionsProps, FormField, type FormFieldProps, FormGrid, type FormGridProps, Header, type HeaderProps, type HttpMethod, IconButton, type IconButtonProps, Input, type InputProps, LAUNCH_WINDOW_PREFIX, LAUNCH_WINDOW_SAVE_DELAY_MS, LAUNCH_WINDOW_STORAGE_KEY, type LaunchWindow, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, MyAccountPanel, type MyAccountPanelProps, type MyAccountUser, NavIcon, type NavIconProps, NavItem, type NavItemProps, Page, type PageProps, type PageWidth, type PlacementStorage, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, ResizeHandle, type ResizeHandleProps, SIDEBAR_DEFAULT_WIDTH, SIDEBAR_WIDTH_KEY_PREFIX, SectionDivider, SectionLabel, type SectionLabelProps, Select, type SelectProps, type ServerChange, SessionsPanel, type SessionsPanelProps, type SettingChoice, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, ShellContext, type ShellState, Sidebar, type SidebarProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, WIDE_SCREEN_QUERY, type WindowPlacement, accountRefusal, createApiClient, createAuthStore, fitToScreen, onServerChange, passwordRefusal, readRememberedWidth, refusalSentence, registerAuthCallback, rememberLaunchWindow, rememberWidth, useDense, useRememberedSidebarWidth, useShell, useWideScreen };
+export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, CompactRowsContext, DataTable, type DataTableAlign, type DataTableColumn, type DataTableProps, DensityContext, FormActions, type FormActionsProps, FormField, type FormFieldProps, FormGrid, type FormGridProps, Header, type HeaderProps, type HttpMethod, IconButton, type IconButtonProps, Input, type InputProps, LAUNCH_WINDOW_PREFIX, LAUNCH_WINDOW_SAVE_DELAY_MS, LAUNCH_WINDOW_STORAGE_KEY, type LaunchWindow, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, MyAccountPanel, type MyAccountPanelProps, type MyAccountUser, NavIcon, type NavIconProps, NavItem, type NavItemProps, Page, type PageProps, type PageWidth, type PlacementStorage, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, ResizeHandle, type ResizeHandleProps, SIDEBAR_DEFAULT_WIDTH, SIDEBAR_WIDTH_KEY_PREFIX, SectionDivider, SectionLabel, type SectionLabelProps, Select, type SelectProps, type ServerChange, SessionsPanel, type SessionsPanelProps, type SettingChoice, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, ShellContext, type ShellState, Sidebar, type SidebarProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, WIDE_SCREEN_QUERY, type WindowPlacement, accountRefusal, createApiClient, createAuthStore, fitToScreen, onServerChange, passwordRefusal, readRememberedWidth, refusalSentence, registerAuthCallback, rememberLaunchWindow, rememberWidth, useCompactRows, useDense, useRememberedSidebarWidth, useShell, useWideScreen };

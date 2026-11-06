@@ -139,6 +139,8 @@ var useCollapsed = () => useContext2(CollapseContext);
 import { createContext as createContext3, useContext as useContext3 } from "react";
 var DensityContext = createContext3(false);
 var useDense = () => useContext3(DensityContext);
+var CompactRowsContext = createContext3(false);
+var useCompactRows = () => useContext3(CompactRowsContext);
 
 // src/ResizeHandle.tsx
 import { useRef as useRef2 } from "react";
@@ -275,6 +277,7 @@ function Sidebar({
   expandTitle = "Roz\u0161\xEDri\u0165",
   closeMenuTitle = "Zavrie\u0165 ponuku",
   dense = false,
+  compactRows = false,
   width,
   onWidthChange,
   minWidth = 180,
@@ -296,7 +299,7 @@ function Sidebar({
   const expanded = dragged ?? ownWidth ?? defaultWidth;
   const resizable = changeWidth != null && !narrow && !rail;
   const shown = rail ? "3.5rem" : dragged != null || ownWidth != null ? `${expanded}px` : "14rem";
-  return /* @__PURE__ */ jsx4(CollapseContext.Provider, { value: rail, children: /* @__PURE__ */ jsx4(DensityContext.Provider, { value: dense, children: /* @__PURE__ */ jsxs2(
+  return /* @__PURE__ */ jsx4(CollapseContext.Provider, { value: rail, children: /* @__PURE__ */ jsx4(DensityContext.Provider, { value: dense, children: /* @__PURE__ */ jsx4(CompactRowsContext.Provider, { value: dense && compactRows, children: /* @__PURE__ */ jsxs2(
     "aside",
     {
       className: `relative flex-shrink-0 bg-[var(--color-surface)] border-r border-[var(--color-border-default)] flex flex-col select-none overflow-x-hidden ${dragged == null ? "transition-all duration-200" : ""}`,
@@ -352,7 +355,7 @@ function Sidebar({
         )
       ]
     }
-  ) }) });
+  ) }) }) });
 }
 
 // src/Page.tsx
@@ -397,12 +400,14 @@ function NavItem({
 }) {
   const collapsed = useCollapsed();
   const dense = useDense();
+  const compact = useCompactRows();
   const { closeMenu } = useShell();
   const choose = () => {
     onClick?.();
     closeMenu();
   };
-  const base = `flex items-center gap-2.5 ${dense ? "h-7" : "h-[35px]"} rounded-lg text-sm transition-colors w-full`;
+  const height = dense ? compact ? "h-[26px]" : "h-7" : "h-[35px]";
+  const base = `flex items-center gap-2.5 ${height} rounded-lg text-sm transition-colors w-full`;
   const px = collapsed ? "px-0 justify-center" : "px-3";
   const color = disabled ? "text-[var(--color-text-muted)] opacity-40 cursor-not-allowed" : active ? "bg-primary-600/10 text-[var(--color-accent-primary)]" : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]";
   const tooltip = disabled ? disabledTitle ?? label : collapsed ? label : void 0;
@@ -2754,6 +2759,7 @@ export {
   Button,
   Card,
   CodeBlock,
+  CompactRowsContext,
   DataTable,
   DensityContext,
   FormActions,
@@ -2800,6 +2806,7 @@ export {
   registerAuthCallback,
   rememberLaunchWindow,
   rememberWidth,
+  useCompactRows,
   useDense,
   useRememberedSidebarWidth,
   useShell,

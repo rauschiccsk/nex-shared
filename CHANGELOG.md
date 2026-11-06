@@ -18,6 +18,13 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.34.0
+- `[nové]` **Nižšie riadky v hustom bočnom paneli, keď o ne aplikácia požiada.** `<Sidebar dense compactRows>` dá
+  riadkom ľavého panela 26 px namiesto 28 (`CompactRowsContext`, `useCompactRows`). Kokpit NEX Studio Visual má 22 položiek
+  a na obrazovku 1280×800 sa bez posúvania zmestia len s nimi (DEV-318); Director 06.11.2026 k zníženiu riadkov kokpitu
+  o 2 px: „Súhlasím“. Bez prepínača sa nič nemení — aplikácie na šablóne si nechávajú 28 px, panel, ktorý nie je hustý,
+  35 px, a na dotykovej obrazovke má riadok stále aspoň 44 px.
+
 ## v0.33.0
 
 - `[nové]` **Zmena na jednej obrazovke sa ukáže na všetkých** (`onServerChange(listener)`). Klient po každej úspešnej

@@ -21,7 +21,7 @@ export {
 export { ResizeHandle } from "./ResizeHandle";
 export type { ResizeHandleProps } from "./ResizeHandle";
 
-export { DensityContext, useDense } from "./DensityContext";
+export { CompactRowsContext, DensityContext, useCompactRows, useDense } from "./DensityContext";
 
 export { SectionDivider } from "./SectionDivider";
 

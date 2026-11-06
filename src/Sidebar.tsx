@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { CollapseContext } from "./CollapseContext";
-import { DensityContext } from "./DensityContext";
+import { CompactRowsContext, DensityContext } from "./DensityContext";
 import { ResizeHandle } from "./ResizeHandle";
 import { useRememberedSidebarWidth } from "./rememberedWidth";
 import { useShell } from "./ShellContext";
@@ -27,6 +27,8 @@ export interface SidebarProps {
   closeMenuTitle?: string;
   /** v0.21.0 — 28 px rows, a lower brand block and footer (see `DensityContext`). Off by default. */
   dense?: boolean;
+  /** v0.34.0 — in a dense sidebar, 26 px rows (see `CompactRowsContext`). Off by default. */
+  compactRows?: boolean;
   /** v0.21.0 — the expanded width in px; omitted = {@link SIDEBAR_DEFAULT_WIDTH}. */
   width?: number;
   /** v0.21.0 — with it the right edge becomes a handle that changes the width on a wide screen (not in the drawer,
@@ -78,6 +80,7 @@ export function Sidebar({
   expandTitle = "Rozšíriť",
   closeMenuTitle = "Zavrieť ponuku",
   dense = false,
+  compactRows = false,
   width,
   onWidthChange,
   minWidth = 180,
@@ -105,6 +108,7 @@ export function Sidebar({
   return (
     <CollapseContext.Provider value={rail}>
       <DensityContext.Provider value={dense}>
+        <CompactRowsContext.Provider value={dense && compactRows}>
         <aside
           className={`relative flex-shrink-0 bg-[var(--color-surface)] border-r border-[var(--color-border-default)] flex flex-col select-none overflow-x-hidden ${
             dragged == null ? "transition-all duration-200" : ""
@@ -165,6 +169,7 @@ export function Sidebar({
             />
           )}
         </aside>
+        </CompactRowsContext.Provider>
       </DensityContext.Provider>
     </CollapseContext.Provider>
   );
