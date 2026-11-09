@@ -18,6 +18,11 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.35.0
+- `[nové]` **Stránka Aktualizácie môže zabrať celú plochu vedľa menu** (`<ReleaseNotes width="full">`). Kokpit NEX Studio
+  Visual využíva na každej stránke aspoň 90 % plochy (DEV-332; Director 09.11.2026: „chcel by som aby obrazovka bola
+  využitá aspoň na 90%“). Bez prepínača sa nič nemení — predvolená šírka ostáva úzka na čítanie (DEV-251).
+
 ## v0.34.0
 - `[nové]` **Nižšie riadky v hustom bočnom paneli, keď o ne aplikácia požiada.** `<Sidebar dense compactRows>` dá
   riadkom ľavého panela 26 px namiesto 28 (`CompactRowsContext`, `useCompactRows`). Kokpit NEX Studio Visual má 22 položiek

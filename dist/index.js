@@ -1037,11 +1037,12 @@ function ReleaseNotes({
   loading = false,
   error = null,
   onDismissError,
-  appName
+  appName,
+  width = "narrow"
 }) {
   return (
-    // DEV-251: at the left like every other page (DEV-244), narrow — text to read.
-    /* @__PURE__ */ jsxs12("div", { className: "p-6 max-w-3xl", children: [
+    // DEV-251: at the left like every other page (DEV-244), narrow — text to read; DEV-332: full when the app asks.
+    /* @__PURE__ */ jsxs12("div", { className: width === "full" ? "p-6" : "p-6 max-w-3xl", children: [
       /* @__PURE__ */ jsxs12("div", { className: "mb-5", children: [
         /* @__PURE__ */ jsxs12("h1", { className: "flex items-center gap-2 text-lg font-semibold text-[var(--color-text-primary)]", children: [
           /* @__PURE__ */ jsx23("span", { "aria-hidden": "true", className: "text-primary-500 leading-none", children: "\u2728" }),

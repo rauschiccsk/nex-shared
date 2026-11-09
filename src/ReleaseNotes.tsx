@@ -29,6 +29,12 @@ export interface ReleaseNotesProps {
   onDismissError?: () => void;
   /** Appended to the subtitle, e.g. "… v jednotlivých verziách NEX Studio." */
   appName?: string;
+  /**
+   * How wide the page is: `"narrow"` (default, DEV-251 — text to read) or `"full"` — the whole space beside the menu.
+   * NEX Studio Visual uses the full width on every page (DEV-332, Director 09.11.2026: „aby obrazovka bola využitá
+   * aspoň na 90%“); an app that does not ask keeps its page as it was.
+   */
+  width?: "narrow" | "full";
 }
 
 /** Format an ISO ``YYYY-MM-DD`` date as Slovak long form (e.g. ``20. jún 2026``).
@@ -142,10 +148,11 @@ export function ReleaseNotes({
   error = null,
   onDismissError,
   appName,
+  width = "narrow",
 }: ReleaseNotesProps) {
   return (
-    // DEV-251: at the left like every other page (DEV-244), narrow — text to read.
-    <div className="p-6 max-w-3xl">
+    // DEV-251: at the left like every other page (DEV-244), narrow — text to read; DEV-332: full when the app asks.
+    <div className={width === "full" ? "p-6" : "p-6 max-w-3xl"}>
       <div className="mb-5">
         <h1 className="flex items-center gap-2 text-lg font-semibold text-[var(--color-text-primary)]">
           <span aria-hidden="true" className="text-primary-500 leading-none">

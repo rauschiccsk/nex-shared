@@ -517,12 +517,18 @@ interface ReleaseNotesProps {
     onDismissError?: () => void;
     /** Appended to the subtitle, e.g. "… v jednotlivých verziách NEX Studio." */
     appName?: string;
+    /**
+     * How wide the page is: `"narrow"` (default, DEV-251 — text to read) or `"full"` — the whole space beside the menu.
+     * NEX Studio Visual uses the full width on every page (DEV-332, Director 09.11.2026: „aby obrazovka bola využitá
+     * aspoň na 90%“); an app that does not ask keeps its page as it was.
+     */
+    width?: "narrow" | "full";
 }
 /**
  * Full "Aktualizácie" page content: title + subtitle, error banner, loading /
  * empty states, and the expandable per-version card list (newest default-open).
  */
-declare function ReleaseNotes({ notes, loading, error, onDismissError, appName, }: ReleaseNotesProps): react.JSX.Element;
+declare function ReleaseNotes({ notes, loading, error, onDismissError, appName, width, }: ReleaseNotesProps): react.JSX.Element;
 
 interface CodeBlockProps {
     children: string;
