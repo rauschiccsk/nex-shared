@@ -90,13 +90,19 @@ const DEFAULT_STATE: I18nState = {
 
 const I18nContext = createContext<I18nState>(DEFAULT_STATE);
 
-/** The translator of the language a provider last rendered — for code outside React (the API client), which has no
- *  context to read. One person uses one browser tab in one language at a time. */
+/** The language a provider last rendered, and its translator — for code outside React (the API client), which has
+ *  no context to read. One person uses one browser tab in one language at a time. */
+let lastLanguage: Language = DEFAULT_LANGUAGE;
 let lastTranslator: Translate = DEFAULT_STATE.t;
 
 /** The translator of the language the app last told the library (Slovak before any provider rendered). */
 export function currentTranslator(): Translate {
   return lastTranslator;
+}
+
+/** The language the app last told the library — what the API client tells the server (Accept-Language). */
+export function currentLanguage(): Language {
+  return lastLanguage;
 }
 
 export interface I18nProviderProps {
@@ -112,6 +118,7 @@ export function I18nProvider({ language, messages, children }: I18nProviderProps
   const code = isLanguage(language) ? language : DEFAULT_LANGUAGE;
   const state = useMemo<I18nState>(() => {
     const t = createTranslator(code, messages);
+    lastLanguage = code;
     lastTranslator = t;
     return { language: code, locale: localeOf(code), t };
   }, [code, messages]);

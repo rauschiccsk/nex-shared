@@ -1,4 +1,4 @@
-import { currentTranslator } from "./i18n";
+import { currentLanguage, currentTranslator } from "./i18n";
 /**
  * Generic, configurable HTTP-client factory (E1 Phase B4, CR-NS-051).
  *
@@ -235,6 +235,8 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
   ): Promise<T> {
     const headers: Record<string, string> = {
       Accept: "application/json",
+      // DEV-393: the server answers in the person's language — also before it knows who asks (a failed sign-in).
+      "Accept-Language": currentLanguage(),
       ...options.headers,
     };
 

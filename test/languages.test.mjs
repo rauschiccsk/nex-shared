@@ -137,3 +137,23 @@ test("Moje konto lets a person choose a language only among the ones the app off
   assert.doesNotMatch(offer(["sk", "hu"], undefined), /aria-label="Nyelv"/); // the app keeps no choice
   assert.equal(LANGUAGES.length, 2);
 });
+
+test("every request tells the server the person's language, so its sentences come in it", async () => {
+  const { createApiClient } = await import("../dist/index.js");
+  const realFetch = globalThis.fetch;
+  const asked = [];
+  globalThis.fetch = async (_url, init) => {
+    asked.push(init.headers["Accept-Language"]);
+    return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+  try {
+    const client = createApiClient({ baseUrl: "http://app.test", getToken: () => null });
+    renderToStaticMarkup(h(I18nProvider, { language: "hu" }, null));
+    await client.get("/auth/me");
+    renderToStaticMarkup(h(I18nProvider, { language: "sk" }, null));
+    await client.post("/auth/login", { username: "jan", password: "x" });
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+  assert.deepEqual(asked, ["hu", "sk"]);
+});

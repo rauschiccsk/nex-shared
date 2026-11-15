@@ -489,14 +489,19 @@ var DEFAULT_STATE = {
   t: createTranslator(DEFAULT_LANGUAGE)
 };
 var I18nContext = createContext4(DEFAULT_STATE);
+var lastLanguage = DEFAULT_LANGUAGE;
 var lastTranslator = DEFAULT_STATE.t;
 function currentTranslator() {
   return lastTranslator;
+}
+function currentLanguage() {
+  return lastLanguage;
 }
 function I18nProvider({ language, messages, children }) {
   const code = isLanguage(language) ? language : DEFAULT_LANGUAGE;
   const state = useMemo2(() => {
     const t = createTranslator(code, messages);
+    lastLanguage = code;
     lastTranslator = t;
     return { language: code, locale: localeOf(code), t };
   }, [code, messages]);
@@ -1589,6 +1594,8 @@ function createApiClient(config) {
   async function request(method, path, body, options = {}) {
     const headers = {
       Accept: "application/json",
+      // DEV-393: the server answers in the person's language — also before it knows who asks (a failed sign-in).
+      "Accept-Language": currentLanguage(),
       ...options.headers
     };
     let serializedBody;
@@ -3209,6 +3216,7 @@ export {
   createApiClient,
   createAuthStore,
   createTranslator,
+  currentLanguage,
   currentTranslator,
   fitToScreen,
   formatDateTime,

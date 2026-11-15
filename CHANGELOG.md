@@ -18,6 +18,12 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.37.0
+- `[nové]` **Server odpovedá v jazyku používateľa.** Klient API (`createApiClient`) pri každej požiadavke povie serveru
+  jazyk, ktorý aplikácia povedala knižnici (`Accept-Language`) — aj pri prihlásení, keď server ešte nevie, kto sa pýta.
+  Server šablóny podľa neho píše svoje hlášky (DEV-393 → šablóna aplikácií). `currentLanguage()` vráti ten istý jazyk
+  kódu mimo Reactu.
+
 ## v0.36.0
 - `[nové]` **Každý text knižnice v jazyku používateľa — slovenčina a maďarčina.** Texty obrazoviek (Používatelia, Moje
   konto, Relácie, Agenti, Systémové nastavenia, prihlásenie, Aktualizácie, bočný panel a ďalšie) sú v katalógoch jazykov

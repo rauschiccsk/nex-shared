@@ -150,6 +150,7 @@ export type { WindowPlacement, LaunchWindow, PlacementStorage } from "./launchWi
 // ── DEV-393: the person's language in every text of the library ──
 export {
   createTranslator,
+  currentLanguage,
   currentTranslator,
   DEFAULT_LANGUAGE,
   formatDateTime,
