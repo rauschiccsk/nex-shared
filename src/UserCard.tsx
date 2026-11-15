@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { useCollapsed } from "./CollapseContext";
 import { useDense } from "./DensityContext";
+import { useT } from "./i18n";
 
 export interface UserCardProps {
   /** Avatar initials (e.g. first letter of the username, uppercased). */
@@ -30,9 +31,10 @@ export function UserCard({
   name,
   subtitle,
   onLogout,
-  logoutTitle = "Odhlásiť sa",
+  logoutTitle,
   actions,
 }: UserCardProps) {
+  const t = useT();
   const collapsed = useCollapsed();
   // v0.21.0: in a dense sidebar the subtitle stays on one line too (the whole text on hover).
   const dense = useDense();
@@ -60,7 +62,7 @@ export function UserCard({
             <button
               type="button"
               onClick={onLogout}
-              title={logoutTitle}
+              title={logoutTitle ?? t("user.logout")}
               className="shrink-0 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors"
             >
               <svg

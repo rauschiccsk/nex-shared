@@ -9,17 +9,18 @@
  */
 
 import { useEffect, useState } from "react";
+import { useT, type MessageKey } from "./i18n";
 
-// Human Slovak labels for the known Claude reasoning-effort levels — a non-expert Manažér should read
-// "Nízka"/"Maximálna", not the raw "low"/"xhigh"/"max" jargon. The option VALUE stays the raw level (what
-// the CLI needs); only the DISPLAYED text changes. Any value not in this map falls back to itself, so an
-// app passing custom effort levels still renders correctly.
-const EFFORT_LABELS: Record<string, string> = {
-  low: "Nízka",
-  medium: "Stredná",
-  high: "Vysoká",
-  xhigh: "Veľmi vysoká",
-  max: "Maximálna",
+// Human labels for the known Claude reasoning-effort levels, in the person's language (DEV-393) — a non-expert
+// should read „Nízka“/„Maximálna“, not the raw "low"/"xhigh"/"max" jargon. The option VALUE stays the raw level (what
+// the CLI needs); only the DISPLAYED text changes. Any value not in this map falls back to itself, so an app passing
+// custom effort levels still renders correctly.
+const EFFORT_KEYS: Record<string, MessageKey> = {
+  low: "agents.effort.low",
+  medium: "agents.effort.medium",
+  high: "agents.effort.high",
+  xhigh: "agents.effort.xhigh",
+  max: "agents.effort.max",
 };
 
 /** One role's draft selection. Empty string = "use the default". ``helperModel`` (optional) is the model
@@ -77,6 +78,7 @@ export function AgentsPanel({
   loadError = "",
   saveErrors = {},
 }: AgentsPanelProps) {
+  const t = useT();
   const [edit, setEdit] = useState<Record<string, AgentDraft>>(() => seedState(roles, drafts));
   const [savingRole, setSavingRole] = useState<string | null>(null);
   const [flashRole, setFlashRole] = useState<string | null>(null);
@@ -105,11 +107,10 @@ export function AgentsPanel({
   return (
     <div className="p-6 max-w-3xl">
       <h2 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-1">
-        Agenti — model a úroveň uvažovania
+        {t("agents.title")}
       </h2>
       <p className="text-xs text-[var(--color-text-muted)] mb-4">
-        Pre každú rolu vyber, ktorý AI model použije a ako dôkladne má uvažovať (vyššia úroveň = dôkladnejšie,
-        ale pomalšie a drahšie). Nevyplnené pole = ponechá sa predvolené nastavenie.
+        {t("agents.description")}
       </p>
 
       {loadError && (
@@ -118,7 +119,7 @@ export function AgentsPanel({
         </div>
       )}
       {loading && !loadError && (
-        <div className="text-xs text-[var(--color-text-muted)]">Načítavam…</div>
+        <div className="text-xs text-[var(--color-text-muted)]">{t("common.loading")}</div>
       )}
 
       {!loading && !loadError && (
@@ -137,12 +138,12 @@ export function AgentsPanel({
                     disabled={saving}
                     className="shrink-0 px-3 py-1.5 text-xs font-medium text-white bg-primary-600 hover:bg-primary-500 disabled:opacity-40 disabled:cursor-not-allowed rounded transition-colors"
                   >
-                    {saving ? "Ukladám…" : "Uložiť"}
+                    {saving ? t("common.saving") : t("common.save")}
                   </button>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <label className="block">
-                    <span className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest">Model</span>
+                    <span className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest">{t("agents.model")}</span>
                     <select
                       value={draft.model}
                       onChange={(e) =>
@@ -150,7 +151,7 @@ export function AgentsPanel({
                       }
                       className="mt-1 w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded px-3 py-1.5 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-primary-500"
                     >
-                      <option value="">— Predvolený —</option>
+                      <option value="">{t("agents.default")}</option>
                       {models.map((m) => (
                         <option key={m.id} value={m.id}>
                           {m.label}
@@ -159,7 +160,7 @@ export function AgentsPanel({
                     </select>
                   </label>
                   <label className="block">
-                    <span className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest">Úroveň</span>
+                    <span className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest">{t("agents.effort")}</span>
                     <select
                       value={draft.effort}
                       onChange={(e) =>
@@ -167,10 +168,10 @@ export function AgentsPanel({
                       }
                       className="mt-1 w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded px-3 py-1.5 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-primary-500"
                     >
-                      <option value="">— Predvolený —</option>
+                      <option value="">{t("agents.default")}</option>
                       {efforts.map((ef) => (
                         <option key={ef} value={ef}>
-                          {EFFORT_LABELS[ef] ?? ef}
+                          {EFFORT_KEYS[ef] ? t(EFFORT_KEYS[ef]) : ef}
                         </option>
                       ))}
                     </select>
@@ -179,7 +180,7 @@ export function AgentsPanel({
                 {showHelperModel(r.id) && (
                   <label className="block mt-3">
                     <span className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest">
-                      Model pomocníkov
+                      {t("agents.helperModel")}
                     </span>
                     <select
                       value={draft.helperModel ?? ""}
@@ -188,7 +189,7 @@ export function AgentsPanel({
                       }
                       className="mt-1 w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded px-3 py-1.5 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-primary-500"
                     >
-                      <option value="">— Predvolený (lacný/rýchly) —</option>
+                      <option value="">{t("agents.helperDefault")}</option>
                       {(helperModels ?? []).map((m) => (
                         <option key={m.id} value={m.id}>
                           {m.label}
@@ -196,13 +197,12 @@ export function AgentsPanel({
                       ))}
                     </select>
                     <span className="mt-1 block text-[10px] text-[var(--color-text-muted)]">
-                      Model dynamických pomocníkov pre paralelnú/hromadnú prácu. Predvolene lacný/rýchly;
-                      zvýš na silný len pre prioritný build (drahšie tokeny).
+                      {t("agents.helperHint")}
                     </span>
                   </label>
                 )}
                 <div className="mt-2 text-[11px] flex items-center gap-2">
-                  {flashRole === r.id && <span className="text-[var(--color-status-success)]">✓ Uložené</span>}
+                  {flashRole === r.id && <span className="text-[var(--color-status-success)]">✓ {t("common.saved")}</span>}
                   {err && <span className="text-[var(--color-status-error)]">{err}</span>}
                 </div>
               </div>

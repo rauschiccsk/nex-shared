@@ -15,6 +15,7 @@ import remarkGfm from "remark-gfm";
 
 import { Card } from "./Card";
 import { CodeBlock } from "./CodeBlock";
+import { useLanguage, useT } from "./i18n";
 
 export interface ReleaseNote {
   version: string;
@@ -37,14 +38,14 @@ export interface ReleaseNotesProps {
   width?: "narrow" | "full";
 }
 
-/** Format an ISO ``YYYY-MM-DD`` date as Slovak long form (e.g. ``20. jún 2026``).
- *  Parsed component-wise to avoid a UTC-midnight off-by-one in the local tz. */
-function formatDate(iso: string | null): string {
+/** Format an ISO ``YYYY-MM-DD`` date in the long form of the person's language (``20. jún 2026``, ``2026. június
+ *  20.``). Parsed component-wise to avoid a UTC-midnight off-by-one in the local tz. */
+function formatDate(iso: string | null, locale: string): string {
   if (!iso) return "";
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
   if (!m) return iso;
   const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
-  return new Intl.DateTimeFormat("sk-SK", {
+  return new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -103,7 +104,8 @@ interface VersionCardProps {
 }
 
 function VersionCard({ note, defaultOpen }: VersionCardProps) {
-  const date = formatDate(note.released_at);
+  const { locale } = useLanguage();
+  const date = formatDate(note.released_at, locale);
   return (
     <Card className="p-0 overflow-hidden">
       <details open={defaultOpen} className="group">
@@ -150,6 +152,7 @@ export function ReleaseNotes({
   appName,
   width = "narrow",
 }: ReleaseNotesProps) {
+  const t = useT();
   return (
     // DEV-251: at the left like every other page (DEV-244), narrow — text to read; DEV-332: full when the app asks.
     <div className={width === "full" ? "p-6" : "p-6 max-w-3xl"}>
@@ -158,10 +161,10 @@ export function ReleaseNotes({
           <span aria-hidden="true" className="text-primary-500 leading-none">
             ✨
           </span>
-          Aktualizácie
+          {t("updates.title")}
         </h1>
         <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-          Čo je nové v jednotlivých verziách{appName ? ` ${appName}` : ""}.
+          {appName ? t("updates.subtitleFor", { app: appName }) : t("updates.subtitle")}
         </p>
       </div>
 
@@ -171,7 +174,7 @@ export function ReleaseNotes({
           <button
             onClick={onDismissError}
             className="ml-2 hover:opacity-80"
-            aria-label="Zavrieť"
+            aria-label={t("common.close")}
           >
             <svg
               className="w-3.5 h-3.5"
@@ -205,11 +208,11 @@ export function ReleaseNotes({
               d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
             />
           </svg>{" "}
-          Načítavam…
+          {t("common.loading")}
         </div>
       ) : notes.length === 0 ? (
         <div className="rounded-xl border border-dashed border-[var(--color-border-default)] p-10 text-center text-sm text-[var(--color-text-muted)]">
-          Zatiaľ žiadne aktualizácie.
+          {t("updates.none")}
         </div>
       ) : (
         <div className="flex flex-col gap-3">

@@ -1,3 +1,4 @@
+import { currentTranslator } from "./i18n";
 /**
  * Generic, configurable HTTP-client factory (E1 Phase B4, CR-NS-051).
  *
@@ -307,7 +308,8 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
       const parsed = await parseBody(response);
 
       if (!response.ok) {
-        const message = errorParser(response.status, parsed) || response.statusText || "Request failed";
+        // DEV-393: the server's own sentence, else one in the person's language — never the HTTP reason phrase.
+        const message = errorParser(response.status, parsed) || currentTranslator()("api.requestFailed", { status: response.status });
         throw new ApiError(response.status, message, parsed);
       }
 

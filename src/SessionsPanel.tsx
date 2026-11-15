@@ -11,6 +11,7 @@
 
 import { useMemo, useState } from "react";
 import type { UserSessionRead } from "./settings-types";
+import { formatDateTime, useLanguage, useT } from "./i18n";
 
 export interface SessionsPanelProps {
   sessions: UserSessionRead[];
@@ -32,10 +33,8 @@ export interface SessionsPanelProps {
   description?: string;
 }
 
-function fmt(ts: string | null | undefined): string {
-  if (!ts) return "—";
-  const d = new Date(ts);
-  return Number.isNaN(d.getTime()) ? "—" : d.toLocaleString("sk-SK");
+function fmt(ts: string | null | undefined, locale: string): string {
+  return ts ? formatDateTime(ts, locale) : "—";
 }
 
 export function SessionsPanel({
@@ -47,8 +46,10 @@ export function SessionsPanel({
   loadError = "",
   filterUserId,
   onFilterChange,
-  description = "Kto je prihlásený a odkedy.",
+  description,
 }: SessionsPanelProps) {
+  const t = useT();
+  const { locale } = useLanguage();
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [revoking, setRevoking] = useState(false);
   const [revokeError, setRevokeError] = useState("");
@@ -71,8 +72,8 @@ export function SessionsPanel({
     } catch (e) {
       const msg =
         e instanceof Error && e.message
-          ? `Nepodarilo sa zrušiť reláciu: ${e.message}`
-          : "Nepodarilo sa zrušiť reláciu.";
+          ? t("sessions.revokeFailedBecause", { reason: e.message })
+          : t("sessions.revokeFailed");
       setRevokeError(msg);
       setConfirmingId(null);
     } finally {
@@ -82,13 +83,13 @@ export function SessionsPanel({
 
   return (
     <div className="p-6">
-      <h2 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-1">Relácie používateľa</h2>
-      <p className="text-xs text-[var(--color-text-muted)] mb-4">{description}</p>
+      <h2 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-1">{t("sessions.title")}</h2>
+      <p className="text-xs text-[var(--color-text-muted)] mb-4">{description ?? t("sessions.description")}</p>
 
       {filterUserId && onFilterChange && (
         <div className="mb-3 flex items-center gap-2 text-xs">
           <span className="text-[var(--color-text-muted)]">
-            Filtrované podľa používateľa:{" "}
+            {t("sessions.filteredBy")}{" "}
             <span className="text-[var(--color-text-secondary)] font-medium">{nameOf(filterUserId)}</span>
           </span>
           <button
@@ -96,7 +97,7 @@ export function SessionsPanel({
             onClick={() => onFilterChange("")}
             className="px-2 py-0.5 text-[var(--color-text-secondary)] border border-[var(--color-border-default)] rounded hover:bg-[var(--color-surface-hover)]"
           >
-            Zrušiť filter
+            {t("sessions.clearFilter")}
           </button>
         </div>
       )}
@@ -107,7 +108,7 @@ export function SessionsPanel({
         </div>
       )}
       {loading && !loadError && (
-        <div className="text-xs text-[var(--color-text-muted)]">Načítavam…</div>
+        <div className="text-xs text-[var(--color-text-muted)]">{t("common.loading")}</div>
       )}
 
       {!loading && !loadError && (
@@ -115,12 +116,12 @@ export function SessionsPanel({
           <table className="w-full text-sm">
             <thead className="bg-[var(--color-surface-hover)]">
               <tr className="text-[10px] uppercase tracking-widest text-[var(--color-text-muted)]">
-                <th className="px-4 py-2.5 text-left font-semibold">Používateľ</th>
-                <th className="px-4 py-2.5 text-left font-semibold">ID relácie</th>
-                {showTv && <th className="px-4 py-2.5 text-right font-semibold">tv</th>}
-                <th className="px-4 py-2.5 text-left font-semibold">Naposledy videný</th>
-                <th className="px-4 py-2.5 text-left font-semibold">Vytvorené</th>
-                <th className="px-4 py-2.5 text-right font-semibold">Akcie</th>
+                <th className="px-4 py-2.5 text-left font-semibold">{t("sessions.col.user")}</th>
+                <th className="px-4 py-2.5 text-left font-semibold">{t("sessions.col.id")}</th>
+                {showTv && <th className="px-4 py-2.5 text-right font-semibold">{t("sessions.col.tokenVersion")}</th>}
+                <th className="px-4 py-2.5 text-left font-semibold">{t("sessions.col.lastSeen")}</th>
+                <th className="px-4 py-2.5 text-left font-semibold">{t("sessions.col.created")}</th>
+                <th className="px-4 py-2.5 text-right font-semibold">{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-border-default)]">
@@ -131,21 +132,21 @@ export function SessionsPanel({
                   {showTv && (
                     <td className="px-4 py-3 text-right font-mono text-xs text-[var(--color-text-secondary)]">{s.token_version}</td>
                   )}
-                  <td className="px-4 py-3 whitespace-nowrap text-xs text-[var(--color-text-muted)]">{fmt(s.last_seen_at)}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-xs text-[var(--color-text-muted)]">{fmt(s.created_at)}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-xs text-[var(--color-text-muted)]">{fmt(s.last_seen_at, locale)}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-xs text-[var(--color-text-muted)]">{fmt(s.created_at, locale)}</td>
                   <td className="px-4 py-3 text-right">
                     {!canRevoke ? (
                       <span className="text-xs text-[var(--color-text-muted)]">—</span>
                     ) : confirmingId === s.id ? (
                       <div className="flex items-center justify-end gap-2 text-xs">
-                        <span className="text-[var(--color-text-secondary)]">Zrušiť reláciu?</span>
+                        <span className="text-[var(--color-text-secondary)]">{t("sessions.confirmRevoke")}</span>
                         <button
                           type="button"
                           onClick={() => handleRevoke(s.id)}
                           disabled={revoking}
                           className="px-2 py-0.5 text-[var(--color-status-error)] border border-[var(--color-state-error-bg)] rounded hover:bg-[var(--color-state-error-bg)] disabled:opacity-40"
                         >
-                          Áno
+                          {t("common.yes")}
                         </button>
                         <button
                           type="button"
@@ -153,7 +154,7 @@ export function SessionsPanel({
                           disabled={revoking}
                           className="px-2 py-0.5 text-[var(--color-text-secondary)] border border-[var(--color-border-default)] rounded hover:bg-[var(--color-surface-hover)]"
                         >
-                          Nie
+                          {t("common.no")}
                         </button>
                       </div>
                     ) : (
@@ -162,7 +163,7 @@ export function SessionsPanel({
                         onClick={() => { setConfirmingId(s.id); setRevokeError(""); }}
                         className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-status-error)] transition-colors"
                       >
-                        Zrušiť
+                        {t("sessions.revoke")}
                       </button>
                     )}
                   </td>
@@ -170,7 +171,7 @@ export function SessionsPanel({
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-xs text-[var(--color-text-muted)]">Žiadne relácie</td>
+                  <td colSpan={6} className="px-4 py-6 text-center text-xs text-[var(--color-text-muted)]">{t("sessions.none")}</td>
                 </tr>
               )}
             </tbody>

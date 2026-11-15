@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useT } from "./i18n";
 
 export type DataTableAlign = "left" | "center" | "right";
 
@@ -62,9 +63,10 @@ export function DataTable<Row>({
   getRowKey,
   rowActions,
   rowActionsHeader,
-  emptyMessage = "Žiadne dáta",
+  emptyMessage,
   className = "",
 }: DataTableProps<Row>) {
+  const t = useT();
   const colCount = columns.length + (rowActions ? 1 : 0);
   return (
     <div
@@ -114,7 +116,7 @@ export function DataTable<Row>({
                 colSpan={colCount}
                 className="px-4 py-6 text-center text-xs text-[var(--color-text-muted)]"
               >
-                {emptyMessage}
+                {emptyMessage ?? t("table.empty")}
               </td>
             </tr>
           )}

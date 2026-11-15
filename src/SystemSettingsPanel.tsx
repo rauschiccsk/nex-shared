@@ -11,6 +11,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { SettingsCategory, SystemSettingRead, SystemSettingValueType } from "./settings-types";
+import { formatDateTime, useLanguage, useT } from "./i18n";
 
 export interface SystemSettingsPanelProps {
   settings: SystemSettingRead[];
@@ -33,9 +34,10 @@ function inputTypeFor(valueType: SystemSettingValueType): "number" | "checkbox" 
   return "text";
 }
 
+/** Settings no category claims — named in the person's language where it is drawn (DEV-393). */
 const OTHER_CATEGORY: SettingsCategory = {
   id: "other",
-  label: "Ostatné",
+  label: "",
   description: "",
   prefixes: [],
 };
@@ -48,6 +50,8 @@ export function SystemSettingsPanel({
   loading = false,
   loadError = "",
 }: SystemSettingsPanelProps) {
+  const t = useT();
+  const { locale } = useLanguage();
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [saveErrors, setSaveErrors] = useState<Record<string, string>>({});
@@ -95,7 +99,7 @@ export function SystemSettingsPanel({
       setFlashKey(key);
       setTimeout(() => setFlashKey((k) => (k === key ? null : k)), 2000);
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Neznáma chyba.";
+      const msg = e instanceof Error ? e.message : t("system.unknownError");
       setSaveErrors((prev) => ({ ...prev, [key]: msg }));
     } finally {
       setSavingKey(null);
@@ -104,9 +108,9 @@ export function SystemSettingsPanel({
 
   return (
     <div className="p-6 max-w-3xl">
-      <h2 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-1">Systémové nastavenia</h2>
+      <h2 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-1">{t("system.title")}</h2>
       <p className="text-xs text-[var(--color-text-muted)] mb-4">
-        Nastavenia, ktoré sa menia za behu aplikácie. {canEdit ? "Zmena platí najneskôr do 30 sekúnd." : "Len na čítanie — meniť ich môže správca."}
+        {t("system.description")} {canEdit ? t("system.appliesSoon") : t("system.readOnlyHint")}
       </p>
 
       {loadError && (
@@ -115,7 +119,7 @@ export function SystemSettingsPanel({
         </div>
       )}
       {loading && !loadError && (
-        <div className="text-xs text-[var(--color-text-muted)]">Načítavam…</div>
+        <div className="text-xs text-[var(--color-text-muted)]">{t("common.loading")}</div>
       )}
 
       {!loading && !loadError && (
@@ -125,7 +129,7 @@ export function SystemSettingsPanel({
             if (rows.length === 0) return null;
             return (
               <section key={cat.id}>
-                <h3 className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-widest mb-1">{cat.label}</h3>
+                <h3 className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-widest mb-1">{cat.id === OTHER_CATEGORY.id ? t("system.otherCategory") : cat.label}</h3>
                 {cat.description && (
                   <p className="text-[11px] text-[var(--color-text-muted)] mb-2">{cat.description}</p>
                 )}
@@ -155,7 +159,7 @@ export function SystemSettingsPanel({
                               disabled={saving || !dirty || s.choices?.length === 0}
                               className="shrink-0 px-3 py-1.5 text-xs font-medium text-white bg-primary-600 hover:bg-primary-500 disabled:opacity-40 disabled:cursor-not-allowed rounded transition-colors"
                             >
-                              {saving ? "Ukladám…" : dirty ? "Uložiť" : "Uložené"}
+                              {saving ? t("common.saving") : dirty ? t("common.save") : t("common.saved")}
                             </button>
                           )}
                         </div>
@@ -164,7 +168,7 @@ export function SystemSettingsPanel({
                         )}
                         {s.choices && s.choices.length === 0 && (
                           <p className="text-xs text-[var(--color-status-warning)] mb-2">
-                            Ponuka sa teraz nedá načítať — nastavenie sa zatiaľ nedá zmeniť.
+                            {t("system.choicesUnavailable")}
                           </p>
                         )}
                         {s.choices ? (
@@ -178,7 +182,7 @@ export function SystemSettingsPanel({
                               className="w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded px-3 py-1.5 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-primary-500 disabled:opacity-50"
                             >
                               {!s.choices.some((c) => c.value === draft) && (
-                                <option value={draft}>{draft ? `${draft} (nie je v ponuke)` : "— nevybraté —"}</option>
+                                <option value={draft}>{draft ? t("system.notOffered", { value: draft }) : t("system.notChosen")}</option>
                               )}
                               {s.choices.map((c) => (
                                 <option key={c.value} value={c.value}>
@@ -217,19 +221,19 @@ export function SystemSettingsPanel({
                         )}
                         <div className="mt-2 text-[11px] flex items-center gap-2 flex-wrap">
                           {s.is_default ? (
-                            <span className="text-[var(--color-text-muted)]">Predvolená hodnota.</span>
+                            <span className="text-[var(--color-text-muted)]">{t("system.defaultValue")}</span>
                           ) : (
                             <span className="text-[var(--color-text-muted)]">
-                              Zmenené
+                              {t("system.changed")}
                               {s.updated_by_username && (
                                 <> — <span className="text-[var(--color-text-secondary)] font-medium">{s.updated_by_username}</span></>
                               )}
                               {s.updated_at && (
-                                <> · {new Date(s.updated_at).toLocaleString("sk-SK")}</>
+                                <> · {formatDateTime(s.updated_at, locale)}</>
                               )}
                             </span>
                           )}
-                          {flashKey === s.key && <span className="text-[var(--color-status-success)]">✓ Uložené</span>}
+                          {flashKey === s.key && <span className="text-[var(--color-status-success)]">✓ {t("common.saved")}</span>}
                           {err && <span className="text-[var(--color-status-error)]">{err}</span>}
                         </div>
                       </div>
@@ -241,7 +245,7 @@ export function SystemSettingsPanel({
           })}
           {!canEdit && (
             <p className="text-[11px] text-[var(--color-text-muted)] italic">
-              Read-only — na úpravu chýba oprávnenie.
+              {t("system.noPermission")}
             </p>
           )}
         </div>

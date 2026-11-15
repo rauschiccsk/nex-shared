@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useT } from "./i18n";
 
 export interface CodeBlockProps {
   children: string;
@@ -49,6 +50,7 @@ function useCopyToClipboard(
  * Icons are inline SVG (no lucide) per the nex-shared zero-dep / emoji+SVG rule.
  */
 export function CodeBlock({ children, language }: CodeBlockProps) {
+  const t = useT();
   const [copy, isCopied] = useCopyToClipboard();
   const code = String(children).replace(/\n$/, "");
 
@@ -77,9 +79,7 @@ export function CodeBlock({ children, language }: CodeBlockProps) {
                   d="M5 13l4 4L19 7"
                 />
               </svg>
-              <span className="text-[var(--color-status-success)]">
-                Skopírované
-              </span>
+              <span className="text-[var(--color-status-success)]">{t("code.copied")}</span>
             </>
           ) : (
             <>
@@ -96,7 +96,7 @@ export function CodeBlock({ children, language }: CodeBlockProps) {
                   d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                 />
               </svg>
-              <span>Kopírovať</span>
+              <span>{t("code.copy")}</span>
             </>
           )}
         </button>

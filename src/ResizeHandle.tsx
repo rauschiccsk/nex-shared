@@ -1,4 +1,5 @@
 import { useRef, type KeyboardEvent, type PointerEvent } from "react";
+import { useT } from "./i18n";
 
 export interface ResizeHandleProps {
   /** The panel's width in px as it is now. */
@@ -42,6 +43,7 @@ export function ResizeHandle({
   label,
   className = "",
 }: ResizeHandleProps) {
+  const t = useT();
   const drag = useRef<{ startX: number; startWidth: number; width: number; moved: boolean } | null>(null);
   const direction = panel === "left" ? 1 : -1;
 
@@ -94,7 +96,7 @@ export function ResizeHandle({
       aria-valuenow={value}
       aria-valuemin={min}
       aria-valuemax={max}
-      title={`${label} — potiahni, šípkami, dvojklik vráti predvolenú`}
+      title={t("resize.hint", { label })}
       tabIndex={0}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}

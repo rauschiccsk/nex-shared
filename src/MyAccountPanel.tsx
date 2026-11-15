@@ -5,7 +5,7 @@
  * shown READ-ONLY — a user cannot change those about themselves; managing OTHER users (incl. role +
  * activation) stays in the admin-only Users tab.
  *
- * Role-agnostic kit (like UsersPanel): the parent supplies the Slovak role label + the two I/O callbacks
+ * Role-agnostic kit (like UsersPanel): the parent supplies the role label (in the person's language) + the two I/O callbacks
  * (no fetch here — the app maps them to PATCH /me + its change-password API with current-password
  * verification).
  */
@@ -14,16 +14,18 @@ import { useEffect, useState } from "react";
 import { Input } from "./Input";
 import { Card } from "./Card";
 import { refusalSentence } from "./api-client";
+import { createTranslator, DEFAULT_LANGUAGE, LANGUAGES, useLanguage, useT, type Language, type Translate } from "./i18n";
 
-/** What the panel says when saving the profile was refused — the server's own sentence, or its general one (DEV-309). */
-export function accountRefusal(err: unknown): string {
-  return refusalSentence(err) || "Uloženie zlyhalo. Skús to znova.";
+/** What the panel says when saving the profile was refused — the server's own sentence, or its general one (DEV-309)
+ *  in the person's language (DEV-393). */
+export function accountRefusal(err: unknown, t: Translate = createTranslator(DEFAULT_LANGUAGE)): string {
+  return refusalSentence(err) || t("account.saveFailed");
 }
 
 /** What the panel says when changing the password was refused — the server's own sentence („Súčasné heslo je
  *  nesprávne.“, „Nové heslo musí byť iné ako súčasné.“), or a general one that guesses no reason (DEV-309). */
-export function passwordRefusal(err: unknown): string {
-  return refusalSentence(err) || "Zmena hesla zlyhala. Skús to znova.";
+export function passwordRefusal(err: unknown, t: Translate = createTranslator(DEFAULT_LANGUAGE)): string {
+  return refusalSentence(err) || t("account.passwordFailed");
 }
 
 export interface MyAccountUser {
@@ -39,7 +41,7 @@ export interface MyAccountUser {
 export interface MyAccountPanelProps {
   /** The current (logged-in) user. */
   user: MyAccountUser;
-  /** Slovak display label for `user.role` (role-agnostic kit — the app owns role naming). */
+  /** Display label for `user.role`, in the person's language (role-agnostic kit — the app owns role naming). */
   roleLabel: string;
   /** Persist the safe profile fields. The app maps this to PATCH /me. A rejection surfaces as the error — the
    *  server's own sentence when the rejection is an `ApiError` carrying one (v0.32.0), else a general one. */
@@ -61,6 +63,14 @@ export interface MyAccountPanelProps {
   /** v0.26.0 (DEV-251) — `false` for an app that sends nothing to Telegram: the field and its test are left out and
    *  `onSaveProfile` passes the stored chat_id back unchanged. Default `true`, as the cockpit has it. */
   telegram?: boolean;
+  /** DEV-393 — the languages the app offers; with more than one and `onLanguageChange`, the panel lets the person
+   *  choose theirs. */
+  languages?: readonly Language[];
+  /** The person's language now. */
+  language?: Language;
+  /** Keep the person's choice (the app stores it with the person and re-renders in it). A rejection surfaces as the
+   *  server's own sentence, else a general one. */
+  onLanguageChange?: (language: Language) => Promise<void> | void;
 }
 
 const LABEL = "block text-xs text-[var(--color-text-muted)] mb-1";
@@ -84,7 +94,14 @@ export function MyAccountPanel({
   onTestTelegram,
   passwordMinLength = 5,
   telegram: showTelegram = true,
+  languages = [],
+  language,
+  onLanguageChange,
 }: MyAccountPanelProps) {
+  const t = useT();
+  const current = useLanguage().language;
+  const [languageBusy, setLanguageBusy] = useState(false);
+  const [languageError, setLanguageError] = useState("");
   // Profile fields (editable).
   const [firstName, setFirstName] = useState(user.first_name ?? "");
   const [lastName, setLastName] = useState(user.last_name ?? "");
@@ -113,7 +130,7 @@ export function MyAccountPanel({
     try {
       setTestResult(await onTestTelegram());
     } catch (err) {
-      setTestResult({ ok: false, detail: refusalSentence(err) || "Test zlyhal (chyba spojenia)." });
+      setTestResult({ ok: false, detail: refusalSentence(err) || t("account.telegramTestFailed") });
     } finally {
       setTestBusy(false);
     }
@@ -131,7 +148,7 @@ export function MyAccountPanel({
     setProfileError("");
     setProfileSaved(false);
     if (!email.trim()) {
-      setProfileError("E-mail je povinný.");
+      setProfileError(t("account.emailRequired"));
       return;
     }
     setSavingProfile(true);
@@ -144,7 +161,7 @@ export function MyAccountPanel({
       });
       setProfileSaved(true);
     } catch (err) {
-      setProfileError(accountRefusal(err));
+      setProfileError(accountRefusal(err, t));
     } finally {
       setSavingProfile(false);
     }
@@ -167,17 +184,32 @@ export function MyAccountPanel({
       setNewPw("");
       setConfirmPw("");
     } catch (err) {
-      setPwError(passwordRefusal(err));
+      setPwError(passwordRefusal(err, t));
     } finally {
       setSavingPw(false);
     }
   }
 
+  async function chooseLanguage(next: Language) {
+    if (!onLanguageChange) return;
+    setLanguageBusy(true);
+    setLanguageError("");
+    try {
+      await onLanguageChange(next);
+    } catch (err) {
+      setLanguageError(refusalSentence(err) || t("account.languageFailed"));
+    } finally {
+      setLanguageBusy(false);
+    }
+  }
+
+  const offered = LANGUAGES.filter((l) => languages.includes(l.code));
+
   return (
     <div className="p-4 max-w-3xl">
       {/* ── My details (self-scoped Users edit form) ─────────────────────────── */}
       <Card className="p-4">
-        <h3 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-3">Moje údaje</h3>
+        <h3 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-3">{t("account.details")}</h3>
         {profileError && (
           <div className="mb-3 text-xs text-[var(--color-state-error-fg)] rounded bg-[var(--color-state-error-bg)] px-3 py-2">
             {profileError}
@@ -185,52 +217,48 @@ export function MyAccountPanel({
         )}
         {profileSaved && !profileError && (
           <div className="mb-3 text-xs text-[var(--color-text-primary)] rounded bg-[var(--color-state-success-bg)] px-3 py-2">
-            Údaje boli uložené.
+            {t("account.saved")}
           </div>
         )}
         <div className="grid grid-cols-2 gap-3 mb-3">
           <div>
             <label htmlFor="ma-first" className={LABEL}>
-              Meno
+              {t("user.firstName")}
             </label>
             <Input id="ma-first" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
           </div>
           <div>
             <label htmlFor="ma-last" className={LABEL}>
-              Priezvisko
+              {t("user.lastName")}
             </label>
             <Input id="ma-last" value={lastName} onChange={(e) => setLastName(e.target.value)} />
           </div>
           <div>
             <label htmlFor="ma-email" className={LABEL}>
-              Email *
+              {t("user.emailRequired")}
             </label>
             <Input id="ma-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           {showTelegram && (
             <div>
               <label htmlFor="ma-tg" className={LABEL}>
-                Telegram chat_id
+                {t("user.telegram")}
               </label>
               <Input
                 id="ma-tg"
                 value={telegram}
                 onChange={(e) => setTelegram(e.target.value)}
-                placeholder="napr. 123456789 (notifikácie)"
+                placeholder={t("account.telegramPlaceholder")}
               />
             </div>
           )}
           {/* Login + access rights are NOT self-editable — shown for reference only. */}
-          <ReadOnly label="Používateľské meno" value={user.username} />
-          <ReadOnly label="Rola" value={roleLabel} />
+          <ReadOnly label={t("user.username")} value={user.username} />
+          <ReadOnly label={t("user.role")} value={roleLabel} />
         </div>
         {showTelegram && onTestTelegram && (
           <div className="mb-3 rounded-lg bg-[var(--color-surface-hover)] px-3 py-2 text-xs">
-            <p className="text-[var(--color-text-muted)] mb-2">
-              Ako začať dostávať upozornenia na Telegram: napíš nášmu botovi{" "}
-              <span className="font-mono">/start</span>, zisti svoje chat ID (napr. cez{" "}
-              <span className="font-mono">@userinfobot</span>), vlož ho vyššie, ulož a klikni „Poslať test".
-            </p>
+            <p className="text-[var(--color-text-muted)] mb-2">{t("account.telegramHowTo")}</p>
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -238,7 +266,7 @@ export function MyAccountPanel({
                 disabled={testBusy}
                 className="px-3 py-1 rounded-lg border border-[var(--color-border-default)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)] disabled:opacity-40 transition-colors"
               >
-                {testBusy ? "Posielam…" : "Poslať test"}
+                {testBusy ? t("account.telegramSending") : t("account.telegramTest")}
               </button>
               {testResult && (
                 <span
@@ -255,14 +283,40 @@ export function MyAccountPanel({
         )}
         <div className="flex justify-end">
           <button type="button" onClick={saveProfile} disabled={savingProfile} className={BTN}>
-            {savingProfile ? "Ukladám…" : "Uložiť"}
+            {savingProfile ? t("common.saving") : t("common.save")}
           </button>
         </div>
       </Card>
 
+      {/* ── DEV-393: the language the app speaks to this person ──────────────── */}
+      {onLanguageChange && offered.length > 1 && (
+        <Card className="p-4 mt-4">
+          <h3 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-1">{t("account.language")}</h3>
+          <p className="mb-3 text-xs text-[var(--color-text-muted)]">{t("account.languageHint")}</p>
+          {languageError && (
+            <div className="mb-3 text-xs text-[var(--color-state-error-fg)] rounded bg-[var(--color-state-error-bg)] px-3 py-2">
+              {languageError}
+            </div>
+          )}
+          <select
+            aria-label={t("account.language")}
+            value={language ?? current}
+            disabled={languageBusy}
+            onChange={(e) => void chooseLanguage(e.target.value as Language)}
+            className="w-full max-w-xs rounded border border-[var(--color-border-default)] bg-[var(--color-surface)] px-3 py-1.5 text-sm text-[var(--color-text-primary)] disabled:opacity-40"
+          >
+            {offered.map((l) => (
+              <option key={l.code} value={l.code} lang={l.code}>
+                {l.name}
+              </option>
+            ))}
+          </select>
+        </Card>
+      )}
+
       {/* ── Change my password ───────────────────────────────────────────────── */}
       <Card className="p-4 mt-4">
-        <h3 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-3">Zmena hesla</h3>
+        <h3 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-3">{t("account.passwordTitle")}</h3>
         {pwError && (
           <div className="mb-3 text-xs text-[var(--color-state-error-fg)] rounded bg-[var(--color-state-error-bg)] px-3 py-2">
             {pwError}
@@ -270,19 +324,19 @@ export function MyAccountPanel({
         )}
         {pwDone && !pwError && (
           <div className="mb-3 text-xs text-[var(--color-text-primary)] rounded bg-[var(--color-state-success-bg)] px-3 py-2">
-            Heslo bolo zmenené.
+            {t("account.passwordChanged")}
           </div>
         )}
         <div className="grid grid-cols-3 gap-3 mb-2">
           <div>
             <label htmlFor="ma-cur" className={LABEL}>
-              Súčasné heslo
+              {t("account.currentPassword")}
             </label>
             <Input id="ma-cur" type="password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} />
           </div>
           <div>
             <label htmlFor="ma-new" className={LABEL}>
-              Nové heslo
+              {t("password.new")}
             </label>
             <Input
               id="ma-new"
@@ -290,13 +344,13 @@ export function MyAccountPanel({
               value={newPw}
               onChange={(e) => setNewPw(e.target.value)}
               // DEV-296: an app that asks only for a non-empty password names no minimum.
-              placeholder={passwordMinLength > 1 ? `min. ${passwordMinLength} znakov` : undefined}
+              placeholder={passwordMinLength > 1 ? t("password.minPlaceholder", { count: passwordMinLength }) : undefined}
               invalid={pwTooShort}
             />
           </div>
           <div>
             <label htmlFor="ma-conf" className={LABEL}>
-              Zopakuj nové heslo
+              {t("account.repeatPassword")}
             </label>
             <Input
               id="ma-conf"
@@ -309,13 +363,13 @@ export function MyAccountPanel({
         </div>
         {pwTooShort && (
           <div className="mb-2 text-[10px] text-[var(--color-status-error)]">
-            Heslo musí mať aspoň {passwordMinLength} znakov.
+            {t("password.tooShort", { count: passwordMinLength })}
           </div>
         )}
-        {pwMismatch && <div className="mb-2 text-[10px] text-[var(--color-status-error)]">Heslá sa nezhodujú.</div>}
+        {pwMismatch && <div className="mb-2 text-[10px] text-[var(--color-status-error)]">{t("password.mismatch")}</div>}
         <div className="flex justify-end">
           <button type="button" onClick={changePassword} disabled={pwDisabled} className={BTN}>
-            {savingPw ? "Ukladám…" : "Zmeniť heslo"}
+            {savingPw ? t("common.saving") : t("account.changePassword")}
           </button>
         </div>
       </Card>

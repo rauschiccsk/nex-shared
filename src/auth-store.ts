@@ -90,6 +90,7 @@ export interface TokenLaunchAuthModule<T> {
 export type AuthModule<T, A extends unknown[]> = LoginAuthModule<T, A> | TokenLaunchAuthModule<T>;
 
 import { useEffect, useState } from "react";
+import { useT } from "./i18n";
 
 export function createAuthStore<T, A extends unknown[] = unknown[]>(
   config: AuthConfig<T, A> & { mode: "login" },
@@ -157,6 +158,7 @@ export function createAuthStore<T, A extends unknown[] = unknown[]>(
     });
 
     const useLogin = () => {
+      const t = useT();
       const login = useAuthStore((s) => s.login);
       const [loading, setLoading] = useState(false);
       const [error, setError] = useState<string | null>(null);
@@ -166,7 +168,7 @@ export function createAuthStore<T, A extends unknown[] = unknown[]>(
         try {
           await login(...args);
         } catch (e) {
-          setError(e instanceof Error ? e.message : "Login failed");
+          setError(e instanceof Error ? e.message : t("login.failed"));
           throw e;
         } finally {
           setLoading(false);

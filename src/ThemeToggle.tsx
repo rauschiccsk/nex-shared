@@ -1,3 +1,4 @@
+import { useT } from "./i18n";
 export interface ThemeToggleProps {
   /** Current theme. State is OWNED BY THE APP (Studio ThemeContext / Inbox uiStore). */
   theme: "light" | "dark";
@@ -57,14 +58,15 @@ const MoonIcon = () => (
 export function ThemeToggle({
   theme,
   onToggle,
-  toLightLabel = "Prepnúť na svetlú tému",
-  toDarkLabel = "Prepnúť na tmavú tému",
-  toLightTitle = "Svetlá téma",
-  toDarkTitle = "Tmavá téma",
+  toLightLabel,
+  toDarkLabel,
+  toLightTitle,
+  toDarkTitle,
 }: ThemeToggleProps) {
+  const t = useT();
   const isDark = theme === "dark";
-  const label = isDark ? toLightLabel : toDarkLabel;
-  const title = isDark ? toLightTitle : toDarkTitle;
+  const label = isDark ? (toLightLabel ?? t("theme.toLight")) : (toDarkLabel ?? t("theme.toDark"));
+  const title = isDark ? (toLightTitle ?? t("theme.light")) : (toDarkTitle ?? t("theme.dark"));
   return (
     <button
       type="button"

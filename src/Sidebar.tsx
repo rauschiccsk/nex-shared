@@ -4,6 +4,7 @@ import { CompactRowsContext, DensityContext } from "./DensityContext";
 import { ResizeHandle } from "./ResizeHandle";
 import { useRememberedSidebarWidth } from "./rememberedWidth";
 import { useShell } from "./ShellContext";
+import { useT } from "./i18n";
 
 /** The expanded width when the app sets none — the sidebar's width before v0.21.0 (14rem). */
 export const SIDEBAR_DEFAULT_WIDTH = 224;
@@ -76,9 +77,9 @@ export function Sidebar({
   logo,
   footer,
   children,
-  collapseTitle = "Zúžiť",
-  expandTitle = "Rozšíriť",
-  closeMenuTitle = "Zavrieť ponuku",
+  collapseTitle,
+  expandTitle,
+  closeMenuTitle,
   dense = false,
   compactRows = false,
   width,
@@ -86,9 +87,10 @@ export function Sidebar({
   minWidth = 180,
   maxWidth = 360,
   defaultWidth = SIDEBAR_DEFAULT_WIDTH,
-  resizeLabel = "Šírka bočného panela",
+  resizeLabel,
   rememberWidthFor,
 }: SidebarProps) {
+  const t = useT();
   const { narrow, closeMenu } = useShell();
   const rail = collapsed && !narrow;
   // While the edge is dragged the width follows the pointer here; the app hears it once, at the end.
@@ -127,8 +129,8 @@ export function Sidebar({
                 type="button"
                 onClick={closeMenu}
                 className="ml-auto flex items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)] transition-colors shrink-0 w-8 h-8"
-                title={closeMenuTitle}
-                aria-label={closeMenuTitle}
+                title={closeMenuTitle ?? t("sidebar.closeMenu")}
+                aria-label={closeMenuTitle ?? t("sidebar.closeMenu")}
               >
                 <IconClose />
               </button>
@@ -137,7 +139,7 @@ export function Sidebar({
                 type="button"
                 onClick={onToggleCollapse}
                 className={`flex items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)] transition-colors shrink-0 ${rail ? "w-8 h-8" : "w-6 h-6"}`}
-                title={rail ? expandTitle : collapseTitle}
+                title={rail ? (expandTitle ?? t("sidebar.expand")) : (collapseTitle ?? t("sidebar.collapse"))}
               >
                 <IconSidebarToggle />
               </button>
@@ -164,7 +166,7 @@ export function Sidebar({
                 setDragged(null);
                 if (w !== (ownWidth ?? defaultWidth)) changeWidth?.(w);
               }}
-              label={resizeLabel}
+              label={resizeLabel ?? t("sidebar.width")}
               className="absolute inset-y-0 right-0"
             />
           )}

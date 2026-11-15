@@ -934,7 +934,7 @@ interface SettingsShellProps {
      *  role coloring is an app concern, kept out of the role-agnostic kit). */
     headerRight?: ReactNode;
 }
-declare function SettingsShell({ config, currentUserRole, panels, title, headerRight, }: SettingsShellProps): react.JSX.Element;
+declare function SettingsShell({ config, currentUserRole, panels, title: titleProp, headerRight, }: SettingsShellProps): react.JSX.Element;
 
 interface SystemSettingsPanelProps {
     settings: SystemSettingRead[];
@@ -1067,22 +1067,227 @@ interface UsersPanelProps {
 }
 declare function UsersPanel({ users, roleOptions, canManage, fieldSchema, onCreate, onUpdate, onDelete, onChangePassword, onToggleActive, roleClass, rowActions, }: UsersPanelProps): react.JSX.Element;
 
-/**
- * MyAccountPanel — the shared "Moje konto" self-service account panel for the Settings → `konto` tab
- * (v0.15.1). It IS the Users-tab edit form, self-scoped: the logged-in user edits their OWN safe fields
- * (name, e-mail, Telegram id) and changes their OWN password. Login (username) + access rights (role) are
- * shown READ-ONLY — a user cannot change those about themselves; managing OTHER users (incl. role +
- * activation) stays in the admin-only Users tab.
- *
- * Role-agnostic kit (like UsersPanel): the parent supplies the Slovak role label + the two I/O callbacks
- * (no fetch here — the app maps them to PATCH /me + its change-password API with current-password
- * verification).
- */
-/** What the panel says when saving the profile was refused — the server's own sentence, or its general one (DEV-309). */
-declare function accountRefusal(err: unknown): string;
+declare const sk: {
+    "common.actions": string;
+    "common.cancel": string;
+    "common.close": string;
+    "common.delete": string;
+    "common.edit": string;
+    "common.loading": string;
+    "common.no": string;
+    "common.save": string;
+    "common.saved": string;
+    "common.saving": string;
+    "common.yes": string;
+    "account.changePassword": string;
+    "account.currentPassword": string;
+    "account.details": string;
+    "account.emailRequired": string;
+    "account.language": string;
+    "account.languageFailed": string;
+    "account.languageHint": string;
+    "account.passwordChanged": string;
+    "account.passwordFailed": string;
+    "account.passwordTitle": string;
+    "account.repeatPassword": string;
+    "account.saved": string;
+    "account.saveFailed": string;
+    "account.telegramHowTo": string;
+    "account.telegramPlaceholder": string;
+    "account.telegramSending": string;
+    "account.telegramTest": string;
+    "account.telegramTestFailed": string;
+    "agents.default": string;
+    "agents.description": string;
+    "agents.effort": string;
+    "agents.effort.low": string;
+    "agents.effort.medium": string;
+    "agents.effort.high": string;
+    "agents.effort.xhigh": string;
+    "agents.effort.max": string;
+    "agents.helperDefault": string;
+    "agents.helperHint": string;
+    "agents.helperModel": string;
+    "agents.model": string;
+    "agents.title": string;
+    "api.requestFailed": string;
+    "code.copied": string;
+    "code.copy": string;
+    "login.email": string;
+    "login.failed": string;
+    "login.loading": string;
+    "login.password": string;
+    "login.submit": string;
+    "login.username": string;
+    "password.minPlaceholder": {
+        one: string;
+        few: string;
+        other: string;
+    };
+    "password.mismatch": string;
+    "password.new": string;
+    "password.tooShort": {
+        one: string;
+        few: string;
+        other: string;
+    };
+    "password.tooShortCount": {
+        one: string;
+        few: string;
+        other: string;
+    };
+    "resize.hint": string;
+    "sessions.clearFilter": string;
+    "sessions.col.created": string;
+    "sessions.col.id": string;
+    "sessions.col.lastSeen": string;
+    "sessions.col.tokenVersion": string;
+    "sessions.col.user": string;
+    "sessions.confirmRevoke": string;
+    "sessions.description": string;
+    "sessions.filteredBy": string;
+    "sessions.none": string;
+    "sessions.revoke": string;
+    "sessions.revokeFailed": string;
+    "sessions.revokeFailedBecause": string;
+    "sessions.title": string;
+    "settings.tab.account": string;
+    "settings.tab.agents": string;
+    "settings.tab.sessions": string;
+    "settings.tab.system": string;
+    "settings.tab.users": string;
+    "settings.title": string;
+    "sidebar.closeMenu": string;
+    "sidebar.collapse": string;
+    "sidebar.expand": string;
+    "sidebar.width": string;
+    "system.appliesSoon": string;
+    "system.changed": string;
+    "system.choicesUnavailable": string;
+    "system.defaultValue": string;
+    "system.description": string;
+    "system.noPermission": string;
+    "system.notChosen": string;
+    "system.notOffered": string;
+    "system.otherCategory": string;
+    "system.readOnlyHint": string;
+    "system.title": string;
+    "system.unknownError": string;
+    "table.empty": string;
+    "theme.dark": string;
+    "theme.light": string;
+    "theme.toDark": string;
+    "theme.toLight": string;
+    "updates.none": string;
+    "updates.subtitle": string;
+    "updates.subtitleFor": string;
+    "updates.title": string;
+    "user.active": string;
+    "user.email": string;
+    "user.emailRequired": string;
+    "user.firstName": string;
+    "user.lastName": string;
+    "user.logout": string;
+    "user.role": string;
+    "user.telegram": string;
+    "user.username": string;
+    "userForm.create": string;
+    "userForm.createTitle": string;
+    "userForm.creating": string;
+    "userForm.editTitle": string;
+    "userForm.emailPlaceholder": string;
+    "userForm.firstNamePlaceholder": string;
+    "userForm.lastNamePlaceholder": string;
+    "userForm.passwordKeep": string;
+    "userForm.passwordRequired": string;
+    "userForm.telegramPlaceholder": string;
+    "userForm.usernameFixed": string;
+    "userForm.usernamePlaceholder": string;
+    "users.activate": string;
+    "users.active": string;
+    "users.allRoles": string;
+    "users.anyState": string;
+    "users.col.name": string;
+    "users.col.state": string;
+    "users.confirmDelete": string;
+    "users.count": {
+        one: string;
+        few: string;
+        other: string;
+    };
+    "users.createFailed": string;
+    "users.createFailedBecause": string;
+    "users.deactivate": string;
+    "users.deleteFailed": string;
+    "users.deleteFailedBecause": string;
+    "users.inactive": string;
+    "users.new": string;
+    "users.none": string;
+    "users.onlyActive": string;
+    "users.onlyInactive": string;
+    "users.saveFailed": string;
+    "users.saveFailedBecause": string;
+    "users.title": string;
+};
+type MessageKey = keyof typeof sk;
+
+/** A message — one text, or its plural forms by the language's plural category (Intl.PluralRules; DEV-393). */
+type Message = string | {
+    one?: string;
+    few?: string;
+    many?: string;
+    other: string;
+};
+
+/** A language a catalog exists for. */
+type Language = "sk" | "hu";
+/** Every language the library speaks: its code, its own name (as its speakers write it) and its locale. */
+declare const LANGUAGES: readonly {
+    code: Language;
+    name: string;
+    locale: string;
+}[];
+/** The language of a person who has not chosen one, and of an app that says nothing. */
+declare const DEFAULT_LANGUAGE: Language;
+/** An app's own texts, per language — merged over the library's (the app's key wins). */
+type AppMessages = Partial<Record<Language, Record<string, Message>>>;
+/** Parameters a message fills in: ``{name}`` in the text; ``count`` also picks a plural form. */
+type MessageParams = Record<string, string | number>;
+/** Translate a key — the library's ``MessageKey`` or an app's own key. */
+type Translate = (key: MessageKey | (string & {}), params?: MessageParams) => string;
+/** Whether ``value`` names a language the library speaks. */
+declare function isLanguage(value: unknown): value is Language;
+/** The locale of a language (for Intl dates and numbers). */
+declare function localeOf(language: Language): string;
+/** A translator for one language — the app's messages over the library's, then Slovak, then the key itself. */
+declare function createTranslator(language: Language, messages?: AppMessages): Translate;
+/** The translator of the language the app last told the library (Slovak before any provider rendered). */
+declare function currentTranslator(): Translate;
+interface I18nProviderProps {
+    /** The person's language; an unknown value falls back to Slovak. */
+    language: Language | string | null | undefined;
+    /** The app's own texts, per language. */
+    messages?: AppMessages;
+    children: ReactNode;
+}
+/** Tell every component under it the person's language (and the app's own texts). */
+declare function I18nProvider({ language, messages, children }: I18nProviderProps): react.JSX.Element;
+/** The translator of the current language. */
+declare function useT(): Translate;
+/** The current language and its locale. */
+declare function useLanguage(): {
+    language: Language;
+    locale: string;
+};
+/** A date with its time, as the language writes it. */
+declare function formatDateTime(value: Date | string | number, locale: string): string;
+
+/** What the panel says when saving the profile was refused — the server's own sentence, or its general one (DEV-309)
+ *  in the person's language (DEV-393). */
+declare function accountRefusal(err: unknown, t?: Translate): string;
 /** What the panel says when changing the password was refused — the server's own sentence („Súčasné heslo je
  *  nesprávne.“, „Nové heslo musí byť iné ako súčasné.“), or a general one that guesses no reason (DEV-309). */
-declare function passwordRefusal(err: unknown): string;
+declare function passwordRefusal(err: unknown, t?: Translate): string;
 interface MyAccountUser {
     username: string;
     /** Opaque per-app role id (the kit never compares against literals — the app passes `roleLabel`). */
@@ -1095,7 +1300,7 @@ interface MyAccountUser {
 interface MyAccountPanelProps {
     /** The current (logged-in) user. */
     user: MyAccountUser;
-    /** Slovak display label for `user.role` (role-agnostic kit — the app owns role naming). */
+    /** Display label for `user.role`, in the person's language (role-agnostic kit — the app owns role naming). */
     roleLabel: string;
     /** Persist the safe profile fields. The app maps this to PATCH /me. A rejection surfaces as the error — the
      *  server's own sentence when the rejection is an `ApiError` carrying one (v0.32.0), else a general one. */
@@ -1120,8 +1325,16 @@ interface MyAccountPanelProps {
     /** v0.26.0 (DEV-251) — `false` for an app that sends nothing to Telegram: the field and its test are left out and
      *  `onSaveProfile` passes the stored chat_id back unchanged. Default `true`, as the cockpit has it. */
     telegram?: boolean;
+    /** DEV-393 — the languages the app offers; with more than one and `onLanguageChange`, the panel lets the person
+     *  choose theirs. */
+    languages?: readonly Language[];
+    /** The person's language now. */
+    language?: Language;
+    /** Keep the person's choice (the app stores it with the person and re-renders in it). A rejection surfaces as the
+     *  server's own sentence, else a general one. */
+    onLanguageChange?: (language: Language) => Promise<void> | void;
 }
-declare function MyAccountPanel({ user, roleLabel, onSaveProfile, onChangePassword, onTestTelegram, passwordMinLength, telegram: showTelegram, }: MyAccountPanelProps): react.JSX.Element;
+declare function MyAccountPanel({ user, roleLabel, onSaveProfile, onChangePassword, onTestTelegram, passwordMinLength, telegram: showTelegram, languages, language, onLanguageChange, }: MyAccountPanelProps): react.JSX.Element;
 
 interface SessionsPanelProps {
     sessions: UserSessionRead[];
@@ -1202,4 +1415,4 @@ declare function rememberLaunchWindow(win?: LaunchWindow, storage?: PlacementSto
 /** A placement that fits on the screen the window is on now — a screen may be smaller than the one it was left on. */
 declare function fitToScreen(placement: WindowPlacement, screen: LaunchWindow["screen"]): WindowPlacement;
 
-export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, CompactRowsContext, DataTable, type DataTableAlign, type DataTableColumn, type DataTableProps, DensityContext, FormActions, type FormActionsProps, FormField, type FormFieldProps, FormGrid, type FormGridProps, Header, type HeaderProps, type HttpMethod, IconButton, type IconButtonProps, Input, type InputProps, LAUNCH_WINDOW_PREFIX, LAUNCH_WINDOW_SAVE_DELAY_MS, LAUNCH_WINDOW_STORAGE_KEY, type LaunchWindow, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, MyAccountPanel, type MyAccountPanelProps, type MyAccountUser, NavIcon, type NavIconProps, NavItem, type NavItemProps, Page, type PageProps, type PageWidth, type PlacementStorage, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, ResizeHandle, type ResizeHandleProps, SIDEBAR_DEFAULT_WIDTH, SIDEBAR_WIDTH_KEY_PREFIX, SectionDivider, SectionLabel, type SectionLabelProps, Select, type SelectProps, type ServerChange, SessionsPanel, type SessionsPanelProps, type SettingChoice, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, ShellContext, type ShellState, Sidebar, type SidebarProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, WIDE_SCREEN_QUERY, type WindowPlacement, accountRefusal, createApiClient, createAuthStore, fitToScreen, onServerChange, passwordRefusal, readRememberedWidth, refusalSentence, registerAuthCallback, rememberLaunchWindow, rememberWidth, useCompactRows, useDense, useRememberedSidebarWidth, useShell, useWideScreen };
+export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, type AppMessages, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, CompactRowsContext, DEFAULT_LANGUAGE, DataTable, type DataTableAlign, type DataTableColumn, type DataTableProps, DensityContext, FormActions, type FormActionsProps, FormField, type FormFieldProps, FormGrid, type FormGridProps, Header, type HeaderProps, type HttpMethod, I18nProvider, type I18nProviderProps, IconButton, type IconButtonProps, Input, type InputProps, LANGUAGES, LAUNCH_WINDOW_PREFIX, LAUNCH_WINDOW_SAVE_DELAY_MS, LAUNCH_WINDOW_STORAGE_KEY, type Language, type LaunchWindow, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, type Message, type MessageKey, type MessageParams, MyAccountPanel, type MyAccountPanelProps, type MyAccountUser, NavIcon, type NavIconProps, NavItem, type NavItemProps, Page, type PageProps, type PageWidth, type PlacementStorage, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, ResizeHandle, type ResizeHandleProps, SIDEBAR_DEFAULT_WIDTH, SIDEBAR_WIDTH_KEY_PREFIX, SectionDivider, SectionLabel, type SectionLabelProps, Select, type SelectProps, type ServerChange, SessionsPanel, type SessionsPanelProps, type SettingChoice, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, ShellContext, type ShellState, Sidebar, type SidebarProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, type Translate, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, WIDE_SCREEN_QUERY, type WindowPlacement, accountRefusal, createApiClient, createAuthStore, createTranslator, currentTranslator, fitToScreen, formatDateTime, isLanguage, localeOf, onServerChange, passwordRefusal, readRememberedWidth, refusalSentence, registerAuthCallback, rememberLaunchWindow, rememberWidth, useCompactRows, useDense, useLanguage, useRememberedSidebarWidth, useShell, useT, useWideScreen };

@@ -18,6 +18,18 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.36.0
+- `[nové]` **Každý text knižnice v jazyku používateľa — slovenčina a maďarčina.** Texty obrazoviek (Používatelia, Moje
+  konto, Relácie, Agenti, Systémové nastavenia, prihlásenie, Aktualizácie, bočný panel a ďalšie) sú v katalógoch jazykov
+  (`src/locales`); aplikácia povie knižnici jazyk používateľa cez `<I18nProvider language=…>` a môže do tých istých
+  katalógov pridať vlastné texty (`messages`, `useT`). Dátumy sa píšu podľa jazyka, počty majú správne množné číslo.
+  V „Moje konto“ si používateľ zvolí jazyk, keď mu ho aplikácia ponúkne (`languages`, `onLanguageChange`). Bez poskytovateľa
+  jazyka hovorí knižnica po slovensky ako doteraz. Stráž `test/no-text-outside-catalogs.test.mjs` nepustí text napísaný
+  natvrdo do súčasti a chýbajúci preklad sa neskompiluje (DEV-393 — viacjazyčné aplikácie, jazyk si volí každý
+  používateľ; Manažér na smer: „Súhlasím“).
+- `[oprava]` Neúspešná požiadavka a neúspešné prihlásenie už nehlásia anglické „Request failed“ / „Login failed“, ale
+  vetu v jazyku používateľa.
+
 ## v0.35.0
 - `[nové]` **Stránka Aktualizácie môže zabrať celú plochu vedľa menu** (`<ReleaseNotes width="full">`). Kokpit NEX Studio
   Visual využíva na každej stránke aspoň 90 % plochy (DEV-332; Director 09.11.2026: „chcel by som aby obrazovka bola

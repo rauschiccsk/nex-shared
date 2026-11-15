@@ -146,3 +146,26 @@ export {
   LAUNCH_WINDOW_SAVE_DELAY_MS,
 } from "./launchWindow";
 export type { WindowPlacement, LaunchWindow, PlacementStorage } from "./launchWindow";
+
+// ── DEV-393: the person's language in every text of the library ──
+export {
+  createTranslator,
+  currentTranslator,
+  DEFAULT_LANGUAGE,
+  formatDateTime,
+  I18nProvider,
+  isLanguage,
+  LANGUAGES,
+  localeOf,
+  useLanguage,
+  useT,
+} from "./i18n";
+export type {
+  AppMessages,
+  I18nProviderProps,
+  Language,
+  Message,
+  MessageKey,
+  MessageParams,
+  Translate,
+} from "./i18n";

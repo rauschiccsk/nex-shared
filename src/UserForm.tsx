@@ -21,6 +21,7 @@ import { Input } from "./Input";
 import { Select } from "./Select";
 import { Card } from "./Card";
 import type { UserRead, UserFieldSchema } from "./settings-types";
+import { useT } from "./i18n";
 
 /** Collected form values handed to the parent on submit. */
 export interface UserFormData {
@@ -82,6 +83,7 @@ export function UserForm({
   onSubmit,
   onCancel,
 }: UserFormProps) {
+  const t = useT();
   const isEdit = mode === "edit";
   const minLen = fieldSchema.passwordMinLength;
   const [data, setData] = useState<UserFormData>(() =>
@@ -109,11 +111,11 @@ export function UserForm({
 
   const submitLabel = isEdit
     ? submitting
-      ? "Ukladám…"
-      : "Uložiť"
+      ? t("common.saving")
+      : t("common.save")
     : submitting
-      ? "Vytváram…"
-      : "Vytvoriť";
+      ? t("userForm.creating")
+      : t("userForm.create");
 
   function update<K extends keyof UserFormData>(key: K, value: UserFormData[K]) {
     setData((prev) => ({ ...prev, [key]: value }));
@@ -129,11 +131,11 @@ export function UserForm({
       <h3 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-3">
         {isEdit ? (
           <>
-            Upraviť používateľa ·{" "}
+            {t("userForm.editTitle")} ·{" "}
             <span className="font-mono text-[var(--color-text-secondary)]">{initial?.username}</span>
           </>
         ) : (
-          "Vytvoriť používateľa"
+          t("userForm.createTitle")
         )}
       </h3>
 
@@ -147,24 +149,24 @@ export function UserForm({
         {fieldSchema.names && (
           <>
             <div>
-              <label htmlFor="uf-first-name" className="block text-xs text-[var(--color-text-muted)] mb-1">Meno</label>
+              <label htmlFor="uf-first-name" className="block text-xs text-[var(--color-text-muted)] mb-1">{t("user.firstName")}</label>
               <Input
                 id="uf-first-name"
                 type="text"
                 value={data.first_name}
                 onChange={(e) => update("first_name", e.target.value)}
-                placeholder="napr. Tibor"
+                placeholder={t("userForm.firstNamePlaceholder")}
               />
             </div>
 
             <div>
-              <label htmlFor="uf-last-name" className="block text-xs text-[var(--color-text-muted)] mb-1">Priezvisko</label>
+              <label htmlFor="uf-last-name" className="block text-xs text-[var(--color-text-muted)] mb-1">{t("user.lastName")}</label>
               <Input
                 id="uf-last-name"
                 type="text"
                 value={data.last_name}
                 onChange={(e) => update("last_name", e.target.value)}
-                placeholder="napr. Rausch"
+                placeholder={t("userForm.lastNamePlaceholder")}
               />
             </div>
           </>
@@ -173,7 +175,7 @@ export function UserForm({
         {fieldSchema.username && (
           <div>
             <label htmlFor="uf-username" className="block text-xs text-[var(--color-text-muted)] mb-1">
-              Používateľské meno {isEdit ? "" : "*"}
+              {t("user.username")} {isEdit ? "" : "*"}
             </label>
             <input
               id="uf-username"
@@ -181,8 +183,8 @@ export function UserForm({
               value={data.username}
               onChange={(e) => update("username", e.target.value)}
               disabled={isEdit}
-              title={isEdit ? "Používateľské meno sa po vytvorení nemení (zachováva login stabilitu)." : undefined}
-              placeholder="napr. tibi"
+              title={isEdit ? t("userForm.usernameFixed") : undefined}
+              placeholder={t("userForm.usernamePlaceholder")}
               className={`w-full border rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-primary-500 ${
                 isEdit
                   ? "bg-[var(--color-surface-hover)] border-[var(--color-border-default)] text-[var(--color-text-muted)] cursor-not-allowed"
@@ -194,13 +196,13 @@ export function UserForm({
 
         {emailShown && (
           <div>
-            <label htmlFor="uf-email" className="block text-xs text-[var(--color-text-muted)] mb-1">Email *</label>
+            <label htmlFor="uf-email" className="block text-xs text-[var(--color-text-muted)] mb-1">{t("user.emailRequired")}</label>
             <Input
               id="uf-email"
               type="email"
               value={data.email}
               onChange={(e) => update("email", e.target.value)}
-              placeholder="napr. tibi@isnex.ai"
+              placeholder={t("userForm.emailPlaceholder")}
             />
           </div>
         )}
@@ -209,11 +211,11 @@ export function UserForm({
           <label htmlFor="uf-password" className="block text-xs text-[var(--color-text-muted)] mb-1">
             {isEdit ? (
               <>
-                Nové heslo{" "}
-                <span className="text-[var(--color-text-muted)]">(nechaj prázdne ak nemeniť)</span>
+                {t("password.new")}{" "}
+                <span className="text-[var(--color-text-muted)]">{t("userForm.passwordKeep")}</span>
               </>
             ) : (
-              "Heslo *"
+              t("userForm.passwordRequired")
             )}
           </label>
           <Input
@@ -222,18 +224,18 @@ export function UserForm({
             value={data.password}
             onChange={(e) => update("password", e.target.value)}
             // DEV-296: an app that asks only for a non-empty password names no minimum.
-            placeholder={minLen > 1 ? `min. ${minLen} znakov` : undefined}
+            placeholder={minLen > 1 ? t("password.minPlaceholder", { count: minLen }) : undefined}
             invalid={passwordTooShort}
           />
           {passwordTooShort && (
             <div className="mt-1 text-[10px] text-[var(--color-status-error)]">
-              Heslo musí mať aspoň {minLen} znakov ({data.password.length}/{minLen}).
+              {t("password.tooShortCount", { count: minLen, length: data.password.length })}
             </div>
           )}
         </div>
 
         <div>
-          <label htmlFor="uf-role" className="block text-xs text-[var(--color-text-muted)] mb-1">Rola</label>
+          <label htmlFor="uf-role" className="block text-xs text-[var(--color-text-muted)] mb-1">{t("user.role")}</label>
           <Select
             id="uf-role"
             value={data.role}
@@ -250,14 +252,14 @@ export function UserForm({
         {fieldSchema.telegram && (
           <div>
             <label htmlFor="uf-telegram" className="block text-xs text-[var(--color-text-muted)] mb-1">
-              Telegram chat_id
+              {t("user.telegram")}
             </label>
             <Input
               id="uf-telegram"
               type="text"
               value={data.telegram_chat_id}
               onChange={(e) => update("telegram_chat_id", e.target.value)}
-              placeholder="napr. 123456789 (notifikácie agenta)"
+              placeholder={t("userForm.telegramPlaceholder")}
             />
           </div>
         )}
@@ -272,7 +274,7 @@ export function UserForm({
                 onChange={(e) => update("is_active", e.target.checked)}
                 className="rounded bg-[var(--color-surface)] border-[var(--color-border-default)]"
               />
-              Aktívny
+              {t("user.active")}
             </label>
           </div>
         )}
@@ -285,7 +287,7 @@ export function UserForm({
             onClick={onCancel}
             className="px-3 py-1.5 text-xs text-[var(--color-text-secondary)] border border-[var(--color-border-default)] rounded-lg hover:bg-[var(--color-surface-hover)] transition-colors"
           >
-            Zrušiť
+            {t("common.cancel")}
           </button>
         )}
         <button

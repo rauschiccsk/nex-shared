@@ -13,6 +13,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { UserForm, type UserFormData } from "./UserForm";
 import type { UserFieldSchema, UserRead } from "./settings-types";
+import { useT } from "./i18n";
 
 export interface UsersPanelProps {
   users: UserRead[];
@@ -52,6 +53,7 @@ export function UsersPanel({
   roleClass,
   rowActions,
 }: UsersPanelProps) {
+  const t = useT();
   const roleCls = roleClass ?? (() => "");
   // DEV-251: the role by its name („Správca“), not its code; a role the app did not name stays as it is.
   const roleName = (role: string) => roleOptions.find((o) => o.value === role)?.label ?? role;
@@ -95,8 +97,8 @@ export function UsersPanel({
     } catch (e) {
       const msg =
         e instanceof Error && e.message
-          ? `Nepodarilo sa vytvoriť používateľa: ${e.message}`
-          : "Nepodarilo sa vytvoriť používateľa.";
+          ? t("users.createFailedBecause", { reason: e.message })
+          : t("users.createFailed");
       setCreateError(msg);
     } finally {
       setCreating(false);
@@ -118,8 +120,8 @@ export function UsersPanel({
     } catch (e) {
       const msg =
         e instanceof Error && e.message
-          ? `Nepodarilo sa uložiť zmeny: ${e.message}`
-          : "Nepodarilo sa uložiť zmeny.";
+          ? t("users.saveFailedBecause", { reason: e.message })
+          : t("users.saveFailed");
       setEditError(msg);
     } finally {
       setEditing(false);
@@ -137,8 +139,8 @@ export function UsersPanel({
       // message + the soft-disable hint.
       const msg =
         e instanceof Error && e.message
-          ? `Nedá sa vymazať: ${e.message}. Skús miesto toho deaktivovať.`
-          : "Nedá sa vymazať. Skús miesto toho deaktivovať.";
+          ? t("users.deleteFailedBecause", { reason: e.message })
+          : t("users.deleteFailed");
       setDeleteError(msg);
       setConfirmingDeleteId(null);
     } finally {
@@ -156,7 +158,7 @@ export function UsersPanel({
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-semibold text-[var(--color-text-secondary)]">Správa používateľov</h2>
+        <h2 className="text-sm font-semibold text-[var(--color-text-secondary)]">{t("users.title")}</h2>
         {canManage && (
           <button
             type="button"
@@ -167,7 +169,7 @@ export function UsersPanel({
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Nový používateľ
+            {t("users.new")}
           </button>
         )}
       </div>
@@ -179,7 +181,7 @@ export function UsersPanel({
           onChange={(e) => setRoleFilter(e.target.value)}
           className="bg-[var(--color-surface)] border border-[var(--color-border-default)] text-xs text-[var(--color-text-secondary)] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-primary-500"
         >
-          <option value="">Všetky role</option>
+          <option value="">{t("users.allRoles")}</option>
           {roleOptions.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
@@ -191,12 +193,12 @@ export function UsersPanel({
           onChange={(e) => setActiveFilter(e.target.value)}
           className="bg-[var(--color-surface)] border border-[var(--color-border-default)] text-xs text-[var(--color-text-secondary)] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-primary-500"
         >
-          <option value="">Akýkoľvek stav</option>
-          <option value="active">Len aktívni</option>
-          <option value="inactive">Len neaktívni</option>
+          <option value="">{t("users.anyState")}</option>
+          <option value="active">{t("users.onlyActive")}</option>
+          <option value="inactive">{t("users.onlyInactive")}</option>
         </select>
         <span className="ml-auto text-xs text-[var(--color-text-muted)]">
-          {filteredUsers.length} používateľov
+          {t("users.count", { count: filteredUsers.length })}
         </span>
       </div>
 
@@ -205,12 +207,12 @@ export function UsersPanel({
         <table className="w-full text-sm">
           <thead className="bg-[var(--color-surface-hover)]">
             <tr className="text-[10px] uppercase tracking-widest text-[var(--color-text-muted)]">
-              {showNames && <th className="px-4 py-2.5 text-left font-semibold">Meno</th>}
-              {showUsername && <th className="px-4 py-2.5 text-left font-semibold">Používateľské meno</th>}
-              <th className="px-4 py-2.5 text-left font-semibold">Email</th>
-              <th className="px-4 py-2.5 text-left font-semibold">Rola</th>
-              <th className="px-4 py-2.5 text-left font-semibold">Stav</th>
-              <th className="px-4 py-2.5 text-right font-semibold">Akcie</th>
+              {showNames && <th className="px-4 py-2.5 text-left font-semibold">{t("users.col.name")}</th>}
+              {showUsername && <th className="px-4 py-2.5 text-left font-semibold">{t("user.username")}</th>}
+              <th className="px-4 py-2.5 text-left font-semibold">{t("user.email")}</th>
+              <th className="px-4 py-2.5 text-left font-semibold">{t("user.role")}</th>
+              <th className="px-4 py-2.5 text-left font-semibold">{t("users.col.state")}</th>
+              <th className="px-4 py-2.5 text-right font-semibold">{t("common.actions")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--color-border-default)]">
@@ -233,9 +235,9 @@ export function UsersPanel({
                   </td>
                   <td className="px-4 py-3">
                     {u.is_active ? (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-state-success-bg)] border border-[var(--color-state-success-bg)] text-[var(--color-state-success-fg)]">aktívny</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-state-success-bg)] border border-[var(--color-state-success-bg)] text-[var(--color-state-success-fg)]">{t("users.active")}</span>
                     ) : (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-state-warning-bg)] border border-[var(--color-state-warning-bg)] text-[var(--color-state-warning-fg)]">neaktívny</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-state-warning-bg)] border border-[var(--color-state-warning-bg)] text-[var(--color-state-warning-fg)]">{t("users.inactive")}</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -247,14 +249,14 @@ export function UsersPanel({
                       )
                     ) : confirmingDeleteId === u.id ? (
                       <div className="flex items-center justify-end gap-2 text-xs">
-                        <span className="text-[var(--color-text-secondary)]">Naozaj vymazať?</span>
+                        <span className="text-[var(--color-text-secondary)]">{t("users.confirmDelete")}</span>
                         <button
                           type="button"
                           onClick={() => handleConfirmDelete(u.id)}
                           disabled={deleting}
                           className="px-2 py-0.5 text-[var(--color-status-error)] border border-[var(--color-state-error-bg)] rounded hover:bg-[var(--color-state-error-bg)] disabled:opacity-40"
                         >
-                          Áno
+                          {t("common.yes")}
                         </button>
                         <button
                           type="button"
@@ -262,7 +264,7 @@ export function UsersPanel({
                           disabled={deleting}
                           className="px-2 py-0.5 text-[var(--color-text-secondary)] border border-[var(--color-border-default)] rounded hover:bg-[var(--color-surface-hover)]"
                         >
-                          Nie
+                          {t("common.no")}
                         </button>
                       </div>
                     ) : (
@@ -272,7 +274,7 @@ export function UsersPanel({
                         <button
                           type="button"
                           onClick={() => { setEditingUser(u); setEditError(""); setShowNewForm(false); setConfirmingDeleteId(null); }}
-                          title="Upraviť"
+                          title={t("common.edit")}
                           className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -283,7 +285,7 @@ export function UsersPanel({
                         <button
                           type="button"
                           onClick={() => { setConfirmingDeleteId(u.id); setDeleteError(""); }}
-                          title="Vymazať"
+                          title={t("common.delete")}
                           className="text-[var(--color-text-muted)] hover:text-[var(--color-status-error)] transition-colors"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -296,7 +298,7 @@ export function UsersPanel({
                           onClick={() => handleToggle(u)}
                           className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors"
                         >
-                          {u.is_active ? "Deaktivovať" : "Aktivovať"}
+                          {u.is_active ? t("users.deactivate") : t("users.activate")}
                         </button>
                       </div>
                     )}
@@ -306,7 +308,7 @@ export function UsersPanel({
             })}
             {filteredUsers.length === 0 && (
               <tr>
-                <td colSpan={colCount} className="px-4 py-6 text-center text-xs text-[var(--color-text-muted)]">Žiadni používatelia</td>
+                <td colSpan={colCount} className="px-4 py-6 text-center text-xs text-[var(--color-text-muted)]">{t("users.none")}</td>
               </tr>
             )}
           </tbody>

@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Input } from "./Input";
 import { Button } from "./Button";
+import { useT } from "./i18n";
 
 /** Credentials collected by the form. `username` carries the identity value
  *  (a username or, in `email` mode, the email string). */
@@ -24,7 +25,7 @@ export interface LoginFormProps {
   autoFocus?: boolean;
   /** Show the password visibility toggle. Default `true`. */
   showPasswordToggle?: boolean;
-  // Text (NEX-Slovak defaults; all overridable for other languages):
+  // Text — by default in the person's language (DEV-393); an app may still name its own:
   identityLabel?: string;
   passwordLabel?: string;
   submitLabel?: string;
@@ -44,18 +45,19 @@ export function LoginForm({
   autoFocus = false,
   showPasswordToggle = true,
   identityLabel,
-  passwordLabel = "Heslo",
-  submitLabel = "Prihlásiť sa",
-  loadingLabel = "Prihlasovanie…",
+  passwordLabel,
+  submitLabel,
+  loadingLabel,
   identityPlaceholder,
   passwordPlaceholder = "••••••••",
 }: LoginFormProps) {
+  const t = useT();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
 
   const isEmail = fieldLabel === "email";
-  const idLabel = identityLabel ?? (isEmail ? "Email" : "Používateľské meno");
+  const idLabel = identityLabel ?? (isEmail ? t("login.email") : t("login.username"));
   const disabled = loading || !username.trim() || !password.trim();
 
   const handleSubmit = (e: FormEvent) => {
@@ -91,7 +93,7 @@ export function LoginForm({
       {/* Password */}
       <div>
         <label htmlFor="login-password" className={LABEL_CLS}>
-          {passwordLabel}
+          {passwordLabel ?? t("login.password")}
         </label>
         <div className="relative">
           <Input
@@ -141,10 +143,10 @@ export function LoginForm({
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
-            {loadingLabel}
+            {loadingLabel ?? t("login.loading")}
           </>
         ) : (
-          submitLabel
+          (submitLabel ?? t("login.submit"))
         )}
       </Button>
     </form>
