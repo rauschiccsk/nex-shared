@@ -1240,7 +1240,7 @@ type Message = string | {
 };
 
 /** A language a catalog exists for. */
-type Language = "sk" | "hu";
+type Language = "sk" | "hu" | "en";
 /** Every language the library speaks: its code, its own name (as its speakers write it) and its locale. */
 declare const LANGUAGES: readonly {
     code: Language;

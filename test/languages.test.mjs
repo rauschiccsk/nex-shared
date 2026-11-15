@@ -67,13 +67,26 @@ const SCREENS = {
 const inLanguage = (language, screen) => renderToStaticMarkup(h(I18nProvider, { language }, screen()));
 const text = (html) => html.replace(/<[^>]+>/g, " ").replace(/&[a-z]+;/g, " ");
 
-for (const [name, screen] of Object.entries(SCREENS)) {
-  test(`${name} speaks Hungarian to a person who chose it — no Slovak word left`, () => {
-    const said = text(inLanguage("hu", screen)) + " " + [...inLanguage("hu", screen).matchAll(/(?:placeholder|title|aria-label)="([^"]*)"/g)].map((m) => m[1]).join(" ");
-    assert.doesNotMatch(said, SLOVAK_ONLY, `${name}: ${said.match(new RegExp(".{0,30}" + SLOVAK_ONLY.source + ".{0,30}", "i"))?.[0]}`);
-    assert.notEqual(text(inLanguage("hu", screen)), text(inLanguage("sk", screen)), `${name} said the same in both`);
-    assert.ok(text(inLanguage("hu", screen)).trim().length > 10, `${name} drew nothing`);
-  });
+// DEV-397: every language but Slovak — the library's own list, so a language added there is guarded here too.
+const OTHER_LANGUAGES = LANGUAGES.map((l) => l.code).filter((code) => code !== "sk");
+
+test("the library speaks Slovak, Hungarian and English", () => {
+  assert.deepEqual(LANGUAGES.map((l) => [l.code, l.name, l.locale]), [
+    ["sk", "Slovenčina", "sk-SK"],
+    ["hu", "Magyar", "hu-HU"],
+    ["en", "English", "en-GB"],
+  ]);
+});
+
+for (const language of OTHER_LANGUAGES) {
+  for (const [name, screen] of Object.entries(SCREENS)) {
+    test(`${name} speaks ${language} to a person who chose it — no Slovak word left`, () => {
+      const said = text(inLanguage(language, screen)) + " " + [...inLanguage(language, screen).matchAll(/(?:placeholder|title|aria-label)="([^"]*)"/g)].map((m) => m[1]).join(" ");
+      assert.doesNotMatch(said, SLOVAK_ONLY, `${name}: ${said.match(new RegExp(".{0,30}" + SLOVAK_ONLY.source + ".{0,30}", "i"))?.[0]}`);
+      assert.notEqual(text(inLanguage(language, screen)), text(inLanguage("sk", screen)), `${name} said the same in both`);
+      assert.ok(text(inLanguage(language, screen)).trim().length > 10, `${name} drew nothing`);
+    });
+  }
 }
 
 test("without a provider, and in Slovak, every screen says what it always said", () => {
@@ -90,15 +103,24 @@ test("the Hungarian screens say it in Hungarian", () => {
   assert.match(inLanguage("hu", SCREENS.ReleaseNotes), /Frissítések/);
 });
 
-test("both catalogs carry the same keys, none of them empty", async () => {
+test("the English screens say it in English", () => {
+  assert.match(inLanguage("en", SCREENS.UsersPanel), /User management/);
+  assert.match(inLanguage("en", SCREENS.MyAccountPanel), /My details/);
+  assert.match(inLanguage("en", SCREENS.LoginForm), /Sign in/);
+  assert.match(inLanguage("en", SCREENS.ReleaseNotes), /Updates/);
+});
+
+test("every catalog carries the keys of the Slovak one, none of them empty", async () => {
   const sk = createTranslator("sk");
-  const hu = createTranslator("hu");
   const { readFileSync } = await import("node:fs");
   const keys = [...readFileSync(new URL("../src/locales/sk.ts", import.meta.url), "utf8").matchAll(/^\s+"([a-zA-Z.]+)":/gm)].map((m) => m[1]);
   assert.ok(keys.length > 100, `only ${keys.length} keys read`);
-  for (const key of keys) {
-    assert.notEqual(hu(key, { count: 2 }), key, `hu misses ${key}`);
-    assert.ok(hu(key, { count: 2 }).trim() && sk(key, { count: 2 }).trim(), key);
+  for (const language of OTHER_LANGUAGES) {
+    const t = createTranslator(language);
+    for (const key of keys) {
+      assert.notEqual(t(key, { count: 2 }), key, `${language} misses ${key}`);
+      assert.ok(t(key, { count: 2 }).trim() && sk(key, { count: 2 }).trim(), key);
+    }
   }
 });
 
@@ -106,6 +128,7 @@ test("a count takes the plural form of the language", () => {
   const sk = createTranslator("sk");
   assert.deepEqual([1, 2, 5].map((count) => sk("users.count", { count })), ["1 používateľ", "2 používatelia", "5 používateľov"]);
   assert.equal(createTranslator("hu")("users.count", { count: 5 }), "5 felhasználó");
+  assert.deepEqual([1, 5].map((count) => createTranslator("en")("users.count", { count })), ["1 user", "5 users"]);
   assert.equal(sk("password.tooShort", { count: 5 }), "Heslo musí mať aspoň 5 znakov.");
 });
 
@@ -116,6 +139,7 @@ test("dates are written as the person's language writes them", () => {
   assert.ok(huHtml.includes(sample.toLocaleString("hu-HU")), "hu-HU date");
   assert.ok(skHtml.includes(sample.toLocaleString("sk-SK")), "sk-SK date");
   assert.notEqual(sample.toLocaleString("hu-HU"), sample.toLocaleString("sk-SK"));
+  assert.ok(inLanguage("en", SCREENS.SessionsPanel).includes(sample.toLocaleString("en-GB")), "en-GB date");
 });
 
 test("an app's own texts join the catalogs; an unknown key or language does not break a screen", () => {
@@ -135,7 +159,8 @@ test("Moje konto lets a person choose a language only among the ones the app off
   assert.match(html, /<option value="hu" lang="hu" selected="">/);
   assert.doesNotMatch(offer(["hu"], noop), /aria-label="Nyelv"/); // one language — nothing to choose
   assert.doesNotMatch(offer(["sk", "hu"], undefined), /aria-label="Nyelv"/); // the app keeps no choice
-  assert.equal(LANGUAGES.length, 2);
+  // DEV-397: the library knows more languages than this app offers — the panel offers only the app's two.
+  assert.equal(LANGUAGES.length, 3);
 });
 
 test("every request tells the server the person's language, so its sentences come in it", async () => {

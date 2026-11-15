@@ -18,6 +18,12 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.38.0
+- `[nové]` **Angličtina ako tretí jazyk knižnice.** Každý text knižnice (prihlásenie, ľavý panel, Nastavenia, Moje konto,
+  Používatelia, Relácie, Agenti, Aktualizácie) má aj anglický katalóg (`src/locales/en.ts`); `LANGUAGES` ponúka
+  slovenčinu, maďarčinu a angličtinu. Dátumy a čísla v angličtine píše knižnica po európsky (`en-GB` — deň pred mesiacom,
+  24-hodinový čas). Aplikácia, ktorá angličtinu neponúka, sa nemení (DEV-397).
+
 ## v0.37.0
 - `[nové]` **Server odpovedá v jazyku používateľa.** Klient API (`createApiClient`) pri každej požiadavke povie serveru
   jazyk, ktorý aplikácia povedala knižnici (`Accept-Language`) — aj pri prihlásení, keď server ešte nevie, kto sa pýta.

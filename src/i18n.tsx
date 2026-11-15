@@ -12,6 +12,7 @@
 
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 
+import { en } from "./locales/en";
 import { hu } from "./locales/hu";
 import { sk, type MessageKey } from "./locales/sk";
 import type { Message } from "./locales/types";
@@ -20,18 +21,20 @@ export type { MessageKey } from "./locales/sk";
 export type { Message } from "./locales/types";
 
 /** A language a catalog exists for. */
-export type Language = "sk" | "hu";
+export type Language = "sk" | "hu" | "en";
 
 /** Every language the library speaks: its code, its own name (as its speakers write it) and its locale. */
 export const LANGUAGES: readonly { code: Language; name: string; locale: string }[] = [
   { code: "sk", name: "Slovenčina", locale: "sk-SK" },
   { code: "hu", name: "Magyar", locale: "hu-HU" },
+  // DEV-397: English as Europe writes it — day before month, a 24-hour clock.
+  { code: "en", name: "English", locale: "en-GB" },
 ];
 
 /** The language of a person who has not chosen one, and of an app that says nothing. */
 export const DEFAULT_LANGUAGE: Language = "sk";
 
-const CATALOGS: Record<Language, Record<MessageKey, Message>> = { sk, hu };
+const CATALOGS: Record<Language, Record<MessageKey, Message>> = { sk, hu, en };
 
 /** An app's own texts, per language — merged over the library's (the app's key wins). */
 export type AppMessages = Partial<Record<Language, Record<string, Message>>>;
