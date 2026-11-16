@@ -157,6 +157,7 @@ export const en: Record<MessageKey, Message> = {
   "users.active": "active",
   "users.allRoles": "All roles",
   "users.anyState": "Any state",
+  "users.col.language": "Language",
   "users.col.name": "Name",
   "users.col.state": "State",
   "users.confirmDelete": "Really delete?",

@@ -31,6 +31,8 @@ export interface UserRead {
   last_name?: string | null;
   /** Telegram chat_id for agent notifications (nullable; apps without it omit). */
   telegram_chat_id?: string | null;
+  /** The person's own language (`sk`, `hu`, `en`); empty = they chose none and follow the installation's (DEV-415). */
+  language?: string | null;
   /** ISO-8601 timestamp. */
   created_at: string;
   /** ISO-8601 timestamp. */

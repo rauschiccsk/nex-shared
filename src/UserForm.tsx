@@ -21,7 +21,7 @@ import { Input } from "./Input";
 import { Select } from "./Select";
 import { Card } from "./Card";
 import type { UserRead, UserFieldSchema } from "./settings-types";
-import { useT } from "./i18n";
+import { DEFAULT_LANGUAGE, LANGUAGES, useT, type Language } from "./i18n";
 
 /** Collected form values handed to the parent on submit. */
 export interface UserFormData {
@@ -36,6 +36,9 @@ export interface UserFormData {
   /** Telegram chat_id for agent notifications. */
   telegram_chat_id: string;
   is_active: boolean;
+  /** DEV-415 — the language the admin chose for the person; absent when it was not changed, so a person who never
+   *  chose one keeps following the installation's. */
+  language?: Language;
 }
 
 export interface UserFormProps {
@@ -55,6 +58,28 @@ export interface UserFormProps {
   onSubmit: (data: UserFormData) => Promise<void> | void;
   /** Optional cancel handler — when supplied a "Zrušiť" button is rendered. */
   onCancel?: () => void;
+  /** DEV-415 — the app's languages (its manifest, main first); with more than one the form offers the person's. */
+  languages?: readonly Language[];
+  /** The language of a person who chose none — the installation's; without it the app's first. */
+  defaultLanguage?: Language;
+}
+
+/** The language the person speaks now: their own choice when the app speaks it, else the installation's, else the
+ *  app's first. */
+export function personLanguage(
+  user: Pick<UserRead, "language"> | undefined,
+  languages: readonly Language[],
+  defaultLanguage?: Language,
+): Language {
+  const own = user?.language;
+  if (own && (languages as readonly string[]).includes(own)) return own as Language;
+  if (defaultLanguage && languages.includes(defaultLanguage)) return defaultLanguage;
+  return languages[0] ?? DEFAULT_LANGUAGE;
+}
+
+/** What the form reports about the language: the admin's choice only when it differs from where the person stood. */
+export function languageToReport(start: Language, chosen: Language): Language | undefined {
+  return chosen === start ? undefined : chosen;
 }
 
 function initialFromUser(
@@ -82,6 +107,8 @@ export function UserForm({
   error,
   onSubmit,
   onCancel,
+  languages = [],
+  defaultLanguage,
 }: UserFormProps) {
   const t = useT();
   const isEdit = mode === "edit";
@@ -89,6 +116,10 @@ export function UserForm({
   const [data, setData] = useState<UserFormData>(() =>
     initialFromUser(initial, roleOptions),
   );
+  // DEV-415: the person's language — offered when the app speaks more than one.
+  const startLanguage = personLanguage(initial, languages, defaultLanguage);
+  const [language, setLanguage] = useState<Language>(startLanguage);
+  const offeredLanguages = LANGUAGES.filter((l) => languages.includes(l.code));
 
   const passwordTooShort = data.password.length > 0 && data.password.length < minLen;
 
@@ -123,7 +154,8 @@ export function UserForm({
 
   function handleSubmit() {
     if (submitDisabled) return;
-    void onSubmit(data);
+    const chosen = offeredLanguages.length > 1 ? languageToReport(startLanguage, language) : undefined;
+    void onSubmit(chosen ? { ...data, language: chosen } : data);
   }
 
   return (
@@ -248,6 +280,21 @@ export function UserForm({
             ))}
           </Select>
         </div>
+
+        {offeredLanguages.length > 1 && (
+          <div>
+            <label htmlFor="uf-language" className="block text-xs text-[var(--color-text-muted)] mb-1">
+              {t("account.language")}
+            </label>
+            <Select id="uf-language" value={language} onChange={(e) => setLanguage(e.target.value as Language)}>
+              {offeredLanguages.map((l) => (
+                <option key={l.code} value={l.code} lang={l.code}>
+                  {l.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+        )}
 
         {fieldSchema.telegram && (
           <div>

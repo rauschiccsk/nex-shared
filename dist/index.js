@@ -283,6 +283,7 @@ var en = {
   "users.active": "active",
   "users.allRoles": "All roles",
   "users.anyState": "Any state",
+  "users.col.language": "Language",
   "users.col.name": "Name",
   "users.col.state": "State",
   "users.confirmDelete": "Really delete?",
@@ -431,6 +432,7 @@ var hu = {
   "users.active": "akt\xEDv",
   "users.allRoles": "Minden szerepk\xF6r",
   "users.anyState": "B\xE1rmely \xE1llapot",
+  "users.col.language": "Nyelv",
   "users.col.name": "N\xE9v",
   "users.col.state": "\xC1llapot",
   "users.confirmDelete": "Biztosan t\xF6rl\xF6d?",
@@ -587,6 +589,7 @@ var sk = {
   "users.active": "akt\xEDvny",
   "users.allRoles": "V\u0161etky role",
   "users.anyState": "Ak\xFDko\u013Evek stav",
+  "users.col.language": "Jazyk",
   "users.col.name": "Meno",
   "users.col.state": "Stav",
   "users.confirmDelete": "Naozaj vymaza\u0165?",
@@ -2431,6 +2434,15 @@ import { useMemo as useMemo4, useState as useState13 } from "react";
 // src/UserForm.tsx
 import { useState as useState12 } from "react";
 import { Fragment as Fragment12, jsx as jsx30, jsxs as jsxs17 } from "react/jsx-runtime";
+function personLanguage(user, languages, defaultLanguage) {
+  const own = user?.language;
+  if (own && languages.includes(own)) return own;
+  if (defaultLanguage && languages.includes(defaultLanguage)) return defaultLanguage;
+  return languages[0] ?? DEFAULT_LANGUAGE;
+}
+function languageToReport(start, chosen) {
+  return chosen === start ? void 0 : chosen;
+}
 function initialFromUser(user, roleOptions) {
   return {
     username: user?.username ?? "",
@@ -2451,7 +2463,9 @@ function UserForm({
   submitting,
   error,
   onSubmit,
-  onCancel
+  onCancel,
+  languages = [],
+  defaultLanguage
 }) {
   const t = useT();
   const isEdit = mode === "edit";
@@ -2459,6 +2473,9 @@ function UserForm({
   const [data, setData] = useState12(
     () => initialFromUser(initial, roleOptions)
   );
+  const startLanguage = personLanguage(initial, languages, defaultLanguage);
+  const [language, setLanguage] = useState12(startLanguage);
+  const offeredLanguages = LANGUAGES.filter((l) => languages.includes(l.code));
   const passwordTooShort = data.password.length > 0 && data.password.length < minLen;
   const emailShown = fieldSchema.email !== false;
   const usernameRequired = !isEdit && fieldSchema.username;
@@ -2469,7 +2486,8 @@ function UserForm({
   }
   function handleSubmit() {
     if (submitDisabled) return;
-    void onSubmit(data);
+    const chosen = offeredLanguages.length > 1 ? languageToReport(startLanguage, language) : void 0;
+    void onSubmit(chosen ? { ...data, language: chosen } : data);
   }
   return /* @__PURE__ */ jsxs17(Card, { className: "mt-4 p-4", children: [
     /* @__PURE__ */ jsx30("h3", { className: "text-sm font-semibold text-[var(--color-text-secondary)] mb-3", children: isEdit ? /* @__PURE__ */ jsxs17(Fragment12, { children: [
@@ -2572,6 +2590,10 @@ function UserForm({
           }
         )
       ] }),
+      offeredLanguages.length > 1 && /* @__PURE__ */ jsxs17("div", { children: [
+        /* @__PURE__ */ jsx30("label", { htmlFor: "uf-language", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: t("account.language") }),
+        /* @__PURE__ */ jsx30(Select, { id: "uf-language", value: language, onChange: (e) => setLanguage(e.target.value), children: offeredLanguages.map((l) => /* @__PURE__ */ jsx30("option", { value: l.code, lang: l.code, children: l.name }, l.code)) })
+      ] }),
       fieldSchema.telegram && /* @__PURE__ */ jsxs17("div", { children: [
         /* @__PURE__ */ jsx30("label", { htmlFor: "uf-telegram", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: t("user.telegram") }),
         /* @__PURE__ */ jsx30(
@@ -2636,7 +2658,9 @@ function UsersPanel({
   onChangePassword,
   onToggleActive,
   roleClass,
-  rowActions
+  rowActions,
+  languages = [],
+  defaultLanguage
 }) {
   const t = useT();
   const roleCls = roleClass ?? (() => "");
@@ -2662,7 +2686,12 @@ function UsersPanel({
   }, [users, roleFilter, activeFilter]);
   const showNames = fieldSchema.names;
   const showUsername = fieldSchema.username;
-  const colCount = 4 + (showNames ? 1 : 0) + (showUsername ? 1 : 0);
+  const showLanguage = LANGUAGES.filter((l) => languages.includes(l.code)).length > 1;
+  const languageName = (u) => {
+    const code = personLanguage(u, languages, defaultLanguage);
+    return LANGUAGES.find((l) => l.code === code) ?? LANGUAGES[0];
+  };
+  const colCount = 4 + (showNames ? 1 : 0) + (showUsername ? 1 : 0) + (showLanguage ? 1 : 0);
   async function handleCreate(data) {
     setCreating(true);
     setCreateError("");
@@ -2766,6 +2795,7 @@ function UsersPanel({
         showUsername && /* @__PURE__ */ jsx31("th", { className: "px-4 py-2.5 text-left font-semibold", children: t("user.username") }),
         /* @__PURE__ */ jsx31("th", { className: "px-4 py-2.5 text-left font-semibold", children: t("user.email") }),
         /* @__PURE__ */ jsx31("th", { className: "px-4 py-2.5 text-left font-semibold", children: t("user.role") }),
+        showLanguage && /* @__PURE__ */ jsx31("th", { className: "px-4 py-2.5 text-left font-semibold", children: t("users.col.language") }),
         /* @__PURE__ */ jsx31("th", { className: "px-4 py-2.5 text-left font-semibold", children: t("users.col.state") }),
         /* @__PURE__ */ jsx31("th", { className: "px-4 py-2.5 text-right font-semibold", children: t("common.actions") })
       ] }) }),
@@ -2778,6 +2808,7 @@ function UsersPanel({
             showUsername && /* @__PURE__ */ jsx31("td", { className: "px-4 py-3 text-sm font-medium text-[var(--color-text-primary)] font-mono", children: u.username }),
             /* @__PURE__ */ jsx31("td", { className: "px-4 py-3 text-xs text-[var(--color-text-secondary)]", children: u.email }),
             /* @__PURE__ */ jsx31("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsx31("span", { className: `text-xs font-medium ${roleCls(u.role)}`, children: roleName(u.role) }) }),
+            showLanguage && /* @__PURE__ */ jsx31("td", { className: "px-4 py-3 text-xs text-[var(--color-text-secondary)]", lang: languageName(u).code, children: languageName(u).name }),
             /* @__PURE__ */ jsx31("td", { className: "px-4 py-3", children: u.is_active ? /* @__PURE__ */ jsx31("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-state-success-bg)] border border-[var(--color-state-success-bg)] text-[var(--color-state-success-fg)]", children: t("users.active") }) : /* @__PURE__ */ jsx31("span", { className: "text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-state-warning-bg)] border border-[var(--color-state-warning-bg)] text-[var(--color-state-warning-fg)]", children: t("users.inactive") }) }),
             /* @__PURE__ */ jsx31("td", { className: "px-4 py-3 text-right", children: !canManage ? ownActions !== null ? /* @__PURE__ */ jsx31("div", { className: "flex items-center justify-end gap-3", children: ownActions }) : /* @__PURE__ */ jsx31("span", { className: "text-xs text-[var(--color-text-muted)]", children: "\u2014" }) : confirmingDeleteId === u.id ? /* @__PURE__ */ jsxs18("div", { className: "flex items-center justify-end gap-2 text-xs", children: [
               /* @__PURE__ */ jsx31("span", { className: "text-[var(--color-text-secondary)]", children: t("users.confirmDelete") }),
@@ -2857,6 +2888,8 @@ function UsersPanel({
         initial: editingUser,
         roleOptions,
         fieldSchema,
+        languages,
+        defaultLanguage,
         submitting: editing,
         error: editError,
         onSubmit: handleSaveEdit,
@@ -2873,6 +2906,8 @@ function UsersPanel({
         mode: "create",
         roleOptions,
         fieldSchema,
+        languages,
+        defaultLanguage,
         submitting: creating,
         error: createError,
         onSubmit: handleCreate,
@@ -3377,9 +3412,11 @@ export {
   fitToScreen,
   formatDateTime,
   isLanguage,
+  languageToReport,
   localeOf,
   onServerChange,
   passwordRefusal,
+  personLanguage,
   readRememberedWidth,
   refusalSentence,
   registerAuthCallback,

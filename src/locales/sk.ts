@@ -157,6 +157,7 @@ export const sk = {
   "users.active": "aktívny",
   "users.allRoles": "Všetky role",
   "users.anyState": "Akýkoľvek stav",
+  "users.col.language": "Jazyk",
   "users.col.name": "Meno",
   "users.col.state": "Stav",
   "users.confirmDelete": "Naozaj vymazať?",

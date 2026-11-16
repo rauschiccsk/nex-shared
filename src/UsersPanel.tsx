@@ -11,9 +11,9 @@
  */
 
 import { useMemo, useState, type ReactNode } from "react";
-import { UserForm, type UserFormData } from "./UserForm";
+import { personLanguage, UserForm, type UserFormData } from "./UserForm";
 import type { UserFieldSchema, UserRead } from "./settings-types";
-import { useT } from "./i18n";
+import { LANGUAGES, useT, type Language } from "./i18n";
 
 export interface UsersPanelProps {
   users: UserRead[];
@@ -38,6 +38,11 @@ export interface UsersPanelProps {
   /** The app's own actions for one person (NEX Manager: „Prístupy“), first in the Akcie cell — also for a viewer who
    *  may not manage people: the app decides what it shows to whom (DEV-293). */
   rowActions?: (user: UserRead) => ReactNode;
+  /** DEV-415 — the app's languages (its manifest, main first). With more than one the list shows each person's language
+   *  and the form lets the admin change it. */
+  languages?: readonly Language[];
+  /** The language of a person who chose none — the installation's; without it the app's first. */
+  defaultLanguage?: Language;
 }
 
 export function UsersPanel({
@@ -52,6 +57,8 @@ export function UsersPanel({
   onToggleActive,
   roleClass,
   rowActions,
+  languages = [],
+  defaultLanguage,
 }: UsersPanelProps) {
   const t = useT();
   const roleCls = roleClass ?? (() => "");
@@ -86,7 +93,13 @@ export function UsersPanel({
 
   const showNames = fieldSchema.names;
   const showUsername = fieldSchema.username;
-  const colCount = 4 + (showNames ? 1 : 0) + (showUsername ? 1 : 0);
+  // DEV-415: each person's language, by its own name (as in Moje konto) — when the app speaks more than one.
+  const showLanguage = LANGUAGES.filter((l) => languages.includes(l.code)).length > 1;
+  const languageName = (u: UserRead) => {
+    const code = personLanguage(u, languages, defaultLanguage);
+    return LANGUAGES.find((l) => l.code === code) ?? LANGUAGES[0];
+  };
+  const colCount = 4 + (showNames ? 1 : 0) + (showUsername ? 1 : 0) + (showLanguage ? 1 : 0);
 
   async function handleCreate(data: UserFormData) {
     setCreating(true);
@@ -211,6 +224,7 @@ export function UsersPanel({
               {showUsername && <th className="px-4 py-2.5 text-left font-semibold">{t("user.username")}</th>}
               <th className="px-4 py-2.5 text-left font-semibold">{t("user.email")}</th>
               <th className="px-4 py-2.5 text-left font-semibold">{t("user.role")}</th>
+              {showLanguage && <th className="px-4 py-2.5 text-left font-semibold">{t("users.col.language")}</th>}
               <th className="px-4 py-2.5 text-left font-semibold">{t("users.col.state")}</th>
               <th className="px-4 py-2.5 text-right font-semibold">{t("common.actions")}</th>
             </tr>
@@ -233,6 +247,11 @@ export function UsersPanel({
                   <td className="px-4 py-3">
                     <span className={`text-xs font-medium ${roleCls(u.role)}`}>{roleName(u.role)}</span>
                   </td>
+                  {showLanguage && (
+                    <td className="px-4 py-3 text-xs text-[var(--color-text-secondary)]" lang={languageName(u).code}>
+                      {languageName(u).name}
+                    </td>
+                  )}
                   <td className="px-4 py-3">
                     {u.is_active ? (
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--color-state-success-bg)] border border-[var(--color-state-success-bg)] text-[var(--color-state-success-fg)]">{t("users.active")}</span>
@@ -331,6 +350,8 @@ export function UsersPanel({
           initial={editingUser}
           roleOptions={roleOptions}
           fieldSchema={fieldSchema}
+          languages={languages}
+          defaultLanguage={defaultLanguage}
           submitting={editing}
           error={editError}
           onSubmit={handleSaveEdit}
@@ -344,6 +365,8 @@ export function UsersPanel({
           mode="create"
           roleOptions={roleOptions}
           fieldSchema={fieldSchema}
+          languages={languages}
+          defaultLanguage={defaultLanguage}
           submitting={creating}
           error={createError}
           onSubmit={handleCreate}

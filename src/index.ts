@@ -123,7 +123,7 @@ export type { MyAccountPanelProps, MyAccountUser } from "./MyAccountPanel";
 export { SessionsPanel } from "./SessionsPanel";
 export type { SessionsPanelProps } from "./SessionsPanel";
 
-export { UserForm } from "./UserForm";
+export { languageToReport, personLanguage, UserForm } from "./UserForm";
 export type { UserFormProps, UserFormData } from "./UserForm";
 
 export type {

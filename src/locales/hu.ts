@@ -151,6 +151,7 @@ export const hu: Record<MessageKey, Message> = {
   "users.active": "aktív",
   "users.allRoles": "Minden szerepkör",
   "users.anyState": "Bármely állapot",
+  "users.col.language": "Nyelv",
   "users.col.name": "Név",
   "users.col.state": "Állapot",
   "users.confirmDelete": "Biztosan törlöd?",

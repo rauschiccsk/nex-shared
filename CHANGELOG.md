@@ -18,6 +18,13 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.39.0
+- `[nové]` **Správca vidí a mení jazyk každého človeka.** `UsersPanel` s voľbou `languages` (jazyky aplikácie, hlavný prvý)
+  ukáže pri každom človeku jeho jazyk menom, akým ho píšu jeho hovoriaci (ako Moje konto), a formulár človeka ponúkne
+  jeho zmenu; `defaultLanguage` je jazyk inštalácie pre človeka, ktorý si jazyk nevybral. Formulár hlási `language`
+  len keď ho správca zmenil — človek, ktorý si jazyk nevybral, tak ďalej nasleduje jazyk inštalácie. `UserRead.language`,
+  `personLanguage`, `languageToReport`. Aplikácia s jedným jazykom sa nemení (DEV-415).
+
 ## v0.38.0
 - `[nové]` **Angličtina ako tretí jazyk knižnice.** Každý text knižnice (prihlásenie, ľavý panel, Nastavenia, Moje konto,
   Používatelia, Relácie, Agenti, Aktualizácie) má aj anglický katalóg (`src/locales/en.ts`); `LANGUAGES` ponúka

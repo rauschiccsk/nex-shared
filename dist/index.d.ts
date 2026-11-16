@@ -824,6 +824,8 @@ interface UserRead {
     last_name?: string | null;
     /** Telegram chat_id for agent notifications (nullable; apps without it omit). */
     telegram_chat_id?: string | null;
+    /** The person's own language (`sk`, `hu`, `en`); empty = they chose none and follow the installation's (DEV-415). */
+    language?: string | null;
     /** ISO-8601 timestamp. */
     created_at: string;
     /** ISO-8601 timestamp. */
@@ -1001,72 +1003,6 @@ interface AgentsPanelProps {
 }
 declare function AgentsPanel({ roles, models, efforts, drafts, onSave, helperModels, helperModelRoleIds, loading, loadError, saveErrors, }: AgentsPanelProps): react.JSX.Element;
 
-/** Collected form values handed to the parent on submit. */
-interface UserFormData {
-    username: string;
-    email: string;
-    /** Create: required. Edit: empty string = keep current. */
-    password: string;
-    /** Opaque per-app role identifier (one of `roleOptions[].value`). */
-    role: string;
-    first_name: string;
-    last_name: string;
-    /** Telegram chat_id for agent notifications. */
-    telegram_chat_id: string;
-    is_active: boolean;
-}
-interface UserFormProps {
-    mode: "create" | "edit";
-    /** Required in edit mode — values pre-fill the form. */
-    initial?: UserRead;
-    /** Role options for the role `<select>` (app-supplied; no role literals here). */
-    roleOptions: {
-        value: string;
-        label: string;
-    }[];
-    /** Which fields to render + the password min length (app-specific). */
-    fieldSchema: UserFieldSchema;
-    /** Disables all inputs + submit button. Driven by the parent's in-flight call. */
-    submitting: boolean;
-    /** Backend error message to display below the title. Empty = hidden. */
-    error: string;
-    /** Called with the collected form data on submit. The parent maps it to the
-     *  right API calls (create vs patch + change-password). */
-    onSubmit: (data: UserFormData) => Promise<void> | void;
-    /** Optional cancel handler — when supplied a "Zrušiť" button is rendered. */
-    onCancel?: () => void;
-}
-declare function UserForm({ mode, initial, roleOptions, fieldSchema, submitting, error, onSubmit, onCancel, }: UserFormProps): react.JSX.Element;
-
-interface UsersPanelProps {
-    users: UserRead[];
-    /** Role options for the filter + the create/edit form (no role literals here). */
-    roleOptions: {
-        value: string;
-        label: string;
-    }[];
-    /** Whether the current user may create/edit/delete/toggle (else read-only). */
-    canManage: boolean;
-    /** Field set + password rule for the embedded UserForm. */
-    fieldSchema: UserFieldSchema;
-    /** Create a user. Reject with an Error to surface the message inline. */
-    onCreate: (data: UserFormData) => Promise<void>;
-    /** Patch profile fields (password is handled via `onChangePassword`). */
-    onUpdate: (id: string, data: UserFormData) => Promise<void>;
-    /** Delete a user. Reject (e.g. 409 FK conflict) surfaces a "deaktivovať" hint. */
-    onDelete: (id: string) => Promise<void>;
-    /** Rotate a user's password (called after `onUpdate` when a new one was typed). */
-    onChangePassword: (id: string, password: string) => Promise<void>;
-    /** Flip `is_active`. */
-    onToggleActive: (user: UserRead) => Promise<void>;
-    /** Optional role→className for the role cell (app supplies the palette). */
-    roleClass?: (role: string) => string;
-    /** The app's own actions for one person (NEX Manager: „Prístupy“), first in the Akcie cell — also for a viewer who
-     *  may not manage people: the app decides what it shows to whom (DEV-293). */
-    rowActions?: (user: UserRead) => ReactNode;
-}
-declare function UsersPanel({ users, roleOptions, canManage, fieldSchema, onCreate, onUpdate, onDelete, onChangePassword, onToggleActive, roleClass, rowActions, }: UsersPanelProps): react.JSX.Element;
-
 declare const sk: {
     "common.actions": string;
     "common.cancel": string;
@@ -1207,6 +1143,7 @@ declare const sk: {
     "users.active": string;
     "users.allRoles": string;
     "users.anyState": string;
+    "users.col.language": string;
     "users.col.name": string;
     "users.col.state": string;
     "users.confirmDelete": string;
@@ -1283,6 +1220,89 @@ declare function useLanguage(): {
 };
 /** A date with its time, as the language writes it. */
 declare function formatDateTime(value: Date | string | number, locale: string): string;
+
+/** Collected form values handed to the parent on submit. */
+interface UserFormData {
+    username: string;
+    email: string;
+    /** Create: required. Edit: empty string = keep current. */
+    password: string;
+    /** Opaque per-app role identifier (one of `roleOptions[].value`). */
+    role: string;
+    first_name: string;
+    last_name: string;
+    /** Telegram chat_id for agent notifications. */
+    telegram_chat_id: string;
+    is_active: boolean;
+    /** DEV-415 — the language the admin chose for the person; absent when it was not changed, so a person who never
+     *  chose one keeps following the installation's. */
+    language?: Language;
+}
+interface UserFormProps {
+    mode: "create" | "edit";
+    /** Required in edit mode — values pre-fill the form. */
+    initial?: UserRead;
+    /** Role options for the role `<select>` (app-supplied; no role literals here). */
+    roleOptions: {
+        value: string;
+        label: string;
+    }[];
+    /** Which fields to render + the password min length (app-specific). */
+    fieldSchema: UserFieldSchema;
+    /** Disables all inputs + submit button. Driven by the parent's in-flight call. */
+    submitting: boolean;
+    /** Backend error message to display below the title. Empty = hidden. */
+    error: string;
+    /** Called with the collected form data on submit. The parent maps it to the
+     *  right API calls (create vs patch + change-password). */
+    onSubmit: (data: UserFormData) => Promise<void> | void;
+    /** Optional cancel handler — when supplied a "Zrušiť" button is rendered. */
+    onCancel?: () => void;
+    /** DEV-415 — the app's languages (its manifest, main first); with more than one the form offers the person's. */
+    languages?: readonly Language[];
+    /** The language of a person who chose none — the installation's; without it the app's first. */
+    defaultLanguage?: Language;
+}
+/** The language the person speaks now: their own choice when the app speaks it, else the installation's, else the
+ *  app's first. */
+declare function personLanguage(user: Pick<UserRead, "language"> | undefined, languages: readonly Language[], defaultLanguage?: Language): Language;
+/** What the form reports about the language: the admin's choice only when it differs from where the person stood. */
+declare function languageToReport(start: Language, chosen: Language): Language | undefined;
+declare function UserForm({ mode, initial, roleOptions, fieldSchema, submitting, error, onSubmit, onCancel, languages, defaultLanguage, }: UserFormProps): react.JSX.Element;
+
+interface UsersPanelProps {
+    users: UserRead[];
+    /** Role options for the filter + the create/edit form (no role literals here). */
+    roleOptions: {
+        value: string;
+        label: string;
+    }[];
+    /** Whether the current user may create/edit/delete/toggle (else read-only). */
+    canManage: boolean;
+    /** Field set + password rule for the embedded UserForm. */
+    fieldSchema: UserFieldSchema;
+    /** Create a user. Reject with an Error to surface the message inline. */
+    onCreate: (data: UserFormData) => Promise<void>;
+    /** Patch profile fields (password is handled via `onChangePassword`). */
+    onUpdate: (id: string, data: UserFormData) => Promise<void>;
+    /** Delete a user. Reject (e.g. 409 FK conflict) surfaces a "deaktivovať" hint. */
+    onDelete: (id: string) => Promise<void>;
+    /** Rotate a user's password (called after `onUpdate` when a new one was typed). */
+    onChangePassword: (id: string, password: string) => Promise<void>;
+    /** Flip `is_active`. */
+    onToggleActive: (user: UserRead) => Promise<void>;
+    /** Optional role→className for the role cell (app supplies the palette). */
+    roleClass?: (role: string) => string;
+    /** The app's own actions for one person (NEX Manager: „Prístupy“), first in the Akcie cell — also for a viewer who
+     *  may not manage people: the app decides what it shows to whom (DEV-293). */
+    rowActions?: (user: UserRead) => ReactNode;
+    /** DEV-415 — the app's languages (its manifest, main first). With more than one the list shows each person's language
+     *  and the form lets the admin change it. */
+    languages?: readonly Language[];
+    /** The language of a person who chose none — the installation's; without it the app's first. */
+    defaultLanguage?: Language;
+}
+declare function UsersPanel({ users, roleOptions, canManage, fieldSchema, onCreate, onUpdate, onDelete, onChangePassword, onToggleActive, roleClass, rowActions, languages, defaultLanguage, }: UsersPanelProps): react.JSX.Element;
 
 /** What the panel says when saving the profile was refused — the server's own sentence, or its general one (DEV-309)
  *  in the person's language (DEV-393). */
@@ -1417,4 +1437,4 @@ declare function rememberLaunchWindow(win?: LaunchWindow, storage?: PlacementSto
 /** A placement that fits on the screen the window is on now — a screen may be smaller than the one it was left on. */
 declare function fitToScreen(placement: WindowPlacement, screen: LaunchWindow["screen"]): WindowPlacement;
 
-export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, type AppMessages, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, CompactRowsContext, DEFAULT_LANGUAGE, DataTable, type DataTableAlign, type DataTableColumn, type DataTableProps, DensityContext, FormActions, type FormActionsProps, FormField, type FormFieldProps, FormGrid, type FormGridProps, Header, type HeaderProps, type HttpMethod, I18nProvider, type I18nProviderProps, IconButton, type IconButtonProps, Input, type InputProps, LANGUAGES, LAUNCH_WINDOW_PREFIX, LAUNCH_WINDOW_SAVE_DELAY_MS, LAUNCH_WINDOW_STORAGE_KEY, type Language, type LaunchWindow, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, type Message, type MessageKey, type MessageParams, MyAccountPanel, type MyAccountPanelProps, type MyAccountUser, NavIcon, type NavIconProps, NavItem, type NavItemProps, Page, type PageProps, type PageWidth, type PlacementStorage, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, ResizeHandle, type ResizeHandleProps, SIDEBAR_DEFAULT_WIDTH, SIDEBAR_WIDTH_KEY_PREFIX, SectionDivider, SectionLabel, type SectionLabelProps, Select, type SelectProps, type ServerChange, SessionsPanel, type SessionsPanelProps, type SettingChoice, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, ShellContext, type ShellState, Sidebar, type SidebarProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, type Translate, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, WIDE_SCREEN_QUERY, type WindowPlacement, accountRefusal, createApiClient, createAuthStore, createTranslator, currentLanguage, currentTranslator, fitToScreen, formatDateTime, isLanguage, localeOf, onServerChange, passwordRefusal, readRememberedWidth, refusalSentence, registerAuthCallback, rememberLaunchWindow, rememberWidth, useCompactRows, useDense, useLanguage, useRememberedSidebarWidth, useShell, useT, useWideScreen };
+export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, type AppMessages, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, CompactRowsContext, DEFAULT_LANGUAGE, DataTable, type DataTableAlign, type DataTableColumn, type DataTableProps, DensityContext, FormActions, type FormActionsProps, FormField, type FormFieldProps, FormGrid, type FormGridProps, Header, type HeaderProps, type HttpMethod, I18nProvider, type I18nProviderProps, IconButton, type IconButtonProps, Input, type InputProps, LANGUAGES, LAUNCH_WINDOW_PREFIX, LAUNCH_WINDOW_SAVE_DELAY_MS, LAUNCH_WINDOW_STORAGE_KEY, type Language, type LaunchWindow, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, type Message, type MessageKey, type MessageParams, MyAccountPanel, type MyAccountPanelProps, type MyAccountUser, NavIcon, type NavIconProps, NavItem, type NavItemProps, Page, type PageProps, type PageWidth, type PlacementStorage, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, ResizeHandle, type ResizeHandleProps, SIDEBAR_DEFAULT_WIDTH, SIDEBAR_WIDTH_KEY_PREFIX, SectionDivider, SectionLabel, type SectionLabelProps, Select, type SelectProps, type ServerChange, SessionsPanel, type SessionsPanelProps, type SettingChoice, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, ShellContext, type ShellState, Sidebar, type SidebarProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, type Translate, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, WIDE_SCREEN_QUERY, type WindowPlacement, accountRefusal, createApiClient, createAuthStore, createTranslator, currentLanguage, currentTranslator, fitToScreen, formatDateTime, isLanguage, languageToReport, localeOf, onServerChange, passwordRefusal, personLanguage, readRememberedWidth, refusalSentence, registerAuthCallback, rememberLaunchWindow, rememberWidth, useCompactRows, useDense, useLanguage, useRememberedSidebarWidth, useShell, useT, useWideScreen };
