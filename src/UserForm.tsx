@@ -126,6 +126,9 @@ export function UserForm({
   // Email is optional per-app (framework fix): hidden + not required when `fieldSchema.email === false`
   // (apps whose users have no email — login is by username). Absent/true = shown + required, unchanged.
   const emailShown = fieldSchema.email !== false;
+  // DEV-422 — a person who has no e-mail (made before it was required, or by NEX Manager) is changed without one; a
+  // person who has one keeps it required, and a new person needs it as ever.
+  const emailRequired = emailShown && !(isEdit && !initial?.email);
 
   // Submit is disabled when:
   //   - currently submitting (in-flight call)
@@ -135,7 +138,7 @@ export function UserForm({
   const usernameRequired = !isEdit && fieldSchema.username;
   const submitDisabled =
     submitting ||
-    (emailShown && !data.email) ||
+    (emailRequired && !data.email) ||
     (usernameRequired && !data.username) ||
     (!isEdit && !data.password) ||
     passwordTooShort;
@@ -228,7 +231,9 @@ export function UserForm({
 
         {emailShown && (
           <div>
-            <label htmlFor="uf-email" className="block text-xs text-[var(--color-text-muted)] mb-1">{t("user.emailRequired")}</label>
+            <label htmlFor="uf-email" className="block text-xs text-[var(--color-text-muted)] mb-1">
+              {t(emailRequired ? "user.emailRequired" : "user.email")}
+            </label>
             <Input
               id="uf-email"
               type="email"

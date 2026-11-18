@@ -2478,8 +2478,9 @@ function UserForm({
   const offeredLanguages = LANGUAGES.filter((l) => languages.includes(l.code));
   const passwordTooShort = data.password.length > 0 && data.password.length < minLen;
   const emailShown = fieldSchema.email !== false;
+  const emailRequired = emailShown && !(isEdit && !initial?.email);
   const usernameRequired = !isEdit && fieldSchema.username;
-  const submitDisabled = submitting || emailShown && !data.email || usernameRequired && !data.username || !isEdit && !data.password || passwordTooShort;
+  const submitDisabled = submitting || emailRequired && !data.email || usernameRequired && !data.username || !isEdit && !data.password || passwordTooShort;
   const submitLabel = isEdit ? submitting ? t("common.saving") : t("common.save") : submitting ? t("userForm.creating") : t("userForm.create");
   function update(key, value) {
     setData((prev) => ({ ...prev, [key]: value }));
@@ -2547,7 +2548,7 @@ function UserForm({
         )
       ] }),
       emailShown && /* @__PURE__ */ jsxs17("div", { children: [
-        /* @__PURE__ */ jsx30("label", { htmlFor: "uf-email", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: t("user.emailRequired") }),
+        /* @__PURE__ */ jsx30("label", { htmlFor: "uf-email", className: "block text-xs text-[var(--color-text-muted)] mb-1", children: t(emailRequired ? "user.emailRequired" : "user.email") }),
         /* @__PURE__ */ jsx30(
           Input,
           {

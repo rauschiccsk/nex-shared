@@ -18,6 +18,12 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.39.1
+- `[oprava]` **Správca uloží človeka, ktorý nemá e-mail.** Človek bez e-mailu (založený skôr, než bol povinný, alebo
+  NEX Managerom) mal v Používateľoch „Uložiť“ zašednuté, kým mu správca e-mail nedoplnil — nezmenil mu ani jazyk.
+  Pri úprave takého človeka e-mail povinný nie je (pole nemá hviezdičku); kto e-mail má, má ho povinný ďalej, a nový
+  človek ho potrebuje ako doteraz. Server šablóny to prijme od nex-app-kit v0.16.3 (DEV-422).
+
 ## v0.39.0
 - `[nové]` **Správca vidí a mení jazyk každého človeka.** `UsersPanel` s voľbou `languages` (jazyky aplikácie, hlavný prvý)
   ukáže pri každom človeku jeho jazyk menom, akým ho píšu jeho hovoriaci (ako Moje konto), a formulár človeka ponúkne
