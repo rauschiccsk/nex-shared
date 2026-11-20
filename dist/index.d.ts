@@ -353,6 +353,14 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 declare function Input({ invalid, className, ...rest }: InputProps): react.JSX.Element;
 
+interface PasswordInputProps extends Omit<InputProps, "type"> {
+    /** Offer the eye that shows the typed password. */
+    reveal?: boolean;
+    /** What the eye's label names („Zobraziť: Nové heslo“); without it the eye says only „Zobraziť heslo“. */
+    revealLabel?: string;
+}
+declare function PasswordInput({ reveal, revealLabel, className, autoComplete, ...rest }: PasswordInputProps): react.JSX.Element;
+
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
     /** Mark the field invalid → red border + `aria-invalid`. */
     invalid?: boolean;
@@ -1062,6 +1070,10 @@ declare const sk: {
     };
     "password.mismatch": string;
     "password.new": string;
+    "password.show": string;
+    "password.hide": string;
+    "password.showNamed": string;
+    "password.hideNamed": string;
     "password.tooShort": {
         one: string;
         few: string;
@@ -1262,13 +1274,16 @@ interface UserFormProps {
     languages?: readonly Language[];
     /** The language of a person who chose none — the installation's; without it the app's first. */
     defaultLanguage?: Language;
+    /** DEV-439 — an eye at the password that shows what is typed. The admin's own account has it; another person's
+     *  account has none — the admin only gives them a new initial password. */
+    revealPassword?: boolean;
 }
 /** The language the person speaks now: their own choice when the app speaks it, else the installation's, else the
  *  app's first. */
 declare function personLanguage(user: Pick<UserRead, "language"> | undefined, languages: readonly Language[], defaultLanguage?: Language): Language;
 /** What the form reports about the language: the admin's choice only when it differs from where the person stood. */
 declare function languageToReport(start: Language, chosen: Language): Language | undefined;
-declare function UserForm({ mode, initial, roleOptions, fieldSchema, submitting, error, onSubmit, onCancel, languages, defaultLanguage, }: UserFormProps): react.JSX.Element;
+declare function UserForm({ mode, initial, roleOptions, fieldSchema, submitting, error, onSubmit, onCancel, languages, defaultLanguage, revealPassword, }: UserFormProps): react.JSX.Element;
 
 interface UsersPanelProps {
     users: UserRead[];
@@ -1287,7 +1302,8 @@ interface UsersPanelProps {
     onUpdate: (id: string, data: UserFormData) => Promise<void>;
     /** Delete a user. Reject (e.g. 409 FK conflict) surfaces a "deaktivovať" hint. */
     onDelete: (id: string) => Promise<void>;
-    /** Rotate a user's password (called after `onUpdate` when a new one was typed). */
+    /** Set a person's password (called after `onUpdate` when a new one was typed) — also the admin's own; what it
+     *  means (another's initial password, one's own regular one) is the server's to decide (DEV-439). */
     onChangePassword: (id: string, password: string) => Promise<void>;
     /** Flip `is_active`. */
     onToggleActive: (user: UserRead) => Promise<void>;
@@ -1301,8 +1317,14 @@ interface UsersPanelProps {
     languages?: readonly Language[];
     /** The language of a person who chose none — the installation's; without it the app's first. */
     defaultLanguage?: Language;
+    /** DEV-439 — the signed-in person. Their own row offers no delete and no deactivation (the server refuses both), and
+     *  their own password field has the eye that shows what they type. */
+    currentUserId?: string;
+    /** DEV-439 — whether a person may be deleted at all; the row offers no delete where it returns false (the template:
+     *  never the app's admin). Without it anyone but the signed-in person. */
+    mayDelete?: (user: UserRead) => boolean;
 }
-declare function UsersPanel({ users, roleOptions, canManage, fieldSchema, onCreate, onUpdate, onDelete, onChangePassword, onToggleActive, roleClass, rowActions, languages, defaultLanguage, }: UsersPanelProps): react.JSX.Element;
+declare function UsersPanel({ users, roleOptions, canManage, fieldSchema, onCreate, onUpdate, onDelete, onChangePassword, onToggleActive, roleClass, rowActions, languages, defaultLanguage, currentUserId, mayDelete, }: UsersPanelProps): react.JSX.Element;
 
 /** What the panel says when saving the profile was refused — the server's own sentence, or its general one (DEV-309)
  *  in the person's language (DEV-393). */
@@ -1333,8 +1355,11 @@ interface MyAccountPanelProps {
         telegram_chat_id: string;
     }) => Promise<void>;
     /** Change own password (current-password verification is the app's concern). Rejection → error, with the
-     *  server's own sentence when it carries one (v0.32.0). */
+     *  server's own sentence when it carries one (v0.32.0). Without `askCurrentPassword` the first argument is "". */
     onChangePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+    /** DEV-439 — `false` for an app whose server changes the signed-in person's password without the current one (the
+     *  app template): the field is left out. Default `true`, as the cockpit and NEX Manager ask for it. */
+    askCurrentPassword?: boolean;
     /** Optional (v0.15.2) — send a TEST Telegram to the saved chat_id + report the outcome, so the user can
      *  confirm notifications actually reach them (a silent fail is otherwise invisible). When supplied, a
      *  "Poslať test" button + a short how-to appear under the Telegram field. */
@@ -1356,7 +1381,7 @@ interface MyAccountPanelProps {
      *  server's own sentence, else a general one. */
     onLanguageChange?: (language: Language) => Promise<void> | void;
 }
-declare function MyAccountPanel({ user, roleLabel, onSaveProfile, onChangePassword, onTestTelegram, passwordMinLength, telegram: showTelegram, languages, language, onLanguageChange, }: MyAccountPanelProps): react.JSX.Element;
+declare function MyAccountPanel({ user, roleLabel, onSaveProfile, onChangePassword, onTestTelegram, passwordMinLength, telegram: showTelegram, languages, language, onLanguageChange, askCurrentPassword, }: MyAccountPanelProps): react.JSX.Element;
 
 interface SessionsPanelProps {
     sessions: UserSessionRead[];
@@ -1437,4 +1462,4 @@ declare function rememberLaunchWindow(win?: LaunchWindow, storage?: PlacementSto
 /** A placement that fits on the screen the window is on now — a screen may be smaller than the one it was left on. */
 declare function fitToScreen(placement: WindowPlacement, screen: LaunchWindow["screen"]): WindowPlacement;
 
-export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, type AppMessages, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, CompactRowsContext, DEFAULT_LANGUAGE, DataTable, type DataTableAlign, type DataTableColumn, type DataTableProps, DensityContext, FormActions, type FormActionsProps, FormField, type FormFieldProps, FormGrid, type FormGridProps, Header, type HeaderProps, type HttpMethod, I18nProvider, type I18nProviderProps, IconButton, type IconButtonProps, Input, type InputProps, LANGUAGES, LAUNCH_WINDOW_PREFIX, LAUNCH_WINDOW_SAVE_DELAY_MS, LAUNCH_WINDOW_STORAGE_KEY, type Language, type LaunchWindow, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, type Message, type MessageKey, type MessageParams, MyAccountPanel, type MyAccountPanelProps, type MyAccountUser, NavIcon, type NavIconProps, NavItem, type NavItemProps, Page, type PageProps, type PageWidth, type PlacementStorage, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, ResizeHandle, type ResizeHandleProps, SIDEBAR_DEFAULT_WIDTH, SIDEBAR_WIDTH_KEY_PREFIX, SectionDivider, SectionLabel, type SectionLabelProps, Select, type SelectProps, type ServerChange, SessionsPanel, type SessionsPanelProps, type SettingChoice, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, ShellContext, type ShellState, Sidebar, type SidebarProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, type Translate, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, WIDE_SCREEN_QUERY, type WindowPlacement, accountRefusal, createApiClient, createAuthStore, createTranslator, currentLanguage, currentTranslator, fitToScreen, formatDateTime, isLanguage, languageToReport, localeOf, onServerChange, passwordRefusal, personLanguage, readRememberedWidth, refusalSentence, registerAuthCallback, rememberLaunchWindow, rememberWidth, useCompactRows, useDense, useLanguage, useRememberedSidebarWidth, useShell, useT, useWideScreen };
+export { type AgentDraft, AgentsPanel, type AgentsPanelProps, type ApiClient, type ApiClientConfig, ApiError, type ApiErrorEnvelope, type AppMessages, AppShell, type AppShellProps, type AuthConfig, type AuthMode, type AuthModule, Badge, type BadgeProps, type BadgeVariant, Brand, type BrandProps, Button, type ButtonProps, type ButtonSize, type ButtonVariant, Card, type CardProps, CodeBlock, type CodeBlockProps, CompactRowsContext, DEFAULT_LANGUAGE, DataTable, type DataTableAlign, type DataTableColumn, type DataTableProps, DensityContext, FormActions, type FormActionsProps, FormField, type FormFieldProps, FormGrid, type FormGridProps, Header, type HeaderProps, type HttpMethod, I18nProvider, type I18nProviderProps, IconButton, type IconButtonProps, Input, type InputProps, LANGUAGES, LAUNCH_WINDOW_PREFIX, LAUNCH_WINDOW_SAVE_DELAY_MS, LAUNCH_WINDOW_STORAGE_KEY, type Language, type LaunchWindow, type LoginAuthModule, type LoginAuthState, type LoginCreds, LoginForm, type LoginFormProps, type Message, type MessageKey, type MessageParams, MyAccountPanel, type MyAccountPanelProps, type MyAccountUser, NavIcon, type NavIconProps, NavItem, type NavItemProps, Page, type PageProps, type PageWidth, PasswordInput, type PasswordInputProps, type PlacementStorage, ProtectedRoute, type ProtectedRouteProps, type ReleaseNote, ReleaseNotes, type ReleaseNotesProps, type RequestOptions, ResizeHandle, type ResizeHandleProps, SIDEBAR_DEFAULT_WIDTH, SIDEBAR_WIDTH_KEY_PREFIX, SectionDivider, SectionLabel, type SectionLabelProps, Select, type SelectProps, type ServerChange, SessionsPanel, type SessionsPanelProps, type SettingChoice, type SettingsCategory, type SettingsKitConfig, SettingsShell, type SettingsShellProps, type SettingsTabId, ShellContext, type ShellState, Sidebar, type SidebarProps, StatusBadge, type StatusBadgeProps, type StatusBadgeStatus, type SystemSettingRead, type SystemSettingValueType, SystemSettingsPanel, type SystemSettingsPanelProps, ThemeToggle, type ThemeToggleProps, type TokenLaunchAuthModule, type TokenLaunchAuthState, type Translate, UserCard, type UserCardProps, type UserFieldSchema, UserForm, type UserFormData, type UserFormProps, type UserRead, type UserSessionRead, UsersPanel, type UsersPanelProps, WIDE_SCREEN_QUERY, type WindowPlacement, accountRefusal, createApiClient, createAuthStore, createTranslator, currentLanguage, currentTranslator, fitToScreen, formatDateTime, isLanguage, languageToReport, localeOf, onServerChange, passwordRefusal, personLanguage, readRememberedWidth, refusalSentence, registerAuthCallback, rememberLaunchWindow, rememberWidth, useCompactRows, useDense, useLanguage, useRememberedSidebarWidth, useShell, useT, useWideScreen };

@@ -65,6 +65,10 @@ export const sk = {
   "password.minPlaceholder": { one: "min. {count} znak", few: "min. {count} znaky", other: "min. {count} znakov" },
   "password.mismatch": "Heslá sa nezhodujú.",
   "password.new": "Nové heslo",
+  "password.show": "Zobraziť heslo",
+  "password.hide": "Skryť heslo",
+  "password.showNamed": "Zobraziť: {label}",
+  "password.hideNamed": "Skryť: {label}",
   "password.tooShort": {
     one: "Heslo musí mať aspoň {count} znak.",
     few: "Heslo musí mať aspoň {count} znaky.",

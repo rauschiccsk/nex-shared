@@ -18,6 +18,7 @@
 
 import { useState } from "react";
 import { Input } from "./Input";
+import { PasswordInput } from "./PasswordInput";
 import { Select } from "./Select";
 import { Card } from "./Card";
 import type { UserRead, UserFieldSchema } from "./settings-types";
@@ -62,6 +63,9 @@ export interface UserFormProps {
   languages?: readonly Language[];
   /** The language of a person who chose none — the installation's; without it the app's first. */
   defaultLanguage?: Language;
+  /** DEV-439 — an eye at the password that shows what is typed. The admin's own account has it; another person's
+   *  account has none — the admin only gives them a new initial password. */
+  revealPassword?: boolean;
 }
 
 /** The language the person speaks now: their own choice when the app speaks it, else the installation's, else the
@@ -109,6 +113,7 @@ export function UserForm({
   onCancel,
   languages = [],
   defaultLanguage,
+  revealPassword = false,
 }: UserFormProps) {
   const t = useT();
   const isEdit = mode === "edit";
@@ -255,9 +260,10 @@ export function UserForm({
               t("userForm.passwordRequired")
             )}
           </label>
-          <Input
+          <PasswordInput
             id="uf-password"
-            type="password"
+            reveal={revealPassword}
+            revealLabel={t("password.new")}
             value={data.password}
             onChange={(e) => update("password", e.target.value)}
             // DEV-296: an app that asks only for a non-empty password names no minimum.

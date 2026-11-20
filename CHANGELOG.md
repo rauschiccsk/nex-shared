@@ -18,6 +18,19 @@ Zdieľaný FE dizajn-kit + utility pre ICC aplikácie. Každá verzia zodpovedá
 
 ---
 
+## v0.40.0
+- `[nové]` **`PasswordInput` — pole hesla, ktoré prehliadač sám nevyplní, voliteľne s okom.** Oko ukáže práve písané
+  heslo a znovu ho skryje; uložené heslo sa zobraziť nedá, preto tam, kde sa nič písať nemá, oko nie je (DEV-439).
+- `[oprava]` **Pole hesla vo formulári človeka prehliadač sám nevyplní.** V Orthodox Hermenia správca menil v
+  Používateľoch svoje meno, prehliadač mu do prázdneho poľa hesla vložil uložené heslo a uloženie zlyhalo ako zmena
+  vlastného hesla, ktorú nepísal.
+- `[nové]` **`UsersPanel` pozná prihláseného (`currentUserId`) a koho nemožno vymazať (`mayDelete`).** Vo vlastnom riadku
+  sa neponúka vymazanie ani deaktivácia (server oboje odmietne) a heslo vo vlastnom účte má oko; riadok, pre ktorý
+  `mayDelete` vráti `false`, vymazanie neponúka vôbec. Bez týchto volieb je panel ako doteraz.
+- `[nové]` **`MyAccountPanel` s `askCurrentPassword: false` sa nepýta na súčasné heslo** — pre aplikáciu, ktorej server
+  mení heslo prihláseného bez neho (šablóna nex-app-kit). Nové heslo aj jeho zopakovanie majú oko pre každého. Bez voľby
+  sa pýta ako doteraz (kokpit, NEX Manager).
+
 ## v0.39.1
 - `[oprava]` **Správca uloží človeka, ktorý nemá e-mail.** Človek bez e-mailu (založený skôr, než bol povinný, alebo
   NEX Managerom) mal v Používateľoch „Uložiť“ zašednuté, kým mu správca e-mail nedoplnil — nezmenil mu ani jazyk.

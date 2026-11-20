@@ -67,6 +67,10 @@ export const en: Record<MessageKey, Message> = {
   "password.minPlaceholder": { one: "min. {count} character", other: "min. {count} characters" },
   "password.mismatch": "The passwords do not match.",
   "password.new": "New password",
+  "password.show": "Show password",
+  "password.hide": "Hide password",
+  "password.showNamed": "Show: {label}",
+  "password.hideNamed": "Hide: {label}",
   "password.tooShort": {
     one: "The password must have at least {count} character.",
     other: "The password must have at least {count} characters.",

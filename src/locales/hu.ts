@@ -67,6 +67,10 @@ export const hu: Record<MessageKey, Message> = {
   "password.minPlaceholder": "legalább {count} karakter",
   "password.mismatch": "A jelszavak nem egyeznek.",
   "password.new": "Új jelszó",
+  "password.show": "Jelszó megjelenítése",
+  "password.hide": "Jelszó elrejtése",
+  "password.showNamed": "Megjelenítés: {label}",
+  "password.hideNamed": "Elrejtés: {label}",
   "password.tooShort": "A jelszónak legalább {count} karakterből kell állnia.",
   "password.tooShortCount": "A jelszónak legalább {count} karakterből kell állnia ({length}/{count}).",
 

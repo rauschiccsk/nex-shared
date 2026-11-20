@@ -12,6 +12,7 @@
 
 import { useEffect, useState } from "react";
 import { Input } from "./Input";
+import { PasswordInput } from "./PasswordInput";
 import { Card } from "./Card";
 import { refusalSentence } from "./api-client";
 import { createTranslator, DEFAULT_LANGUAGE, LANGUAGES, useLanguage, useT, type Language, type Translate } from "./i18n";
@@ -52,8 +53,11 @@ export interface MyAccountPanelProps {
     telegram_chat_id: string;
   }) => Promise<void>;
   /** Change own password (current-password verification is the app's concern). Rejection → error, with the
-   *  server's own sentence when it carries one (v0.32.0). */
+   *  server's own sentence when it carries one (v0.32.0). Without `askCurrentPassword` the first argument is "". */
   onChangePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  /** DEV-439 — `false` for an app whose server changes the signed-in person's password without the current one (the
+   *  app template): the field is left out. Default `true`, as the cockpit and NEX Manager ask for it. */
+  askCurrentPassword?: boolean;
   /** Optional (v0.15.2) — send a TEST Telegram to the saved chat_id + report the outcome, so the user can
    *  confirm notifications actually reach them (a silent fail is otherwise invisible). When supplied, a
    *  "Poslať test" button + a short how-to appear under the Telegram field. */
@@ -97,6 +101,7 @@ export function MyAccountPanel({
   languages = [],
   language,
   onLanguageChange,
+  askCurrentPassword = true,
 }: MyAccountPanelProps) {
   const t = useT();
   const current = useLanguage().language;
@@ -170,7 +175,11 @@ export function MyAccountPanel({
   const pwTooShort = newPw.length > 0 && newPw.length < passwordMinLength;
   const pwMismatch = confirmPw.length > 0 && newPw !== confirmPw;
   const pwDisabled =
-    savingPw || !currentPw || !newPw || newPw.length < passwordMinLength || newPw !== confirmPw;
+    savingPw ||
+    (askCurrentPassword && !currentPw) ||
+    !newPw ||
+    newPw.length < passwordMinLength ||
+    newPw !== confirmPw;
 
   async function changePassword() {
     setPwError("");
@@ -178,7 +187,7 @@ export function MyAccountPanel({
     if (pwDisabled) return;
     setSavingPw(true);
     try {
-      await onChangePassword(currentPw, newPw);
+      await onChangePassword(askCurrentPassword ? currentPw : "", newPw);
       setPwDone(true);
       setCurrentPw("");
       setNewPw("");
@@ -327,20 +336,29 @@ export function MyAccountPanel({
             {t("account.passwordChanged")}
           </div>
         )}
-        <div className="grid grid-cols-3 gap-3 mb-2">
-          <div>
-            <label htmlFor="ma-cur" className={LABEL}>
-              {t("account.currentPassword")}
-            </label>
-            <Input id="ma-cur" type="password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} />
-          </div>
+        <div className={`grid ${askCurrentPassword ? "grid-cols-3" : "grid-cols-2"} gap-3 mb-2`}>
+          {askCurrentPassword && (
+            <div>
+              <label htmlFor="ma-cur" className={LABEL}>
+                {t("account.currentPassword")}
+              </label>
+              <PasswordInput
+                id="ma-cur"
+                autoComplete="current-password"
+                value={currentPw}
+                onChange={(e) => setCurrentPw(e.target.value)}
+              />
+            </div>
+          )}
           <div>
             <label htmlFor="ma-new" className={LABEL}>
               {t("password.new")}
             </label>
-            <Input
+            {/* DEV-439: the eye shows what is typed — for every person, in their own account. */}
+            <PasswordInput
               id="ma-new"
-              type="password"
+              reveal
+              revealLabel={t("password.new")}
               value={newPw}
               onChange={(e) => setNewPw(e.target.value)}
               // DEV-296: an app that asks only for a non-empty password names no minimum.
@@ -352,9 +370,10 @@ export function MyAccountPanel({
             <label htmlFor="ma-conf" className={LABEL}>
               {t("account.repeatPassword")}
             </label>
-            <Input
+            <PasswordInput
               id="ma-conf"
-              type="password"
+              reveal
+              revealLabel={t("account.repeatPassword")}
               value={confirmPw}
               onChange={(e) => setConfirmPw(e.target.value)}
               invalid={pwMismatch}

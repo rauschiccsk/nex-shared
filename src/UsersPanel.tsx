@@ -29,7 +29,8 @@ export interface UsersPanelProps {
   onUpdate: (id: string, data: UserFormData) => Promise<void>;
   /** Delete a user. Reject (e.g. 409 FK conflict) surfaces a "deaktivovať" hint. */
   onDelete: (id: string) => Promise<void>;
-  /** Rotate a user's password (called after `onUpdate` when a new one was typed). */
+  /** Set a person's password (called after `onUpdate` when a new one was typed) — also the admin's own; what it
+   *  means (another's initial password, one's own regular one) is the server's to decide (DEV-439). */
   onChangePassword: (id: string, password: string) => Promise<void>;
   /** Flip `is_active`. */
   onToggleActive: (user: UserRead) => Promise<void>;
@@ -43,6 +44,12 @@ export interface UsersPanelProps {
   languages?: readonly Language[];
   /** The language of a person who chose none — the installation's; without it the app's first. */
   defaultLanguage?: Language;
+  /** DEV-439 — the signed-in person. Their own row offers no delete and no deactivation (the server refuses both), and
+   *  their own password field has the eye that shows what they type. */
+  currentUserId?: string;
+  /** DEV-439 — whether a person may be deleted at all; the row offers no delete where it returns false (the template:
+   *  never the app's admin). Without it anyone but the signed-in person. */
+  mayDelete?: (user: UserRead) => boolean;
 }
 
 export function UsersPanel({
@@ -59,11 +66,15 @@ export function UsersPanel({
   rowActions,
   languages = [],
   defaultLanguage,
+  currentUserId,
+  mayDelete,
 }: UsersPanelProps) {
   const t = useT();
   const roleCls = roleClass ?? (() => "");
   // DEV-251: the role by its name („Správca“), not its code; a role the app did not name stays as it is.
   const roleName = (role: string) => roleOptions.find((o) => o.value === role)?.label ?? role;
+  const isSelf = (u: UserRead) => currentUserId !== undefined && u.id === currentUserId;
+  const deletable = (u: UserRead) => !isSelf(u) && (mayDelete ? mayDelete(u) : true);
 
   // Filters (client-side over the supplied users).
   const [roleFilter, setRoleFilter] = useState("");
@@ -300,7 +311,8 @@ export function UsersPanel({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
                         </button>
-                        {/* Delete (trash) */}
+                        {/* Delete (trash) — never for oneself, nor for whom the app keeps (DEV-439). */}
+                        {deletable(u) && (
                         <button
                           type="button"
                           onClick={() => { setConfirmingDeleteId(u.id); setDeleteError(""); }}
@@ -311,7 +323,9 @@ export function UsersPanel({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                         </button>
-                        {/* Toggle active */}
+                        )}
+                        {/* Toggle active — not one's own account: the server refuses to switch oneself off (DEV-439). */}
+                        {!isSelf(u) && (
                         <button
                           type="button"
                           onClick={() => handleToggle(u)}
@@ -319,6 +333,7 @@ export function UsersPanel({
                         >
                           {u.is_active ? t("users.deactivate") : t("users.activate")}
                         </button>
+                        )}
                       </div>
                     )}
                   </td>
@@ -352,6 +367,7 @@ export function UsersPanel({
           fieldSchema={fieldSchema}
           languages={languages}
           defaultLanguage={defaultLanguage}
+          revealPassword={isSelf(editingUser)}
           submitting={editing}
           error={editError}
           onSubmit={handleSaveEdit}
